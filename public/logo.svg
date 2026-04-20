@@ -1,0 +1,19 @@
+<svg width="400" height="120" viewBox="0 0 400 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Bag Handle -->
+  <path d="M 40 45 V 30 A 20 20 0 0 1 80 30 V 45" stroke="#215FEA" stroke-width="10" stroke-linecap="round" fill="none"/>
+  
+  <!-- Bag Body -->
+  <rect x="15" y="40" width="90" height="70" rx="14" fill="#215FEA"/>
+  
+  <!-- Inner Light Blue Block -->
+  <rect x="28" y="60" width="64" height="30" rx="4" fill="#DDF0FF"/>
+  
+  <!-- Inner Orange Block Shadow (Bottom edge) -->
+  <rect x="44" y="54" width="32" height="44" rx="6" fill="#E0610D"/>
+  
+  <!-- Inner Orange Block -->
+  <rect x="44" y="50" width="32" height="44" rx="6" fill="#FA7A19"/>
+  
+  <!-- Text -->
+  <text x="120" y="92" font-family="Poppins, Montserrat, system-ui, sans-serif" font-weight="800" font-size="56" fill="#151B26" letter-spacing="-1.5">Mostr<tspan fill="#FA7A19">ua</tspan></text>
+</svg>

@@ -1,0 +1,168 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // =========================================================================
+    // 1. FUNÇÕES AUXILIARES (HELPERS)
+    // =========================================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Verifica se é Admin (usando custom claims)
+    function isAdmin() {
+      return isAuthenticated() && request.auth.token.admin == true;
+    }
+
+    // Verifica se é Revendedor (buscando no Firestore)
+    function isReseller() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'reseller';
+    }
+
+    // Verifica se o documento pertence ao usuário logado
+    function belongsToReseller(resellerId) {
+      return isAuthenticated() && request.auth.uid == resellerId;
+    }
+
+    // Verifica se a conta do revendedor está ativa buscando no Firestore
+    function isResellerActive(resellerId) {
+      let resellerDoc = get(/databases/$(database)/documents/resellers/$(resellerId));
+      return resellerDoc != null && resellerDoc.data.status == 'active';
+    }
+
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    // =========================================================================
+    // 2. REGRAS DE COLEÇÕES
+    // =========================================================================
+
+    // --- USERS (Dados de autenticação e perfil base) ---
+    match /users/{userId} {
+      allow read: if isAdmin() || belongsToReseller(userId);
+      
+      // Criação/Edição: Revendedor pode se criar, Admin pode tudo
+      allow create: if isAuthenticated() && (
+        (belongsToReseller(userId) && request.resource.data.role == 'reseller' && isValidEmail(request.resource.data.email)) || 
+        isAdmin()
+      );
+      allow update: if isAdmin() || (
+        belongsToReseller(userId) && request.resource.data.role == resource.data.role && isValidEmail(request.resource.data.email)
+      );
+    }
+
+    // --- RESELLERS (Dados do tenant/revendedor) ---
+    match /resellers/{resellerId} {
+      // Público pode ler para carregar a loja (se estiver ativa)
+      allow read: if isAdmin() || belongsToReseller(resellerId) || resource.data.status == 'active';
+      
+      // Revendedor só pode atualizar campos não-sensíveis (não pode mudar próprio status)
+      allow update: if isAdmin() || (
+        belongsToReseller(resellerId) &&
+        request.resource.data.status == resource.data.status &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'phone', 'storeName', 'settings', 'updatedAt', 'onboardingStep', 'achievements', 'customDomain', 'customDomainStatus', 'customDomainVerifiedAt'])
+      );
+      allow create: if isAdmin() || belongsToReseller(resellerId);
+      allow delete: if isAdmin();
+    }
+
+    // --- CATÁLOGO GLOBAL (Niches, Catalogs, Products) ---
+    match /niches/{nicheId} {
+      allow read: if isAdmin() || resource.data.active == true;
+      allow write: if isAdmin();
+    }
+
+    match /catalogs/{catalogId} {
+      allow read: if isAdmin() || resource.data.active == true;
+      allow write: if isAdmin();
+    }
+
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /products/{productId} {
+      allow read: if isAdmin() || resource.data.active == true;
+      allow write: if isAdmin();
+    }
+
+    // --- RESELLER_PRODUCTS (Produtos customizados do revendedor) ---
+    match /reseller_products/{rpId} {
+      // Público lê se o produto e o revendedor estiverem ativos
+      allow read: if isAdmin() || 
+                  belongsToReseller(resource.data.resellerId) || 
+                  (resource.data.active == true && isResellerActive(resource.data.resellerId));
+      
+      // Validação rigorosa na criação
+      allow create: if isAdmin() || (
+        isReseller() &&
+        belongsToReseller(request.resource.data.resellerId) &&
+        isResellerActive(request.resource.data.resellerId) &&
+        request.resource.data.keys().hasAll(['resellerId', 'baseProductId']) &&
+        (!('active' in request.resource.data) || request.resource.data.active is bool)
+      );
+      
+      // Validação na atualização (impede roubo de posse mudando resellerId)
+      allow update: if isAdmin() || (
+        belongsToReseller(resource.data.resellerId) &&
+        request.resource.data.resellerId == resource.data.resellerId && // Imutável
+        isResellerActive(resource.data.resellerId) &&
+        (!('active' in request.resource.data) || request.resource.data.active is bool) &&
+        (!('customPrice' in request.resource.data) || (request.resource.data.customPrice is number && request.resource.data.customPrice >= 0))
+      );
+      
+      allow delete: if isAdmin() || belongsToReseller(resource.data.resellerId);
+    }
+
+    match /reseller_catalogs/{rcId} {
+      allow read: if true;
+      allow create: if isAuthenticated() && request.resource.data.resellerId == request.auth.uid;
+      allow update: if isAuthenticated() && resource.data.resellerId == request.auth.uid;
+      allow delete: if isAuthenticated() && resource.data.resellerId == request.auth.uid;
+    }
+
+    // --- ORDERS & ORDER_ITEMS (Pedidos) ---
+    match /orders/{orderId} {
+      allow get: if true; // Permite que o cliente veja a página de sucesso caso tenha o ID do pedido
+      allow list: if isAdmin() || belongsToReseller(resource.data.resellerId);
+      
+      // Regras mínimas de segurança para permitir checkout via client-side
+      allow create: if true 
+                    && request.resource.data.keys().hasAll(['id', 'resellerId', 'customer', 'items', 'total', 'status', 'createdAt'])
+                    && request.resource.data.status == 'novo'
+                    && request.resource.data.total >= 0;
+
+      allow update: if isAdmin() || (
+        belongsToReseller(resource.data.resellerId) &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']) &&
+        request.resource.data.status in ['novo', 'confirmed', 'shipped', 'cancelled']
+      );
+      allow delete: if isAdmin();
+    }
+
+    match /subscriptions/{subId} {
+      allow read: if isAdmin() || belongsToReseller(resource.data.resellerId);
+      allow write: if isAdmin();
+    }
+
+    match /payments/{paymentId} {
+      allow read: if isAdmin() || belongsToReseller(resource.data.resellerId);
+      allow write: if isAdmin();
+    }
+
+    match /store_views/{resellerId}/daily/{date} {
+      allow read: if belongsToReseller(resellerId) || isAdmin();
+      allow create, update: if true; // Permite que visitantes públicos incrementem views
+    }
+
+    match /product_views/{resellerId}/products/{productId} {
+      allow read: if belongsToReseller(resellerId) || isAdmin();
+      allow create, update: if true; // Permite que visitantes públicos incrementem views
+    }
+  }
+}

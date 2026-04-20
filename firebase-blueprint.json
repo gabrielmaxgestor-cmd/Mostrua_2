@@ -1,0 +1,165 @@
+{
+  "entities": {
+    "user": {
+      "title": "User",
+      "description": "System users (Admin or Reseller)",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "format": "email" },
+        "role": { "type": "string", "enum": ["admin", "reseller"] },
+        "status": { "type": "string", "enum": ["active", "inactive"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["email", "role", "status"]
+    },
+    "niche": {
+      "title": "Niche",
+      "description": "Market niches for catalogs",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "active": { "type": "boolean" },
+        "catalogsCount": { "type": "number" },
+        "productsCount": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "active", "catalogsCount", "productsCount"]
+    },
+    "catalog": {
+      "title": "Catalog",
+      "description": "Product catalogs within a niche",
+      "type": "object",
+      "properties": {
+        "nicheId": { "type": "string" },
+        "nicheName": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "active": { "type": "boolean" },
+        "order": { "type": "number" },
+        "productsCount": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["nicheId", "nicheName", "name", "active", "order", "productsCount"]
+    },
+    "category": {
+      "title": "Category",
+      "description": "Categories within a catalog",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "nicheId": { "type": "string" },
+        "catalogId": { "type": "string" },
+        "order": { "type": "number" },
+        "status": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "nicheId", "catalogId", "order", "status"]
+    },
+    "product": {
+      "title": "Product",
+      "description": "Base products managed by admin",
+      "type": "object",
+      "properties": {
+        "nicheId": { "type": "string" },
+        "catalogId": { "type": "string" },
+        "category": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "sku": { "type": "string" },
+        "images": { "type": "array", "items": { "type": "string" } },
+        "priceBase": { "type": "number" },
+        "variations": { "type": "array", "items": { "type": "string" } },
+        "active": { "type": "boolean" },
+        "resellersCount": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["nicheId", "catalogId", "name", "priceBase", "active", "resellersCount"]
+    },
+    "reseller": {
+      "title": "Reseller",
+      "description": "Reseller store and profile",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string" },
+        "storeName": { "type": "string" },
+        "slug": { "type": "string" },
+        "nicheId": { "type": "string" },
+        "status": { "type": "string", "enum": ["active", "inactive"] },
+        "settings": {
+          "type": "object",
+          "properties": {
+            "logo": { "type": "string" },
+            "banner": { "type": "string" },
+            "primaryColor": { "type": "string" },
+            "secondaryColor": { "type": "string" },
+            "description": { "type": "string" },
+            "whatsapp": { "type": "string" },
+            "instagram": { "type": "string" }
+          }
+        }
+      },
+      "required": ["name", "email", "storeName", "slug", "nicheId", "status"]
+    },
+    "reseller_product": {
+      "title": "Reseller Product",
+      "description": "Customized product for a specific reseller",
+      "type": "object",
+      "properties": {
+        "resellerId": { "type": "string" },
+        "baseProductId": { "type": "string" },
+        "customName": { "type": "string" },
+        "customDescription": { "type": "string" },
+        "customPrice": { "type": "number" },
+        "promotionalPrice": { "type": "number" },
+        "featured": { "type": "boolean" },
+        "active": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["resellerId", "baseProductId", "customPrice", "active"]
+    },
+    "reseller_catalog": {
+      "title": "Reseller Catalog",
+      "description": "Active catalogs for a reseller",
+      "type": "object",
+      "properties": {
+        "resellerId": { "type": "string" },
+        "catalogId": { "type": "string" },
+        "active": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["resellerId", "catalogId", "active"]
+    },
+    "order": {
+      "title": "Order",
+      "description": "Customer orders",
+      "type": "object",
+      "properties": {
+        "resellerId": { "type": "string" },
+        "customerName": { "type": "string" },
+        "customerPhone": { "type": "string" },
+        "observations": { "type": "string" },
+        "total": { "type": "number" },
+        "status": { "type": "string", "enum": ["pending", "confirmed", "shipped", "cancelled"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "items": { "type": "array", "items": { "type": "object" } }
+      },
+      "required": ["resellerId", "customerName", "customerPhone", "total", "status", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{uid}": { "schema": "user", "description": "Users collection" },
+    "/niches/{id}": { "schema": "niche", "description": "Market niches" },
+    "/catalogs/{id}": { "schema": "catalog", "description": "Catalogs" },
+    "/categories/{id}": { "schema": "category", "description": "Categories" },
+    "/products/{id}": { "schema": "product", "description": "Base products" },
+    "/resellers/{uid}": { "schema": "reseller", "description": "Reseller profiles" },
+    "/reseller_products/{id}": { "schema": "reseller_product", "description": "Reseller customized products" },
+    "/reseller_catalogs/{id}": { "schema": "reseller_catalog", "description": "Reseller active catalogs" },
+    "/orders/{id}": { "schema": "order", "description": "Orders" }
+  }
+}

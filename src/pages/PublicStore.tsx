@@ -1,0 +1,555 @@
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { db } from "../firebase";
+import { ShoppingCart, MessageCircle, X, Plus, Minus, Search, Store, ArrowLeft, ChevronRight } from "lucide-react";
+import { useCart } from "../hooks/useCart";
+import { CartDrawer } from "../components/store/CartDrawer";
+import { Checkout } from "../components/store/Checkout";
+import { ProductCard } from "../components/store/ProductCard";
+import { SearchBar } from "../components/store/SearchBar";
+import { InstallBanner } from "../components/store/InstallBanner";
+import { getCategories } from "../services/categoryService";
+import { Category } from "../types";
+import { useProductSearch } from "../hooks/useProductSearch";
+import { incrementStoreView, incrementProductView, incrementAddToCart } from "../services/analyticsService";
+import { setMetaTags, resetMetaTags } from '../utils/setMetaTags';
+import { useTenant } from "../hooks/useTenant";
+
+export default function PublicStore() {
+  const { reseller: tenantReseller, loading: tenantLoading, error: tenantError, slug } = useTenant();
+  const [reseller, setReseller] = useState<any>(null);
+  const [products, setProducts] = useState<any[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  
+  // Views: 'home', 'product', 'category'
+  const [view, setView] = useState<'home' | 'product' | 'category'>('home');
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  
+  const [showCart, setShowCart] = useState(false);
+  const [showCheckout, setShowCheckout] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [storeInactive, setStoreInactive] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [notFound, setNotFound] = useState(false);
+
+  // Product page state
+  const [selectedVariation, setSelectedVariation] = useState<string>("");
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  const { items: cart, addItem, removeItem, updateQuantity, clearCart, total, itemCount: totalItems } = useCart(reseller?.id || '');
+
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // TODO: Para bases com 1000+ produtos, migrar para Algolia ou Firebase Extension de search.
+  const { filteredProducts: searchResults, isSearching } = useProductSearch(products, searchQuery);
+
+  useEffect(() => {
+    async function loadStore() {
+      if (tenantLoading) return;
+      
+      if (tenantError || !tenantReseller) {
+        setNotFound(true);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const resellerData = tenantReseller;
+        
+        // Block if reseller is not active
+        if (resellerData.status !== 'active') {
+           setStoreInactive(true);
+           setLoading(false);
+           return;
+        }
+
+        // Check subscription
+        const subSnap = await getDocs(query(
+          collection(db, 'subscriptions'),
+          where('resellerId', '==', resellerData.id)
+        ));
+        
+        if (!subSnap.empty) {
+          const sub = subSnap.docs[0].data();
+          if (sub.status !== 'active' && sub.status !== 'trial') {
+            setStoreInactive(true);
+            setLoading(false);
+            return;
+          }
+        }
+
+        setReseller(resellerData);
+        
+        // Add meta tags
+        setMetaTags({
+          title: `${resellerData.storeName} — Catalogo Online`,
+          description: resellerData.settings?.description || `Confira o catalogo de produtos de ${resellerData.storeName}`,
+          image: resellerData.settings?.banner || resellerData.settings?.logo || undefined,
+          url: window.location.href,
+        });
+
+        // 1. Buscar catalogs ativos do revendedor
+      const rcSnap = await getDocs(
+        query(collection(db, 'reseller_catalogs'),
+          where('resellerId', '==', resellerData.id),
+          where('active', '==', true))
+      );
+      const activeCatalogIds = rcSnap.docs.map(d => d.data().catalogId);
+
+      if (activeCatalogIds.length === 0) {
+        setProducts([]);
+        setLoading(false);
+        return; // loja sem catalogos ativos
+      }
+
+      // 2. Buscar produtos base dos catalogs ativos (batches de 10)
+      const batchSize = 10;
+      const batches = [];
+      for (let i = 0; i < activeCatalogIds.length; i += batchSize) {
+        const batch = activeCatalogIds.slice(i, i + batchSize);
+        batches.push(getDocs(query(
+          collection(db, 'products'),
+          where('catalogId', 'in', batch),
+          where('active', '==', true)
+        )));
+      }
+      
+      const batchResults = await Promise.race([
+        Promise.all(batches),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 15000))
+      ]) as any[];
+      
+      const baseProducts = batchResults.flatMap(snap => snap.docs.map(d => ({ id: d.id, ...d.data() })));
+
+      // 3. Buscar reseller_products ativos
+      const rpSnap = await getDocs(query(
+        collection(db, 'reseller_products'),
+        where('resellerId', '==', resellerData.id),
+        where('active', '==', true)
+      ));
+      const rps = rpSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+      // Merge
+      const mergedProducts = rps.map((rp: any) => {
+        const base: any = baseProducts.find(p => p.id === rp.baseProductId);
+        if (!base) return null;
+        return {
+          ...base,
+          ...rp,
+          id: rp.baseProductId, // Use base product ID for consistency
+          rpId: rp.id,
+          name: rp.customName || base.name,
+          description: rp.customDescription || base.description,
+          price: rp.customPrice || base.priceBase,
+        };
+      }).filter(Boolean);
+
+      setProducts(mergedProducts);
+      
+      try {
+        const fetchedCategories = await getCategories(resellerData.nicheId);
+        setCategories(fetchedCategories);
+      } catch (err) {
+        console.error("Error fetching categories:", err);
+      }
+      
+      // Track store view
+      incrementStoreView(resellerData.id);
+      
+      setLoading(false);
+    } catch (err: any) {
+      console.error("Error loading store:", err);
+      setError(err.message === 'timeout' ? 'Conexão lenta. Tente novamente.' : 'Erro ao carregar loja.');
+      setLoading(false);
+    } finally {
+      // setLoading(false); // already handled in try/catch for now
+    }
+  }
+  loadStore();
+  return () => { resetMetaTags(); };
+}, [tenantReseller, tenantLoading, tenantError]);
+
+  const handleAddToCart = (product: any, variation?: string) => {
+    addItem({
+      productId: product.id,
+      name: product.name,
+      price: product.price,
+      variation,
+      imageUrl: product.images?.[0],
+      hasVariations: product.variations && product.variations.length > 0,
+      stock: product.stock
+    }, 1, useStockControl);
+    setShowCart(true);
+    
+    // Track add to cart
+    if (reseller?.id) {
+      incrementAddToCart(reseller.id, product.id);
+    }
+  };
+
+  const navigate = useNavigate();
+
+  const handleCheckoutSuccess = (orderId: string) => {
+    setShowCheckout(false);
+    setShowCart(false);
+    navigate(`/store/${slug}/order-confirmed/${orderId}`);
+  };
+
+  const useStockControl = reseller?.settings?.useStockControl ?? true;
+  const primaryColor = reseller?.settings?.primaryColor || "#16a34a";
+  const secondaryColor = reseller?.settings?.secondaryColor || "#f0fdf4";
+
+  useEffect(() => {
+    if (reseller) {
+      document.title = reseller.storeName || "Loja";
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+      if (metaThemeColor) {
+        metaThemeColor.setAttribute("content", primaryColor);
+      }
+    }
+  }, [reseller, primaryColor]);
+
+  if (error) return <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 w-full max-w-sm">
+      <ErrorState message={error} onRetry={() => window.location.reload()} />
+      {reseller && (
+        <a href={`https://wa.me/55${reseller.settings?.whatsapp?.replace(/\D/g,'')}`} className="w-full mt-4 flex items-center justify-center gap-2 py-3 bg-green-500 text-white rounded-xl font-bold">
+          <MessageCircle className="w-5 h-5" /> Falar com o vendedor
+        </a>
+      )}
+    </div>
+  </div>;
+
+  if (loading) return (
+    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: primaryColor }} />
+    </div>
+  );
+
+  if (storeInactive) return (
+    <div className="min-h-screen flex flex-col items-center justify-center p-8 text-center"
+         style={{ background: reseller?.settings?.primaryColor ? reseller.settings.primaryColor + '10' : '#f9fafb' }}>
+      {reseller?.settings?.logo && <img src={reseller.settings.logo} className="w-20 h-20 rounded-full mb-4 object-cover" />}
+      <h1 className="text-2xl font-bold text-gray-900 mb-2">{reseller?.storeName || 'Esta loja'}</h1>
+      <p className="text-gray-500 mb-6">Esta loja esta temporariamente indisponivel.</p>
+      {reseller?.settings?.whatsapp && (
+        <a href={`https://wa.me/55${reseller.settings.whatsapp.replace(/\D/g,'')}`}
+           target="_blank" rel="noopener noreferrer"
+           className="flex items-center gap-2 px-6 py-3 bg-green-500 text-white rounded-full font-bold text-lg shadow-lg">
+          Falar com o vendedor
+        </a>
+      )}
+    </div>
+  );
+
+  if (notFound) return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 text-center px-4">
+      <Store className="w-16 h-16 text-gray-300 mb-4" />
+      <h1 className="text-2xl font-bold text-gray-900 mb-2">Loja não encontrada</h1>
+      <p className="text-gray-500">O link que você acessou não existe ou está inativo.</p>
+    </div>
+  );
+
+  const filteredProducts = searchResults.filter(p => {
+    const matchesCategory = view === 'category' && selectedCategory ? p.categoryId === selectedCategory.id : true;
+    return matchesCategory;
+  });
+
+  const goHome = () => {
+    setView('home');
+    setSearchQuery("");
+    window.scrollTo(0, 0);
+  };
+
+  const goBack = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    if (view === 'product' && selectedCategory) {
+      setView('category');
+    } else {
+      goHome();
+    }
+    window.scrollTo(0, 0);
+  };
+
+  const openProduct = (product: any) => {
+    setSelectedProduct(product);
+    setSelectedVariation(product.variations?.[0] || "");
+    setCurrentImageIndex(0);
+    setView('product');
+    window.scrollTo(0, 0);
+    
+    // Track product view
+    if (reseller?.id) {
+      incrementProductView(reseller.id, product.id);
+    }
+  };
+
+  const openCategory = (category: Category) => {
+    navigate(`/store/${slug}/categoria/${category.id}`);
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 pb-24">
+      {/* Header */}
+      <header className="bg-white sticky top-0 z-40 shadow-sm">
+        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {view !== 'home' ? (
+              <div className="flex items-center gap-1">
+                <button onClick={goBack} className="p-2 -ml-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors" title="Voltar">
+                  <ArrowLeft className="w-5 h-5" />
+                </button>
+                <button onClick={goHome} className="p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors" title="Início da Loja">
+                  <Store className="w-5 h-5" />
+                </button>
+              </div>
+            ) : (
+              <div className="cursor-pointer flex items-center gap-3" onClick={goHome}>
+                {reseller?.settings?.logo ? (
+                  <img src={reseller.settings.logo} alt="Logo" className="h-10 w-auto object-contain max-w-[150px]" referrerPolicy="no-referrer" />
+                ) : (
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-lg" style={{ backgroundColor: primaryColor }}>
+                    {reseller?.storeName?.[0]?.toUpperCase()}
+                  </div>
+                )}
+              </div>
+            )}
+            <h1 className="font-bold text-lg text-gray-900 truncate max-w-[180px] cursor-pointer" onClick={goHome}>{reseller?.storeName}</h1>
+          </div>
+          <button onClick={() => setShowCart(true)} className="relative p-2.5 bg-gray-50 rounded-full hover:bg-gray-100 transition-all">
+            <ShoppingCart className="w-5 h-5 text-gray-700" />
+            {totalItems > 0 && (
+              <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-white text-[10px] font-bold flex items-center justify-center border-2 border-white" style={{ backgroundColor: primaryColor }}>
+                {totalItems}
+              </span>
+            )}
+          </button>
+        </div>
+        
+        {view === 'home' && (
+          <div className="max-w-5xl mx-auto px-4 pb-3">
+            <SearchBar 
+              value={searchQuery} 
+              onChange={setSearchQuery} 
+              primaryColor={primaryColor} 
+              resultCount={filteredProducts.length}
+              isSearching={isSearching}
+            />
+          </div>
+        )}
+      </header>
+
+      <main className="max-w-5xl mx-auto">
+        {/* HOME VIEW */}
+        {view === 'home' && (
+          <>
+            {reseller?.settings?.banner && !isSearching && (
+              <div className="w-full aspect-[21/9] sm:aspect-[21/6] overflow-hidden bg-gray-200">
+                <img src={reseller.settings.banner} alt="Banner" className="w-full h-full object-cover" />
+              </div>
+            )}
+
+            {!isSearching && categories.length > 0 && (
+              <div className="px-4 py-6">
+                <h2 className="font-bold text-gray-900 mb-4">Categorias</h2>
+                <div className="flex overflow-x-auto hide-scrollbar gap-3 pb-2 -mx-4 px-4">
+                  {categories.map(cat => (
+                    <button key={cat.id} onClick={() => openCategory(cat)}
+                      className="whitespace-nowrap px-5 py-2.5 bg-white border border-gray-200 rounded-full text-sm font-medium text-gray-700 hover:border-gray-300 transition-colors shadow-sm">
+                      {cat.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="px-4 py-4">
+              {isSearching && (
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+                  <h2 className="font-bold text-gray-900 text-lg">
+                    {filteredProducts.length} {filteredProducts.length === 1 ? 'resultado' : 'resultados'} para "{searchQuery}"
+                  </h2>
+                  <button 
+                    onClick={() => setSearchQuery('')}
+                    className="text-sm font-medium hover:text-gray-900 transition-colors px-3 py-1.5 bg-white border border-gray-200 rounded-full w-fit"
+                    style={{ color: primaryColor }}
+                  >
+                    Limpar busca
+                  </button>
+                </div>
+              )}
+              {!isSearching && <h2 className="font-bold text-gray-900 mb-4 text-lg">Todos os Produtos</h2>}
+              
+              {products.length === 0 && !loading && (
+                <div className="text-center py-20">
+                  <p className="text-gray-500 text-lg">Esta loja ainda esta configurando o catalogo.</p>
+                  {reseller?.settings?.whatsapp && (
+                    <a href={`https://wa.me/55${reseller.settings.whatsapp.replace(/\D/g,'')}`}
+                       className="mt-4 inline-block bg-green-500 text-white px-6 py-3 rounded-full font-bold">
+                      Falar pelo WhatsApp
+                    </a>
+                  )}
+                </div>
+              )}
+              
+              {products.length > 0 && filteredProducts.length === 0 && (
+                <div className="text-center py-16 px-4 bg-white rounded-3xl border border-gray-100 shadow-sm mt-4">
+                  <Search className="w-12 h-12 text-gray-200 mx-auto mb-4" />
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">Nenhum produto encontrado</h3>
+                  <p className="text-gray-500 mb-6">Tente usar outros termos ou palavras-chave.</p>
+                  <button 
+                    onClick={() => setSearchQuery('')}
+                    className="px-6 py-2.5 rounded-full text-white font-bold transition-all shadow-sm mx-auto"
+                    style={{ backgroundColor: primaryColor }}
+                  >
+                    Ver todos os produtos
+                  </button>
+                </div>
+              )}
+
+              {filteredProducts.length > 0 && (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
+                  {filteredProducts.map(product => (
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      storeSlug={slug || ''}
+                      onAddToCart={(p) => handleAddToCart(p, p.variations?.[0])}
+                      onClick={openProduct}
+                      resellerPrimaryColor={primaryColor}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
+        {/* CATEGORY VIEW */}
+        {view === 'category' && selectedCategory && (
+          <div className="px-4 py-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-bold text-xl text-gray-900">{selectedCategory.name}</h2>
+              <span className="text-sm text-gray-500">{filteredProducts.length} produtos</span>
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
+              {filteredProducts.map(product => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  storeSlug={slug || ''}
+                  onAddToCart={(p) => handleAddToCart(p, p.variations?.[0])}
+                  onClick={openProduct}
+                  resellerPrimaryColor={primaryColor}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* PRODUCT VIEW */}
+        {view === 'product' && selectedProduct && (
+          <div className="bg-white min-h-screen pb-24">
+            {/* Image Slider */}
+            <div className="relative aspect-square sm:aspect-[4/3] bg-gray-100">
+              {selectedProduct.images?.[currentImageIndex] ? (
+                <img src={selectedProduct.images[currentImageIndex]} alt={selectedProduct.name} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-gray-300"><Store className="w-16 h-16" /></div>
+              )}
+              
+              {selectedProduct.images?.length > 1 && (
+                <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
+                  {selectedProduct.images.map((_: any, idx: number) => (
+                    <button key={idx} onClick={() => setCurrentImageIndex(idx)}
+                      className={`w-2 h-2 rounded-full transition-all ${idx === currentImageIndex ? 'w-4 bg-white' : 'bg-white/50'}`} />
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="p-5">
+              <div className="mb-6">
+                <h1 className="text-2xl font-bold text-gray-900 mb-2">{selectedProduct.name}</h1>
+                <p className="text-3xl font-black" style={{ color: primaryColor }}>R$ {Number(selectedProduct.price).toFixed(2)}</p>
+              </div>
+
+              {selectedProduct.variations?.length > 0 && (
+                <div className="mb-6">
+                  <h3 className="text-sm font-bold text-gray-900 mb-3 uppercase tracking-wider">Opções</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedProduct.variations.map((v: string) => (
+                      <button key={v} onClick={() => setSelectedVariation(v)}
+                        className={`px-4 py-2 rounded-xl text-sm font-medium border-2 transition-all ${selectedVariation === v ? 'border-transparent text-white' : 'border-gray-200 text-gray-600 hover:border-gray-300'}`}
+                        style={selectedVariation === v ? { backgroundColor: primaryColor } : {}}>
+                        {v}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {selectedProduct.description && (
+                <div className="mb-8">
+                  <h3 className="text-sm font-bold text-gray-900 mb-2 uppercase tracking-wider">Descrição</h3>
+                  <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap">{selectedProduct.description}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Fixed Bottom Actions */}
+            <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 flex gap-3 z-30 max-w-5xl mx-auto">
+              <button onClick={() => handleAddToCart(selectedProduct, selectedVariation)} disabled={selectedProduct.stock === 0}
+                className="flex-1 py-3.5 rounded-2xl font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors disabled:opacity-50">
+                Adicionar
+              </button>
+              <button onClick={() => { handleAddToCart(selectedProduct, selectedVariation); setShowCart(false); setShowCheckout(true); }} disabled={selectedProduct.stock === 0}
+                className="flex-[2] py-3.5 rounded-2xl font-bold text-white transition-all hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg"
+                style={{ backgroundColor: primaryColor }}>
+                <MessageCircle className="w-5 h-5" /> Comprar Agora
+              </button>
+            </div>
+          </div>
+        )}
+      </main>
+
+      {/* Floating WhatsApp Button (Only on Home/Category) */}
+      {view !== 'product' && reseller?.settings?.whatsapp && (
+        <a href={`https://wa.me/${reseller.settings.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noreferrer"
+          className="fixed bottom-6 right-6 w-14 h-14 bg-[#25D366] text-white rounded-full flex items-center justify-center shadow-xl hover:scale-105 transition-transform z-30">
+          <MessageCircle className="w-7 h-7" />
+        </a>
+      )}
+
+      {/* Cart Drawer */}
+      <CartDrawer
+        isOpen={showCart}
+        onClose={() => setShowCart(false)}
+        cart={cart}
+        updateQuantity={(pid, variation, qt, st) => updateQuantity(pid, variation, qt, st, useStockControl)}
+        removeItem={removeItem}
+        total={total}
+        itemCount={totalItems}
+        onCheckout={() => { setShowCart(false); setShowCheckout(true); }}
+        primaryColor={primaryColor}
+        useStockControl={useStockControl}
+      />
+
+      {/* Checkout Modal */}
+      <Checkout
+        isOpen={showCheckout}
+        onClose={() => { setShowCheckout(false); setShowCart(true); }}
+        cart={cart}
+        reseller={reseller}
+        onSuccess={handleCheckoutSuccess}
+        total={total}
+        itemCount={totalItems}
+      />
+
+      <InstallBanner storeName={reseller?.storeName} primaryColor={primaryColor} />
+    </div>
+  );
+}
