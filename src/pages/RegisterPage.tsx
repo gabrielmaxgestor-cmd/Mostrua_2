@@ -6,7 +6,7 @@ import { generateSlug, validateSlug, isSlugAvailable } from "../utils/slug";
 import { nicheService } from "../services/nicheService";
 import { resellerService } from "../services/resellerService";
 import { Niche } from "../types";
-import { signInWithPopup } from "firebase/auth";
+import { signInWithPopup, createUserWithEmailAndPassword } from "firebase/auth";
 import { auth, googleProvider, db } from "../firebase";
 import { doc, getDoc } from "firebase/firestore";
 
@@ -187,28 +187,22 @@ export default function RegisterPage() {
     setError("");
 
     try {
-      let result;
-      if (isGoogleSignIn && googleUid) {
-        result = await resellerService.createResellerProfile({
-          uid: googleUid,
-          name,
-          email,
-          phone,
-          storeName,
-          slug,
-          nicheId
-        });
-      } else {
-        result = await resellerService.registerReseller({
-          name,
-          email,
-          password,
-          phone,
-          storeName,
-          slug,
-          nicheId
-        });
+      let uidToUse = googleUid;
+      
+      if (!isGoogleSignIn) {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        uidToUse = userCredential.user.uid;
       }
+
+      const result = await resellerService.createResellerProfile({
+        uid: uidToUse,
+        name,
+        email,
+        phone,
+        storeName,
+        slug,
+        nicheId
+      });
 
       if (result.success) {
         navigate("/reseller/welcome", { state: { slug: result.slug } });

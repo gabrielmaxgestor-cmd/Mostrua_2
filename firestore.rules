@@ -164,5 +164,23 @@ service cloud.firestore {
       allow read: if belongsToReseller(resellerId) || isAdmin();
       allow create, update: if true; // Permite que visitantes públicos incrementem views
     }
+
+    // --- NOTIFICATIONS ---
+    match /notifications/{notificationId} {
+      allow read: if isAdmin() ||
+        (isAuthenticated() && resource.data.resellerId == request.auth.uid);
+      allow update: if isAuthenticated() &&
+        resource.data.resellerId == request.auth.uid &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
+      allow create: if isAdmin();
+      allow delete: if isAdmin() ||
+        (isAuthenticated() && resource.data.resellerId == request.auth.uid);
+    }
+
+    // --- PLANS ---
+    match /plans/{planId} {
+      allow read: if true; // planos são públicos (necessário para tela de preços)
+      allow write: if isAdmin();
+    }
   }
 }

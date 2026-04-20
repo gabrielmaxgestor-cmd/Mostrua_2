@@ -41,6 +41,22 @@ export function Checkout({ isOpen, onClose, cart, reseller, onSuccess, total, it
 
   const isFormValid = name.trim().length > 0 && phone.replace(/\D/g, '').length >= 10;
 
+  const buildWhatsAppMessage = (cust: Customer): string => {
+    let message = `Olá, gostaria de fazer o pedido:\n\n`;
+    cart.forEach(item => {
+      message += `Produto: ${item.name}`;
+      if (item.variation) message += ` | Variação: ${item.variation}`;
+      message += ` | Qtd: ${item.quantity}\n`;
+    });
+    const formattedTotal = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total);
+    message += `\nTotal: ${formattedTotal}\n\n`;
+    message += `Nome: ${cust.name}\n`;
+    message += `Telefone: ${cust.phone}\n`;
+    if (cust.city) message += `Cidade: ${cust.city}\n`;
+    if (cust.notes) message += `Obs: ${cust.notes}\n`;
+    return message;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isFormValid) return;
@@ -48,72 +64,51 @@ export function Checkout({ isOpen, onClose, cart, reseller, onSuccess, total, it
     // Check for products with variations that have no variation selected
     const invalidItems = cart.filter(item => item.hasVariations && !item.variation);
     if (invalidItems.length > 0) {
-      setError(`Selecione o tamanho/variacao de: ${invalidItems.map(i => i.name).join(', ')}`);
+      setError(`Selecione o tamanho/variação de: ${invalidItems.map(i => i.name).join(', ')}`);
       return;
     }
 
+    const resellerPhone = reseller?.settings?.whatsapp?.replace(/\D/g, '');
+    if (!resellerPhone) {
+      setError('Esta loja ainda não configurou o WhatsApp. Por favor, entre em contato diretamente.');
+      return;
+    }
+
+    const customer: Customer = {
+      name: name.trim(),
+      phone: phone.replace(/\D/g, ''),
+      email: email.trim() || undefined,
+      city: city.trim() || undefined,
+      notes: notes.trim() || undefined
+    };
+
+    // Abre o WhatsApp ANTES do await — necessário para iOS Safari
+    const message = buildWhatsAppMessage(customer);
+    const whatsappUrl = `https://wa.me/55${resellerPhone}?text=${encodeURIComponent(message)}`;
+    const link = document.createElement('a');
+    link.href = whatsappUrl;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    // Salva o pedido depois
     setLoading(true);
     setError('');
-
     try {
-      const customer: Customer = {
-        name: name.trim(),
-        phone: phone.replace(/\D/g, ''),
-        email: email.trim() || undefined,
-        city: city.trim() || undefined,
-        notes: notes.trim() || undefined
-      };
-
       const orderId = await orderService.createOrder({
         resellerId: reseller.id,
         customer,
         items: cart,
         total
       });
-
-      const resellerPhone = reseller?.settings?.whatsapp?.replace(/\D/g, '');
-      if (!resellerPhone) {
-        setError('Esta loja ainda não configurou o WhatsApp. Por favor, entre em contato diretamente.');
-        setLoading(false);
-        return;
-      }
-      
-      sendWhatsAppMessage(customer); // abre WhatsApp antes de redirecionar
       onSuccess(orderId, customer);
     } catch (err: any) {
       console.error(err);
-      setError('Ocorreu um erro ao salvar seu pedido. Tente novamente.');
+      setError('Ocorreu um erro ao salvar seu pedido. O WhatsApp já foi aberto — você pode confirmar o pedido diretamente com o vendedor.');
       setLoading(false);
     }
-  };
-
-  const sendWhatsAppMessage = (cust: Customer) => {
-    let message = `Olá, gostaria de fazer o pedido:\n\n`;
-    
-    cart.forEach(item => {
-      message += `Produto: ${item.name}`;
-      if (item.variation) {
-        message += ` | Variação: ${item.variation}`;
-      }
-      message += ` | Qtd: ${item.quantity}\n`;
-    });
-
-    const formattedTotal = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total);
-    message += `\nTotal: ${formattedTotal}\n\n`;
-    
-    message += `Nome: ${cust.name}\n`;
-    message += `Telefone: ${phone}\n`;
-    if (cust.city) message += `Cidade: ${cust.city}\n`;
-    if (cust.notes) message += `Obs: ${cust.notes}\n`;
-
-    const resellerPhone = reseller?.settings?.whatsapp?.replace(/\D/g, '');
-    if (!resellerPhone) {
-      console.warn("Revendedor não tem número de WhatsApp configurado.");
-      return;
-    }
-
-    const whatsappUrl = `https://wa.me/55${resellerPhone}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
   };
 
   return (

@@ -4,7 +4,8 @@ import {
   where, 
   getDocs, 
   doc, 
-  setDoc, 
+  setDoc,
+  getDoc,
   Timestamp,
   writeBatch
 } from "firebase/firestore";
@@ -81,24 +82,30 @@ export const resellerService = {
 
       await batch.commit();
 
-      // Create trial subscription
-      const plansSnap = await getDocs(query(collection(db, 'plans'), where('name', '==', 'PRO')));
-      let planId = 'plan_pro';
-      if (!plansSnap.empty) planId = plansSnap.docs[0].id;
-
-      const trialEnd = new Date();
-      trialEnd.setDate(trialEnd.getDate() + 7);
-
+      // Create trial subscription only if one doesn't exist
       const subscriptionRef = doc(db, 'subscriptions', data.uid);
-      await setDoc(subscriptionRef, {
-        resellerId: data.uid,
-        planId,
-        status: 'trial',
-        currentPeriodStart: Timestamp.now(),
-        currentPeriodEnd: Timestamp.fromDate(trialEnd),
-        paymentProvider: 'trial',
-        createdAt: Timestamp.now()
-      });
+      const existingSub = await getDoc(subscriptionRef);
+      
+      if (!existingSub.exists()) {
+        const plansSnap = await getDocs(query(collection(db, 'plans'), where('name', '==', 'PRO')));
+        let planId = 'plan_pro';
+        if (!plansSnap.empty) planId = plansSnap.docs[0].id;
+
+        const trialEnd = new Date();
+        trialEnd.setDate(trialEnd.getDate() + 7);
+
+        await setDoc(subscriptionRef, {
+          resellerId: data.uid,
+          planId,
+          status: 'trial',
+          currentPeriodStart: Timestamp.now(),
+          currentPeriodEnd: Timestamp.fromDate(trialEnd),
+          paymentProvider: 'trial',
+          createdAt: Timestamp.now()
+        });
+        
+        console.log('[resellerService] Trial subscription criada para:', data.uid);
+      }
 
       return { success: true, slug: data.slug };
     } catch (error: any) {
@@ -107,6 +114,9 @@ export const resellerService = {
     }
   },
 
+  /**
+   * @deprecated Use `createResellerProfile` instead. This function creates redundant trial subscriptions and isn't used by RegisterPage.tsx anymore.
+   */
   async registerReseller(data: {
     name: string;
     email: string;
@@ -162,25 +172,6 @@ export const resellerService = {
         });
 
         await batch.commit();
-
-        // 3. Create automatic trial subscription
-        const plansSnap = await getDocs(query(collection(db, 'plans'), where('name', '==', 'PRO')));
-        let planId = 'plan_pro'; // fallback
-        if (!plansSnap.empty) planId = plansSnap.docs[0].id;
-
-        const trialEnd = new Date();
-        trialEnd.setDate(trialEnd.getDate() + 7);
-
-        const subscriptionRef = doc(db, 'subscriptions', user.uid);
-        await setDoc(subscriptionRef, {
-          resellerId: user.uid,
-          planId,
-          status: 'trial',
-          currentPeriodStart: Timestamp.now(),
-          currentPeriodEnd: Timestamp.fromDate(trialEnd),
-          paymentProvider: 'trial',
-          createdAt: Timestamp.now()
-        });
 
         return { success: true, slug: data.slug };
       } catch (dbError) {

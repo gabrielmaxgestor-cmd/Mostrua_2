@@ -58,6 +58,13 @@
       ]
     },
     {
+      "collectionGroup": "subscriptions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "asaasSubscriptionId", "order": "ASCENDING"}
+      ]
+    },
+    {
       "collectionGroup": "plans",
       "queryScope": "COLLECTION",
       "fields": [
