@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { collection, onSnapshot, addDoc, updateDoc, doc, query, where, getDocs, setDoc } from "firebase/firestore";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth, db } from "../../firebase";
+import { collection, onSnapshot, addDoc, updateDoc, doc, query, where, getDocs, setDoc, deleteDoc } from "firebase/firestore";
+import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
+import { initializeApp } from "firebase/app";
+import { auth, db, firebaseConfig } from "../../firebase";
 import { Reseller, Niche } from "../../types";
-import { Plus, Settings, UserPlus, Mail, Phone, Store } from "lucide-react";
+import { Plus, Settings, UserPlus, Mail, Phone, Store, Trash2 } from "lucide-react";
 import { motion } from "motion/react";
 
 export const Resellers = () => {
@@ -25,14 +26,31 @@ export const Resellers = () => {
     return () => { unsubResellers(); unsubNiches(); };
   }, []);
 
+  const handleDelete = async (resellerId: string) => {
+    if (!window.confirm("Atenção! Isso excluirá permanentemente os registros do revendedor no banco de dados da loja. Deseja prosseguir?")) return;
+    
+    try {
+      // Deleta das coleções principais (a conta Authentication Firebase precisaria ser deletada via Admin SDK ou interface, mas apagando esses docs já corta o acesso)
+      await deleteDoc(doc(db, "resellers", resellerId));
+      await deleteDoc(doc(db, "users", resellerId));
+      await deleteDoc(doc(db, "subscriptions", resellerId));
+      alert("Revendedor removido com sucesso!");
+    } catch (err: any) {
+      alert("Erro ao remover revendedor: " + err.message);
+    }
+  };
+
   const handleCreate = async () => {
     if (!newReseller.nicheId || !newReseller.email || !newReseller.password) return alert("Preencha todos os campos");
     setLoading(true);
     try {
-      // 1. Create Auth User
-      const userCred = await createUserWithEmailAndPassword(auth, newReseller.email, newReseller.password);
+      // 1. Create Auth User using a secondary app instance to avoid logging out the admin
+      const secondaryApp = initializeApp(firebaseConfig, "Secondary");
+      const secondaryAuth = getAuth(secondaryApp);
+      const userCred = await createUserWithEmailAndPassword(secondaryAuth, newReseller.email, newReseller.password);
       const uid = userCred.user.uid;
-
+      await secondaryAuth.signOut();
+      
       // 2. Create User Profile
       await setDoc(doc(db, "users", uid), {
         email: newReseller.email,
@@ -55,10 +73,29 @@ export const Resellers = () => {
           description: "", whatsapp: newReseller.phone, instagram: ""
         }
       });
+      
+      // 4. Grant full subscription access automatically for admin-created resellers
+      const plansSnap = await getDocs(query(collection(db, 'plans'), where('name', '==', 'PRO')));
+      let planId = 'admin_granted_pro';
+      if (!plansSnap.empty) planId = plansSnap.docs[0].id;
+
+      const subscriptionRef = doc(db, 'subscriptions', uid);
+      const farFutureDate = new Date();
+      farFutureDate.setFullYear(farFutureDate.getFullYear() + 100);
+      
+      await setDoc(subscriptionRef, {
+        resellerId: uid,
+        planId,
+        status: 'active',
+        currentPeriodStart: new Date(),
+        currentPeriodEnd: farFutureDate,
+        paymentProvider: 'admin_granted',
+        createdAt: new Date()
+      });
 
       setIsModalOpen(false);
       setNewReseller({ name: "", email: "", password: "", phone: "", storeName: "", slug: "", nicheId: "" });
-      alert("Revendedor criado com sucesso!");
+      alert("Revendedor criado com sucesso e assinatura vitalícia concedida!");
     } catch (err: any) {
       alert("Erro ao criar revendedor: " + err.message);
     } finally {
@@ -134,9 +171,14 @@ export const Resellers = () => {
                       </span>
                     </td>
                     <td className="py-4 px-6 text-right">
-                      <button className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
-                        <Settings className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center justify-end gap-2">
+                        <button className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                          <Settings className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => handleDelete(reseller.uid)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Remover Revendedor">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

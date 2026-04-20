@@ -8,6 +8,7 @@ export interface CartItem {
   variation?: string;
   imageUrl?: string;
   hasVariations?: boolean;
+  stock?: number;
 }
 
 export function useCart(resellerId: string | undefined) {

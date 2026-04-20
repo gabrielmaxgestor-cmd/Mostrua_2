@@ -1,21 +1,25 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useReseller } from "../../hooks/useReseller";
 import { useOrders } from "../../hooks/useOrders";
 import { useResellerProducts } from "../../hooks/useResellerProducts";
 import { Package, ShoppingCart, Clock, ExternalLink, Copy } from "lucide-react";
+import { ErrorState } from "../../components/ErrorState";
 
 export const Dashboard = () => {
   const { user } = useAuth();
+  const [retryCount, setRetryCount] = useState(0);
   const { reseller, loading: resellerLoading, error: resellerError } = useReseller(user?.uid);
   const { orders, loading: ordersLoading, error: ordersError } = useOrders(user?.uid);
   const { products, loading: productsLoading, error: productsError } = useResellerProducts(user?.uid);
-  const [retryCount, setRetryCount] = useState(0);
 
   if (resellerLoading || ordersLoading || productsLoading) return <div className="p-12 text-center">Carregando...</div>;
   if (resellerError || ordersError || productsError) return <ErrorState message="Erro ao carregar dados do painel." onRetry={() => setRetryCount(c => c + 1)} />;
 
+  const activeProductsCount = products.filter(p => p.active !== false).length;
+  const totalOrdersCount = orders.length;
+  const pendingOrdersCount = orders.filter(o => o.status === 'pending').length;
 
   const storeUrl = reseller ? `${window.location.origin}/store/${reseller.slug}` : "";
 

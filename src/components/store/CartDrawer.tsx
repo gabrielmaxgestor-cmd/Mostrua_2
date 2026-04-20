@@ -44,10 +44,27 @@ export function CartDrawer({
         
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-gray-100 shrink-0">
-          <h2 className="font-bold text-xl flex items-center gap-2 text-gray-900">
-            <ShoppingCart className="w-6 h-6" style={{ color: primaryColor }} /> 
-            Meu Carrinho
-          </h2>
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <div 
+                className="w-10 h-10 flex items-center justify-center rounded-xl"
+                style={{ backgroundColor: `${primaryColor}15`, color: primaryColor }}
+              >
+                <ShoppingCart className="w-5 h-5" /> 
+              </div>
+              {itemCount > 0 && (
+                <span 
+                  className="absolute -top-2 -right-2 min-w-[24px] h-6 px-1.5 rounded-full text-white text-xs font-black flex items-center justify-center ring-4 ring-white shadow-sm" 
+                  style={{ backgroundColor: primaryColor }}
+                >
+                  {itemCount}
+                </span>
+              )}
+            </div>
+            <h2 className="font-bold text-xl text-gray-900">
+              Meu Carrinho
+            </h2>
+          </div>
           <button 
             onClick={onClose} 
             className="p-2 bg-gray-50 rounded-full hover:bg-gray-100 text-gray-500 transition-colors"
@@ -71,7 +88,10 @@ export function CartDrawer({
             </div>
           ) : (
             <div className="space-y-4">
-              {cart.map(item => (
+              {cart.map(item => {
+                const isMaxStock = useStockControl && item.stock !== undefined && item.quantity >= item.stock;
+                
+                return (
                 <div 
                   key={`${item.productId}-${item.variation}`} 
                   className="flex gap-4 bg-white border border-gray-100 p-4 rounded-2xl shadow-sm hover:shadow-md transition-shadow relative"
@@ -113,25 +133,39 @@ export function CartDrawer({
                         </span>
                       </div>
                       
-                      <div className="flex items-center gap-3 bg-gray-50 rounded-xl p-1 border border-gray-200">
-                        <button 
-                          onClick={() => updateQuantity(item.productId, item.variation, item.quantity - 1, item.stock, useStockControl)} 
-                          className="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center text-gray-600 hover:text-red-500 transition-colors"
-                        >
-                          <Minus className="w-4 h-4" />
-                        </button>
-                        <span className="w-4 text-center font-bold text-sm text-gray-900">{item.quantity}</span>
-                        <button 
-                          onClick={() => updateQuantity(item.productId, item.variation, item.quantity + 1, item.stock, useStockControl)} 
-                          className="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center text-gray-600 hover:text-green-500 transition-colors"
-                        >
-                          <Plus className="w-4 h-4" />
-                        </button>
+                      <div className="flex flex-col items-end gap-1.5">
+                        <div className="flex items-center gap-1.5 bg-gray-50 rounded-xl p-1 border border-gray-200">
+                          <button 
+                            onClick={() => updateQuantity(item.productId, item.variation, item.quantity - 1, item.stock, useStockControl)} 
+                            className="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center text-gray-600 hover:text-red-500 hover:bg-red-50 transition-all active:scale-90"
+                          >
+                            <Minus className="w-4 h-4" />
+                          </button>
+                          <span className="w-6 text-center font-bold text-sm text-gray-900">{item.quantity}</span>
+                          <button 
+                            onClick={() => {
+                              if (!isMaxStock) {
+                                updateQuantity(item.productId, item.variation, item.quantity + 1, item.stock, useStockControl);
+                              }
+                            }}
+                            disabled={isMaxStock}
+                            className={`w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center transition-all ${
+                              isMaxStock ? 'opacity-40 cursor-not-allowed' : 'text-gray-600 hover:text-green-500 hover:bg-green-50 active:scale-90'
+                            }`}
+                          >
+                            <Plus className="w-4 h-4" />
+                          </button>
+                        </div>
+                        {useStockControl && item.stock !== undefined && (
+                          <span className={`text-[10px] font-bold ${isMaxStock ? 'text-red-500' : 'text-gray-400'} pr-1 text-right leading-tight max-w-[90px]`}>
+                            {isMaxStock ? 'Límite no estoque' : `Faltam ${item.stock - item.quantity}`}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
                 </div>
-              ))}
+              )})}
             </div>
           )}
         </div>

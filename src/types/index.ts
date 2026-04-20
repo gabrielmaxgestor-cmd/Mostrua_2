@@ -167,3 +167,14 @@ export interface Order {
   createdAt?: Timestamp;
   items: OrderItem[];
 }
+
+export interface AppNotification {
+  id: string;
+  resellerId: string;
+  title: string;
+  message: string;
+  type: string;
+  read: boolean;
+  link?: string;
+  createdAt: Timestamp;
+}

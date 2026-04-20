@@ -5,6 +5,7 @@ import { BaseProduct, Catalog, Niche, Category } from "../../types";
 import { productService } from "../../services/productService";
 import { storageService } from "../../services/storageService";
 import { getCategoriesByCatalog } from "../../services/categoryService";
+import { notificationService } from "../../services/notificationService";
 import { Plus, Settings, Edit, Trash2, Image as ImageIcon, Loader2, Search, AlertCircle, Filter, Package, X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -211,12 +212,22 @@ export const Products = () => {
         });
         showToast("success", "Produto atualizado com sucesso!");
       } else {
-        await productService.createProduct({
+        const newProductId = await productService.createProduct({
           ...formData,
           priceBase: Number(formData.priceBase),
           images: finalImages,
           variations
         });
+        
+        // Notify resellers in this niche
+        const catalogName = catalogs.find(c => c.id === formData.catalogId)?.name || 'Catálogos';
+        await notificationService.notifyNicheUpdate(
+          formData.nicheId,
+          "Novo Produto Disponível! 📦",
+          `O produto "${formData.name}" foi adicionado em ${catalogName}. Adicione à sua loja agora!`,
+          "/dashboard/catalogs"
+        );
+        
         showToast("success", "Produto criado com sucesso!");
       }
       closeModal();
@@ -249,8 +260,10 @@ export const Products = () => {
   };
 
   const filteredProducts = products.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          product.sku.toLowerCase().includes(searchTerm.toLowerCase());
+    const searchLower = searchTerm.toLowerCase();
+    const matchesSearch = product.name.toLowerCase().includes(searchLower) || 
+                          product.sku.toLowerCase().includes(searchLower) ||
+                          (product.description || "").toLowerCase().includes(searchLower);
     const matchesNiche = filterNiche === "all" || product.nicheId === filterNiche;
     const matchesCatalog = filterCatalog === "all" || product.catalogId === filterCatalog;
     return matchesSearch && matchesNiche && matchesCatalog;

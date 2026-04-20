@@ -9,6 +9,7 @@ import { Checkout } from "../components/store/Checkout";
 import { ProductCard } from "../components/store/ProductCard";
 import { SearchBar } from "../components/store/SearchBar";
 import { InstallBanner } from "../components/store/InstallBanner";
+import { ErrorState } from "../components/ErrorState";
 import { getCategories } from "../services/categoryService";
 import { Category } from "../types";
 import { useProductSearch } from "../hooks/useProductSearch";
@@ -287,7 +288,9 @@ export default function PublicStore() {
   };
 
   const openCategory = (category: Category) => {
-    navigate(`/store/${slug}/categoria/${category.id}`);
+    setSelectedCategory(category);
+    setView('category');
+    window.scrollTo(0, 0);
   };
 
   return (
@@ -328,7 +331,7 @@ export default function PublicStore() {
           </button>
         </div>
         
-        {view === 'home' && (
+        {(view === 'home' || view === 'category') && (
           <div className="max-w-5xl mx-auto px-4 pb-3">
             <SearchBar 
               value={searchQuery} 
@@ -430,23 +433,51 @@ export default function PublicStore() {
         {/* CATEGORY VIEW */}
         {view === 'category' && selectedCategory && (
           <div className="px-4 py-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="font-bold text-xl text-gray-900">{selectedCategory.name}</h2>
-              <span className="text-sm text-gray-500">{filteredProducts.length} produtos</span>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+              <h2 className="font-bold text-xl text-gray-900">
+                {isSearching ? `Resultados para "${searchQuery}" em ${selectedCategory.name}` : selectedCategory.name}
+              </h2>
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-gray-500">{filteredProducts.length} produtos</span>
+                {isSearching && (
+                  <button 
+                    onClick={() => setSearchQuery('')}
+                    className="text-sm font-medium hover:text-gray-900 transition-colors px-3 py-1.5 bg-white border border-gray-200 rounded-full w-fit"
+                    style={{ color: primaryColor }}
+                  >
+                    Limpar
+                  </button>
+                )}
+              </div>
             </div>
             
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
-              {filteredProducts.map(product => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  storeSlug={slug || ''}
-                  onAddToCart={(p) => handleAddToCart(p, p.variations?.[0])}
-                  onClick={openProduct}
-                  resellerPrimaryColor={primaryColor}
-                />
-              ))}
-            </div>
+            {filteredProducts.length === 0 ? (
+                <div className="text-center py-16 px-4 bg-white rounded-3xl border border-gray-100 shadow-sm mt-4">
+                  <Search className="w-12 h-12 text-gray-200 mx-auto mb-4" />
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">Nenhum produto encontrado</h3>
+                  <p className="text-gray-500 mb-6">Tente usar outros termos ou palavras-chave.</p>
+                  <button 
+                    onClick={() => setSearchQuery('')}
+                    className="px-6 py-2.5 rounded-full text-white font-bold transition-all shadow-sm mx-auto"
+                    style={{ backgroundColor: primaryColor }}
+                  >
+                    Ver todos da categoria
+                  </button>
+                </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
+                {filteredProducts.map(product => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    storeSlug={slug || ''}
+                    onAddToCart={(p) => handleAddToCart(p, p.variations?.[0])}
+                    onClick={openProduct}
+                    resellerPrimaryColor={primaryColor}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         )}
 

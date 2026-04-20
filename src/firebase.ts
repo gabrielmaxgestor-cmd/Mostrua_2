@@ -1,9 +1,9 @@
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
-const firebaseConfig = {
+export const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyCbeCsr7BqdlrHpO_PblYx9Xw6l01dF91Q",
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "gen-lang-client-0464376280.firebaseapp.com",
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "gen-lang-client-0464376280",
@@ -19,3 +19,4 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app, databaseId);
 export const storage = getStorage(app);
+export const googleProvider = new GoogleAuthProvider();

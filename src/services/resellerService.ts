@@ -31,6 +31,82 @@ export const resellerService = {
     return slug;
   },
 
+  async createResellerProfile(data: {
+    uid: string;
+    name: string;
+    email: string;
+    phone: string;
+    storeName: string;
+    slug: string;
+    nicheId: string;
+  }) {
+    try {
+      const batch = writeBatch(db);
+
+      // User document
+      const userRef = doc(db, "users", data.uid);
+      batch.set(userRef, {
+        email: data.email,
+        role: "reseller",
+        status: "active",
+        createdAt: Timestamp.now()
+      });
+
+      // Reseller document
+      const resellerRef = doc(db, "resellers", data.uid);
+      const resellerData: Reseller = {
+        uid: data.uid,
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        storeName: data.storeName,
+        slug: data.slug,
+        nicheId: data.nicheId,
+        status: "active",
+        settings: {
+          logo: "",
+          banner: "",
+          primaryColor: "#2563eb",
+          secondaryColor: "#1e40af",
+          description: "",
+          whatsapp: data.phone,
+          instagram: ""
+        }
+      };
+
+      batch.set(resellerRef, {
+        ...resellerData,
+        createdAt: Timestamp.now()
+      });
+
+      await batch.commit();
+
+      // Create trial subscription
+      const plansSnap = await getDocs(query(collection(db, 'plans'), where('name', '==', 'PRO')));
+      let planId = 'plan_pro';
+      if (!plansSnap.empty) planId = plansSnap.docs[0].id;
+
+      const trialEnd = new Date();
+      trialEnd.setDate(trialEnd.getDate() + 7);
+
+      const subscriptionRef = doc(db, 'subscriptions', data.uid);
+      await setDoc(subscriptionRef, {
+        resellerId: data.uid,
+        planId,
+        status: 'trial',
+        currentPeriodStart: Timestamp.now(),
+        currentPeriodEnd: Timestamp.fromDate(trialEnd),
+        paymentProvider: 'trial',
+        createdAt: Timestamp.now()
+      });
+
+      return { success: true, slug: data.slug };
+    } catch (error: any) {
+      console.error("Error creating reseller profile:", error);
+      throw new Error(error.message || "Erro ao configurar a conta do revendedor.");
+    }
+  },
+
   async registerReseller(data: {
     name: string;
     email: string;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   LayoutDashboard, 
@@ -9,11 +9,18 @@ import {
   LogOut, 
   Menu, 
   X,
-  Globe
+  Globe,
+  Bell,
+  Check
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useReseller } from "../../hooks/useReseller";
 import { useOrders } from "../../hooks/useOrders";
+import { collection, query, where, orderBy, onSnapshot } from "firebase/firestore";
+import { db } from "../../firebase";
+import { AppNotification } from "../../types";
+import { notificationService } from "../../services/notificationService";
+import { motion, AnimatePresence } from "motion/react";
 
 export const ResellerLayout: React.FC = () => {
   const { user, logout, subscription } = useAuth();
@@ -22,8 +29,37 @@ export const ResellerLayout: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const notificationsRef = useRef<HTMLDivElement>(null);
 
   const isExpired = subscription && subscription.status !== 'active' && subscription.status !== 'trial';
+
+  useEffect(() => {
+    if (!user?.uid) return;
+    const q = query(
+      collection(db, "notifications"), 
+      where("resellerId", "==", user.uid), 
+      orderBy("createdAt", "desc")
+    );
+    const unsub = onSnapshot(q, (snap) => {
+      setNotifications(snap.docs.map(d => ({ id: d.id, ...d.data() } as AppNotification)));
+    });
+    return () => unsub();
+  }, [user?.uid]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
+        setIsNotificationsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const unreadCount = notifications.filter(n => !n.read).length;
 
   useEffect(() => {
     if (subscription && subscription.status !== 'active' && subscription.status !== 'trial') {
@@ -159,7 +195,89 @@ export const ResellerLayout: React.FC = () => {
             <Menu className="w-6 h-6" />
           </button>
           <div className="flex-1" />
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
+            
+            {/* Notifications */}
+            <div className="relative" ref={notificationsRef}>
+              <button
+                onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+                className="relative p-2 text-gray-500 hover:text-gray-700 transition-colors rounded-full hover:bg-gray-100"
+              >
+                <Bell className="w-6 h-6" />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+                )}
+              </button>
+
+              <AnimatePresence>
+                {isNotificationsOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 overflow-hidden"
+                  >
+                    <div className="p-4 border-b border-gray-50 flex items-center justify-between">
+                      <h3 className="font-bold text-gray-900">Notificações</h3>
+                      {unreadCount > 0 && (
+                        <button 
+                          onClick={() => {
+                            if (user?.uid) notificationService.markAllAsRead(user.uid);
+                          }}
+                          className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+                        >
+                          <Check className="w-3 h-3" />
+                          Ler todas
+                        </button>
+                      )}
+                    </div>
+                    
+                    <div className="max-h-80 overflow-y-auto custom-scrollbar">
+                      {notifications.length === 0 ? (
+                        <div className="p-6 text-center text-gray-500 flex flex-col items-center gap-2">
+                          <Bell className="w-8 h-8 text-gray-300" />
+                          <p className="text-sm">Nenhuma notificação</p>
+                        </div>
+                      ) : (
+                        <div className="divide-y divide-gray-50">
+                          {notifications.map(notif => (
+                            <div 
+                              key={notif.id} 
+                              className={`p-4 transition-colors hover:bg-gray-50 cursor-pointer ${!notif.read ? 'bg-blue-50/30' : ''}`}
+                              onClick={() => {
+                                if (!notif.read) notificationService.markAsRead(notif.id);
+                                if (notif.link) {
+                                  navigate(notif.link);
+                                  setIsNotificationsOpen(false);
+                                }
+                              }}
+                            >
+                              <div className="flex gap-3">
+                                <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${!notif.read ? 'bg-blue-600' : 'bg-transparent'}`} />
+                                <div>
+                                  <p className={`text-sm ${!notif.read ? 'font-bold text-gray-900' : 'font-medium text-gray-700'}`}>
+                                    {notif.title}
+                                  </p>
+                                  <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">
+                                    {notif.message}
+                                  </p>
+                                  {notif.createdAt && (
+                                    <p className="text-[10px] text-gray-400 mt-2">
+                                      {notif.createdAt.toDate().toLocaleDateString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
             <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 font-bold text-sm">
               {user?.email?.charAt(0).toUpperCase()}
             </div>

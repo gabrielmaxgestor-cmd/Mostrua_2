@@ -54,6 +54,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   resellerPrimaryColor = '#16a34a',
 }) => {
   const [isAdded, setIsAdded] = useState(false);
+  const [selectedVariation, setSelectedVariation] = useState<string>('');
+
+  const hasVariations = product.variations && product.variations.length > 0;
+  const isOutOfStock = product.stock === 0;
+  const canAddToCart = !isOutOfStock && (!hasVariations || !!selectedVariation);
 
   const displayName = product.customName || product.name;
   const displayPrice = product.promotionalPrice ?? product.customPrice ?? product.basePrice ?? product.price ?? 0;
@@ -122,19 +127,24 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 Tamanho <span className="text-red-500">*</span>
               </p>
               <div className="flex flex-wrap gap-1.5">
-                {product.variations!.map((v: string) => (
-                  <button key={v}
-                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); setSelectedVariation(v); }}
-                    className={`px-2 py-0.5 rounded-md border text-[10px] font-medium transition-all ${
-                      selectedVariation === v
-                        ? 'text-white border-transparent'
-                        : 'border-gray-200 text-gray-600 hover:border-gray-300'
-                    }`}
-                    style={selectedVariation === v ? { backgroundColor: resellerPrimaryColor } : {}}
-                  >
-                    {v}
-                  </button>
-                ))}
+                {product.variations!.map((v: string) => {
+                  const isSelected = selectedVariation === v;
+                  return (
+                    <button key={v}
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (!isOutOfStock) setSelectedVariation(v); }}
+                      disabled={isOutOfStock}
+                      className={`px-2.5 py-1 rounded-md border text-[10px] font-bold transition-all relative overflow-hidden flex items-center gap-1 ${
+                        isSelected
+                          ? 'text-white border-transparent shadow-sm'
+                          : 'border-gray-200 text-gray-600 hover:border-gray-300 bg-white'
+                      } ${isOutOfStock ? 'opacity-40 cursor-not-allowed' : ''}`}
+                      style={isSelected ? { backgroundColor: resellerPrimaryColor } : {}}
+                    >
+                      {v}
+                      {isSelected && <Check className="w-3 h-3" />}
+                    </button>
+                  );
+                })}
               </div>
               {!selectedVariation && (
                 <p className="text-[10px] text-red-500 mt-1">Selecione um tamanho</p>
@@ -156,13 +166,16 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             <button
               onClick={handleAddToCart}
               disabled={isAdded || !canAddToCart}
-              className={`w-8 h-8 rounded-full flex items-center justify-center text-white transition-all duration-300 active:scale-95 ${
-                isAdded ? 'scale-110' : ''
-              } ${!canAddToCart ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`w-8 h-8 rounded-full flex items-center justify-center text-white transition-all duration-300 relative ${
+                isAdded ? 'scale-110' : 'active:scale-95 hover:scale-105'
+              } ${!canAddToCart ? 'opacity-50 cursor-not-allowed hover:scale-100' : ''}`}
               style={{ backgroundColor: isAdded ? '#22c55e' : resellerPrimaryColor }}
             >
               {isAdded ? (
-                <Check className="w-4 h-4 animate-in zoom-in duration-200" />
+                <>
+                  <span className="absolute inset-0 rounded-full animate-ping opacity-75" style={{ backgroundColor: '#22c55e' }} />
+                  <Check className="w-4 h-4 animate-in zoom-in duration-200 relative z-10" />
+                </>
               ) : (
                 <Plus className="w-4 h-4" />
               )}
