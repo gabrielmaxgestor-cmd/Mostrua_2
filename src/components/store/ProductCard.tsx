@@ -123,17 +123,17 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         <div className="mt-2 flex flex-col gap-2">
           {hasVariations && (
             <div className="mt-1">
-              <p className="text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-wider">
+              <p className="text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">
                 Tamanho <span className="text-red-500">*</span>
               </p>
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex overflow-x-auto gap-1.5 pb-1 hide-scrollbar">
                 {product.variations!.map((v: string) => {
                   const isSelected = selectedVariation === v;
                   return (
                     <button key={v}
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (!isOutOfStock) setSelectedVariation(v); }}
                       disabled={isOutOfStock}
-                      className={`px-2.5 py-1 rounded-md border text-[10px] font-bold transition-all relative overflow-hidden flex items-center gap-1 ${
+                      className={`min-h-[36px] min-w-[36px] px-3 py-2 rounded-lg border text-xs font-bold transition-all relative overflow-hidden flex items-center justify-center gap-1 ${
                         isSelected
                           ? 'text-white border-transparent shadow-sm'
                           : 'border-gray-200 text-gray-600 hover:border-gray-300 bg-white'
@@ -141,7 +141,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                       style={isSelected ? { backgroundColor: resellerPrimaryColor } : {}}
                     >
                       {v}
-                      {isSelected && <Check className="w-3 h-3" />}
+                      {isSelected && <Check className="w-3.5 h-3.5 ml-1" />}
                     </button>
                   );
                 })}

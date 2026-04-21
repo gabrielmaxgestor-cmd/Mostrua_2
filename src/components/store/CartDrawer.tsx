@@ -174,15 +174,19 @@ export function CartDrawer({
         {cart.length > 0 && (
           <div className="p-6 bg-white border-t border-gray-100 shadow-[0_-10px_30px_rgba(0,0,0,0.03)] shrink-0">
             <div className="space-y-3 mb-5">
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-gray-500 font-medium">Subtotal ({itemCount} {itemCount === 1 ? 'item' : 'itens'})</span>
-                <span className="font-bold text-gray-700">R$ {total.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-gray-500 font-medium">Taxas</span>
-                <span className="font-bold text-gray-700">R$ {tax.toFixed(2)}</span>
-              </div>
-              <div className="pt-3 border-t border-gray-100 flex justify-between items-end">
+              {itemCount > 1 && (
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-gray-500 font-medium">Subtotal ({itemCount} itens)</span>
+                  <span className="font-bold text-gray-700">R$ {total.toFixed(2)}</span>
+                </div>
+              )}
+              {tax > 0 && (
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-gray-500 font-medium">Taxas</span>
+                  <span className="font-bold text-gray-700">R$ {tax.toFixed(2)}</span>
+                </div>
+              )}
+              <div className={`${itemCount > 1 || tax > 0 ? 'pt-3 border-t border-gray-100' : ''} flex justify-between items-end`}>
                 <span className="text-gray-900 font-bold text-lg">Total</span>
                 <span className="font-black text-3xl" style={{ color: primaryColor }}>
                   R$ {finalTotal.toFixed(2)}

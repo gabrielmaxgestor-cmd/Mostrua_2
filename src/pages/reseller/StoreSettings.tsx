@@ -313,6 +313,32 @@ export const StoreSettings = () => {
               </div>
             </div>
 
+            <hr className="border-gray-100" />
+
+            {/* Configurações de URL */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-bold text-gray-900">Endereço da Loja (Link)</h3>
+              <p className="text-sm text-gray-500">Este é o link que você compartilha no Instagram e WhatsApp.</p>
+              
+              <div>
+                <div className="flex items-center">
+                  <span className="text-gray-500 bg-gray-50 border border-r-0 border-gray-200 rounded-l-xl px-3 py-3 text-sm">
+                    {window.location.host}/
+                  </span>
+                  <input 
+                    type="text" 
+                    value={reseller?.slug || ''}
+                    disabled
+                    className="w-full pl-3 pr-4 py-3 rounded-r-xl border border-gray-200 bg-gray-50 focus:outline-none text-gray-500 cursor-not-allowed"
+                    title="Para alterar seu link, entre em contato com o suporte."
+                  />
+                </div>
+                <p className="text-xs text-orange-500 mt-2 font-medium">
+                  Nota: Alterar o endereço base da loja pode quebrar links de produtos compartilhados anteriormente por você com seus clientes. Para segurança, a alteração self-service customizada está sendo limitada temporariamente.
+                </p>
+              </div>
+            </div>
+
             <div className="pt-4 flex justify-end">
               <button 
                 type="submit"

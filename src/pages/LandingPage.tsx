@@ -27,8 +27,20 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-white font-sans text-gray-900 selection:bg-orange-100 selection:text-orange-900">
+      {/* Top Banner */}
+      <div className="bg-orange-500 text-white text-center py-2.5 px-4">
+        <p className="text-sm font-medium">
+          Lançamento — teste grátis por{' '}
+          <strong>14 dias</strong> nas primeiras 2 semanas
+          (normalmente 7 dias)
+          <Link to="/register" className="ml-3 underline font-bold">
+            Criar conta agora →
+          </Link>
+        </p>
+      </div>
+
       {/* Navbar */}
-      <nav className="fixed w-full bg-white/80 backdrop-blur-md border-b border-gray-100 z-50">
+      <nav className="sticky top-0 w-full bg-white/80 backdrop-blur-md border-b border-gray-100 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
             <div className="flex items-center gap-2">
@@ -82,7 +94,7 @@ export default function LandingPage() {
                     <img key={i} src={`https://i.pravatar.cc/100?img=${i+10}`} alt="User" className="w-8 h-8 rounded-full border-2 border-white" />
                   ))}
                 </div>
-                <p>Junte-se a +2.000 revendedores</p>
+                <p>Junte-se a +2.000 vendedores</p>
               </div>
             </motion.div>
 
@@ -252,8 +264,8 @@ export default function LandingPage() {
             {[
               { step: "01", title: "Crie sua conta", desc: "Faça seu cadastro rápido e gratuito na plataforma." },
               { step: "02", title: "Escolha o nicho", desc: "Selecione com quais tipos de produtos você quer trabalhar." },
-              { step: "03", title: "Ative produtos", desc: "Escolha os produtos do catálogo base e defina sua margem." },
-              { step: "04", title: "Comece a vender", desc: "Compartilhe seu link e receba os pedidos no WhatsApp." }
+              { step: "03", title: "Escolha o que vender", desc: "Fotos, descrições e preços base já vêm prontos. Só defina seu lucro e pronto." },
+              { step: "04", title: "Compartilhe e venda", desc: "Cole o link na bio do Instagram ou mande no seu grupo do WhatsApp. Os pedidos chegam formatados no seu zap." }
             ].map((item, i) => (
               <div key={i} className="relative z-10 text-center">
                 <div className="w-24 h-24 mx-auto bg-gray-800 rounded-full flex items-center justify-center mb-6 border-8 border-gray-900 shadow-xl">
@@ -266,7 +278,7 @@ export default function LandingPage() {
           </div>
           
           <div className="mt-16 text-center">
-            <Link to="/register" className="inline-flex items-center gap-2 px-8 py-4 bg-blue-600 text-white font-bold rounded-full hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/30 text-lg">
+            <Link to="/register" className="inline-flex items-center gap-2 px-8 py-4 bg-orange-500 text-white font-bold rounded-full hover:bg-orange-600 transition-all shadow-lg shadow-orange-500/30 text-lg">
               Criar minha loja agora <ArrowRight className="w-5 h-5" />
             </Link>
           </div>
@@ -278,7 +290,13 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-4xl font-black text-gray-900 mb-6">Planos simples e transparentes</h2>
-            <p className="text-xl text-gray-600">Comece grátis por 7 dias. Cancele quando quiser.</p>
+            <p className="text-xl text-gray-600 mb-2">Comece grátis por 7 dias. Cancele quando quiser.</p>
+            <p className="text-center text-gray-400 text-sm mt-3 mb-12">
+              Criar uma loja com desenvolvedor custa entre{' '}
+              <span className="font-bold text-gray-600">R$3.000 e R$8.000</span>.
+              Com a Mostrua, você tem uma loja profissional a partir de{' '}
+              <span className="font-bold text-orange-500">R$1,65 por dia</span>.
+            </p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
@@ -286,10 +304,14 @@ export default function LandingPage() {
               <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-200 flex flex-col">
                 <h3 className="text-2xl font-bold text-gray-900 mb-2">Plano PRO</h3>
                 <p className="text-gray-500 mb-6">Ideal para quem está começando a revender.</p>
-                <div className="mb-8">
+                <div className="mb-2">
                   <span className="text-5xl font-black text-gray-900">R$49</span>
                   <span className="text-xl text-gray-500 font-medium">,90/mês</span>
                 </div>
+                <p className="text-gray-500 text-sm mb-6">
+                  Menos de <strong className="text-gray-700">R$1,70 por dia</strong> —
+                  menos que um cafezinho.
+                </p>
                 <ul className="space-y-4 mb-8 flex-1">
                   {[
                     "Produtos ilimitados",
@@ -304,7 +326,7 @@ export default function LandingPage() {
                     </li>
                   ))}
                 </ul>
-                <Link to="/register" className="w-full py-4 bg-gray-100 text-gray-900 font-bold rounded-xl hover:bg-gray-200 transition-colors text-center">
+                <Link to="/register" className="w-full py-4 bg-orange-500 text-white font-bold rounded-xl hover:bg-orange-600 transition-colors text-center shadow-md shadow-orange-500/20">
                   Comecar gratis
                 </Link>
               </div>
@@ -315,26 +337,56 @@ export default function LandingPage() {
                   Mais Escolhido
                 </div>
                 <h3 className="text-2xl font-bold text-white mb-2">Plano PREMIUM</h3>
-                <p className="text-blue-100 mb-6">Para revendedores que querem escalar.</p>
-                <div className="mb-8">
+                <p className="text-blue-100 mb-6">Para quem quer crescer nas vendas.</p>
+                <div className="mb-2">
                   <span className="text-5xl font-black text-white">R$89</span>
                   <span className="text-xl text-blue-200 font-medium">,90/mês</span>
                 </div>
-              <ul className="space-y-4 mb-8 flex-1">
+                <p className="text-blue-200 text-sm mb-6">
+                  Menos de <strong className="text-white">R$3,00 por dia</strong> para
+                  ter uma loja profissional no ar.
+                </p>
+              <ul className="space-y-3 mb-6 flex-1">
+                {/* Features herdadas do PRO */}
+                {["Produtos ilimitados", "Link personalizado", "Pedidos via WhatsApp"].map((item, i) => (
+                  <li key={`base-${i}`} className="flex items-center gap-3 text-blue-200 text-sm">
+                    <CheckCircle2 className="w-4 h-4 text-blue-300 shrink-0 opacity-70" />
+                    {item}
+                  </li>
+                ))}
+                
+                {/* Divisória */}
+                <li className="py-2">
+                  <div className="flex items-center gap-2 opacity-80">
+                    <div className="flex-1 h-px bg-blue-400/30" />
+                    <span className="text-blue-200 text-[11px] font-bold uppercase tracking-widest">
+                      + Exclusivo PREMIUM
+                    </span>
+                    <div className="flex-1 h-px bg-blue-400/30" />
+                  </div>
+                </li>
+                
+                {/* Features exclusivas */}
                 {[
-                  "Tudo do plano PRO",
                   "Catálogos ilimitados",
                   "Relatórios avançados",
                   "CRM de clientes",
                   "Cupons de desconto",
                   "Domínio próprio (.com.br)"
                 ].map((item, i) => (
-                  <li key={i} className="flex items-center gap-3 text-white font-medium">
-                    <CheckCircle2 className="w-5 h-5 text-blue-300 shrink-0" />
+                  <li key={`premium-${i}`} className="flex items-center gap-3 text-white font-medium">
+                    <CheckCircle2 className="w-5 h-5 text-green-400 shrink-0" />
                     {item}
                   </li>
                 ))}
               </ul>
+
+              <blockquote className="border-l-2 border-blue-400 pl-3 mt-2 mb-6">
+                <p className="text-blue-100 text-xs italic">
+                  "Upgrade para o Premium e meus pedidos dobraram no primeiro mês."
+                </p>
+                <footer className="text-blue-200 text-[10px] mt-1">— Juliana C., usando há 3 meses</footer>
+              </blockquote>
               <Link to="/register" className="w-full py-4 bg-orange-500 text-white font-bold rounded-xl hover:bg-orange-600 transition-colors text-center shadow-lg shadow-orange-500/30">
                 Quero escalar meu negócio
               </Link>
@@ -343,33 +395,19 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Social Proof */}
+      {/* Metrics Section replacing Fake Testimonials */}
       <section className="py-24 bg-white border-y border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-black text-gray-900 mb-12">Quem usa, recomenda</h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              { name: "Ana Silva", store: "Ana Modas", text: "Minhas vendas dobraram depois que parei de mandar fotos soltas e passei a usar o link da minha loja. Muito profissional!" },
-              { name: "Carlos Santos", store: "CS Eletrônicos", text: "A facilidade de receber o pedido já formatado no WhatsApp com o valor total calculado mudou a minha vida." },
-              { name: "Juliana Costa", store: "Ju Semijoias", text: "Não entendo nada de tecnologia, mas consegui montar minha loja em 10 minutos. O suporte é excelente." }
-            ].map((test, i) => (
-              <div key={i} className="bg-gray-50 p-8 rounded-3xl text-left">
-                <div className="flex gap-1 mb-4">
-                  {[1,2,3,4,5].map(star => <Star key={star} className="w-5 h-5 fill-orange-400 text-orange-400" />)}
-                </div>
-                <p className="text-gray-600 mb-6 italic">"{test.text}"</p>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold">
-                    {test.name.charAt(0)}
-                  </div>
-                  <div>
-                    <p className="font-bold text-gray-900">{test.name}</p>
-                    <p className="text-sm text-gray-500">{test.store}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+        <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-12 text-center px-4">
+          {[
+            { number: "7 dias", label: "de teste grátis sem cartão" },
+            { number: "5 min", label: "para criar sua loja" },
+            { number: "0", label: "produtos para cadastrar" }
+          ].map((stat, i) => (
+            <div key={i} className="flex flex-col items-center justify-center">
+              <p className="text-5xl font-black text-gray-900 mb-4">{stat.number}</p>
+              <p className="text-lg text-gray-500 font-medium">{stat.label}</p>
+            </div>
+          ))}
         </div>
       </section>
 

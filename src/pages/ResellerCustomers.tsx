@@ -3,17 +3,24 @@ import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../context/AuthContext';
 import { MessageCircle, Search, Loader2 } from 'lucide-react';
+import { ErrorState } from '../components/ErrorState';
  
 export const ResellerCustomers = () => {
   const { user } = useAuth();
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [error, setError] = useState<string | null>(null);
  
   useEffect(() => {
     if (!user?.uid) return;
     getDocs(query(collection(db, 'orders'), where('resellerId', '==', user.uid)))
-      .then(snap => { setOrders(snap.docs.map(d => d.data())); setLoading(false); });
+      .then(snap => { setOrders(snap.docs.map(d => d.data())); setLoading(false); })
+      .catch((err) => {
+        console.error('Customers load error:', err);
+        setError('Erro ao carregar clientes. Verifique sua conexão.');
+        setLoading(false);
+      });
   }, [user?.uid]);
  
   const customers = useMemo(() => {
@@ -44,6 +51,7 @@ export const ResellerCustomers = () => {
   );
  
   if (loading) return <div className="flex justify-center p-12"><Loader2 className="animate-spin" /></div>;
+  if (error) return <ErrorState message={error} onRetry={() => window.location.reload()} />;
  
   return (
     <div className="max-w-5xl mx-auto space-y-6">

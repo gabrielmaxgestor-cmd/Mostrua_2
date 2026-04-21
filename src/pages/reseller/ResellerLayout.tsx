@@ -11,7 +11,9 @@ import {
   X,
   Globe,
   Bell,
-  Check
+  Check,
+  BarChart3,
+  Users
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useReseller } from "../../hooks/useReseller";
@@ -86,13 +88,15 @@ export const ResellerLayout: React.FC = () => {
     { path: "/dashboard/store", icon: <Store className="w-5 h-5" />, label: "Minha Loja" },
     { path: "/dashboard/catalogs", icon: <Layers className="w-5 h-5" />, label: "Catálogos" },
     { path: "/dashboard/products", icon: <Package className="w-5 h-5" />, label: "Produtos" },
-    { path: "/dashboard/domain", icon: <Globe className="w-5 h-5" />, label: "Domínio" },
+    { path: "/dashboard/analytics", icon: <BarChart3 className="w-5 h-5" />, label: "Analytics" },
     { 
       path: "/dashboard/orders", 
       icon: <ShoppingCart className="w-5 h-5" />, 
       label: "Pedidos",
       badge: pendingOrdersCount > 0 ? pendingOrdersCount : undefined
     },
+    { path: "/dashboard/customers", icon: <Users className="w-5 h-5" />, label: "Clientes" },
+    { path: "/dashboard/domain", icon: <Globe className="w-5 h-5" />, label: "Domínio" },
   ];
 
   const primaryColor = reseller?.settings?.primaryColor || "#2563eb";

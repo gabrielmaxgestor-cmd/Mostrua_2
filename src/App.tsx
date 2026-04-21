@@ -29,6 +29,7 @@ import { StoreSettings as ResellerSettings } from "./pages/reseller/StoreSetting
 import { CustomDomain } from "./pages/reseller/CustomDomain";
 import ResellerWelcome from "./pages/reseller/ResellerWelcome";
 import Analytics from "./pages/reseller/Analytics";
+import { ResellerCustomers } from "./pages/ResellerCustomers";
 import OrderConfirmedPage from "./pages/store/OrderConfirmedPage";
 import CategoryPage from "./pages/store/CategoryPage";
 
@@ -102,6 +103,7 @@ export default function App() {
         <Route path="/dashboard" element={<ProtectedRoute requiredRole="reseller"><ResellerLayout /></ProtectedRoute>}>
           <Route index element={<ResellerDashboard />} />
           <Route path="analytics" element={<Analytics />} />
+          <Route path="customers" element={<ResellerCustomers />} />
           <Route path="store" element={<ResellerSettings />} />
           <Route path="domain" element={<CustomDomain />} />
           <Route path="catalogs" element={<ResellerCatalogs />} />

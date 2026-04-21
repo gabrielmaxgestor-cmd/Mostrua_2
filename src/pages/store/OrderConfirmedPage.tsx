@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useTenant } from '../../hooks/useTenant';
 import { orderService, Order } from '../../services/orderService';
-import { CheckCircle2, ShoppingBag, ArrowLeft, Loader2, Store, ChevronRight } from 'lucide-react';
+import { CheckCircle2, ShoppingBag, ArrowLeft, Loader2, Store, ChevronRight, Copy, MessageCircle } from 'lucide-react';
 import { useCart } from '../../hooks/useCart';
+import { InstallBanner } from '../../components/store/InstallBanner';
 
 export default function OrderConfirmedPage() {
   const { slug, orderId } = useParams<{ slug?: string; orderId: string }>();
@@ -53,6 +54,16 @@ export default function OrderConfirmedPage() {
 
     loadOrder();
   }, [orderId, reseller?.id, resellerLoading]);
+
+  useEffect(() => {
+    // Impede o cliente de voltar para o checkout com o carrinho "cheio"
+    window.history.pushState(null, '', window.location.href);
+    const handlePopState = () => {
+      window.history.pushState(null, '', window.location.href);
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   const primaryColor = reseller?.settings?.primaryColor || '#16a34a';
   const storeUrl = slug ? `/store/${slug}` : '/';
@@ -180,6 +191,35 @@ export default function OrderConfirmedPage() {
           >
             Continuar Comprando
           </Link>
+        </div>
+
+        <div className="mt-8 p-5 bg-gray-50 rounded-2xl border border-gray-100">
+          <p className="text-sm font-bold text-gray-700 mb-3 text-center">
+            Gostou? Indique para um amigo
+          </p>
+          <div className="flex gap-3">
+            <button
+              onClick={() => navigator.clipboard.writeText(`${window.location.origin}/store/${slug}`).then(() => alert('Link copiado!'))}
+              className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-100 flex items-center justify-center gap-2 transition-colors"
+            >
+              <Copy className="w-4 h-4" /> Copiar link
+            </button>
+            <a
+              href={`https://wa.me/?text=${encodeURIComponent(`Comprei na ${reseller?.storeName} e adorei! Confira: ${window.location.origin}/store/${slug}`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 py-2.5 bg-[#25D366] text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
+            >
+              <MessageCircle className="w-4 h-4" /> Compartilhar
+            </a>
+          </div>
+        </div>
+
+        <div className="mt-4 text-center">
+          <p className="text-xs text-gray-400 mb-3">
+            Adicione esta loja à tela inicial para acessar mais rápido na próxima vez.
+          </p>
+          <InstallBanner storeName={reseller?.storeName} primaryColor={primaryColor} />
         </div>
 
       </div>

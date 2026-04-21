@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Store, ChevronRight, Check, X, Loader2, Mail, Lock, User, Phone, ArrowLeft } from "lucide-react";
+import { Store, ChevronRight, Check, X, Loader2, Mail, Lock, User, Phone, ArrowLeft, Info, HelpCircle } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { generateSlug, validateSlug, isSlugAvailable } from "../utils/slug";
 import { nicheService } from "../services/nicheService";
 import { resellerService } from "../services/resellerService";
-import { Niche } from "../types";
+import { catalogService } from "../services/catalogService";
+import { Niche, Catalog, BaseProduct } from "../types";
 import { signInWithPopup, createUserWithEmailAndPassword } from "firebase/auth";
 import { auth, googleProvider, db } from "../firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, writeBatch, collection, query, where, getDocs } from "firebase/firestore";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -53,11 +54,16 @@ export default function RegisterPage() {
   const [phone, setPhone] = useState("");
   const [storeName, setStoreName] = useState("");
   const [slug, setSlug] = useState("");
-  const [slugAvailable, setSlugAvailable] = useState<boolean | null>(null);
-  const [checkingSlug, setCheckingSlug] = useState(false);
 
   // Step 3
   const [nicheId, setNicheId] = useState("");
+
+  // Step 4
+  const [nicheCatalogs, setNicheCatalogs] = useState<Catalog[]>([]);
+  const [selectedCatalogs, setSelectedCatalogs] = useState<string[]>([]);
+
+  // Step 5
+  const [catalogPrices, setCatalogPrices] = useState<Record<string, string>>({});
 
   useEffect(() => {
     nicheService.getActiveNiches().then(setNiches).catch(console.error);
@@ -69,28 +75,6 @@ export default function RegisterPage() {
       setSlug(generateSlug(storeName));
     }
   }, [storeName]);
-
-  useEffect(() => {
-    const checkSlug = async () => {
-      if (!slug) {
-        setSlugAvailable(null);
-        return;
-      }
-      
-      if (!validateSlug(slug)) {
-        setSlugAvailable(false);
-        return;
-      }
-
-      setCheckingSlug(true);
-      const available = await isSlugAvailable(slug);
-      setSlugAvailable(available);
-      setCheckingSlug(false);
-    };
-
-    const timeoutId = setTimeout(checkSlug, 500);
-    return () => clearTimeout(timeoutId);
-  }, [slug]);
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value.replace(/\D/g, "");
@@ -105,7 +89,7 @@ export default function RegisterPage() {
     setPhone(value);
   };
 
-  const handleNextStep = () => {
+  const handleNextStep = async () => {
     setError("");
     if (step === 1) {
       if (!email || (!isGoogleSignIn && (!password || !confirmPassword))) {
@@ -142,11 +126,40 @@ export default function RegisterPage() {
         setError("WhatsApp inválido.");
         return;
       }
-      if (slugAvailable === false) {
-        setError("O link escolhido não está disponível ou é inválido.");
+      setStep(3);
+    } else if (step === 3) {
+      if (!nicheId) {
+        setError("Selecione um nicho para sua loja.");
         return;
       }
-      setStep(3);
+      setLoading(true);
+      try {
+        const catalogs = await catalogService.getCatalogsByNiche(nicheId);
+        // Filter out inactive catalogs from onboarding
+        const activeCatalogs = catalogs.filter(c => c.active);
+        setNicheCatalogs(activeCatalogs);
+        // Auto select all by default
+        setSelectedCatalogs(activeCatalogs.map(c => c.id));
+        
+        // Setup default prices mapping
+        const defaultPrices: Record<string, string> = {};
+        activeCatalogs.forEach(c => {
+          defaultPrices[c.id] = "";
+        });
+        setCatalogPrices(defaultPrices);
+
+        setStep(4);
+      } catch (err: any) {
+        setError("Erro ao carregar categorias do nicho. Tente novamente.");
+      } finally {
+        setLoading(false);
+      }
+    } else if (step === 4) {
+      if (selectedCatalogs.length === 0) {
+        setError("Selecione pelo menos uma categoria.");
+        return;
+      }
+      setStep(5);
     }
   };
 
@@ -194,17 +207,66 @@ export default function RegisterPage() {
         uidToUse = userCredential.user.uid;
       }
 
+      const finalSlug = await resellerService.generateUniqueSlug(storeName);
+
       const result = await resellerService.createResellerProfile({
         uid: uidToUse,
         name,
         email,
         phone,
         storeName,
-        slug,
+        slug: finalSlug,
         nicheId
       });
 
       if (result.success) {
+        // Process catalog selection and pricing
+        let currentBatch = writeBatch(db);
+        let operationCount = 0;
+
+        for (const catId of selectedCatalogs) {
+          const rawPrice = catalogPrices[catId];
+          let customPrice: number | null = null;
+          
+          if (rawPrice) {
+             const parsed = parseFloat(rawPrice.replace(",", "."));
+             if (!isNaN(parsed) && parsed > 0) {
+                customPrice = parsed;
+             }
+          }
+
+          const baseProductsQ = query(collection(db, "products"), where("catalogId", "==", catId), where("active", "==", true));
+          const snap = await getDocs(baseProductsQ);
+
+          for (const docSnap of snap.docs) {
+            const bp = { id: docSnap.id, ...docSnap.data() } as BaseProduct;
+            const rpId = `${uidToUse}_${bp.id}`;
+            const rpRef = doc(db, "reseller_products", rpId);
+
+            currentBatch.set(rpRef, {
+              resellerId: uidToUse,
+              baseProductId: bp.id,
+              customName: bp.name,
+              customDescription: bp.description,
+              customPrice: customPrice !== null ? customPrice : bp.priceBase,
+              active: true,
+              featured: false,
+              createdAt: new Date()
+            });
+
+            operationCount++;
+            if (operationCount >= 450) {
+              await currentBatch.commit();
+              currentBatch = writeBatch(db);
+              operationCount = 0;
+            }
+          }
+        }
+
+        if (operationCount > 0) {
+          await currentBatch.commit();
+        }
+
         navigate("/reseller/welcome", { state: { slug: result.slug } });
       }
     } catch (err: any) {
@@ -237,9 +299,14 @@ export default function RegisterPage() {
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-xl">
-        <div className="bg-green-50 border border-green-200 rounded-2xl p-4 mb-6 text-center">
-          <p className="text-green-800 font-bold">Teste gratis por 7 dias</p>
-          <p className="text-green-600 text-sm">Sem cartao de credito. Cancele quando quiser.</p>
+        <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4 mb-6">
+          <p className="text-orange-800 font-bold text-center">
+            Oferta de lançamento — 14 dias grátis
+          </p>
+          <p className="text-orange-600 text-sm text-center mt-1">
+            Válido para cadastros realizados esta semana.<br className="sm:hidden" />
+            Sem cartão de crédito.
+          </p>
         </div>
         <div className="bg-white py-8 px-4 shadow-xl shadow-gray-200/50 sm:rounded-2xl sm:px-10 border border-gray-100">
           
@@ -249,10 +316,10 @@ export default function RegisterPage() {
               <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-gray-100 rounded-full -z-10"></div>
               <div 
                 className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-blue-600 rounded-full -z-10 transition-all duration-500"
-                style={{ width: `${((step - 1) / 2) * 100}%` }}
+                style={{ width: `${((step - 1) / 4) * 100}%` }}
               ></div>
               
-              {[1, 2, 3].map((i) => (
+              {[1, 2, 3, 4, 5].map((i) => (
                 <div 
                   key={i} 
                   className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-colors ${
@@ -263,10 +330,12 @@ export default function RegisterPage() {
                 </div>
               ))}
             </div>
-            <div className="flex justify-between mt-2 text-xs font-medium text-gray-500">
+            <div className="flex justify-between mt-2 text-[10px] sm:text-xs font-medium text-gray-500">
               <span>Conta</span>
               <span>Loja</span>
               <span>Nicho</span>
+              <span>Módulos</span>
+              <span>Preços</span>
             </div>
           </div>
 
@@ -422,40 +491,20 @@ export default function RegisterPage() {
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Link da Loja</label>
-                  <div className="flex items-center">
-                    <span className="text-gray-500 bg-gray-50 border border-r-0 border-gray-200 rounded-l-xl px-3 py-3 text-sm">
-                      {window.location.host}/
-                    </span>
-                    <div className="relative flex-1">
-                      <input
-                        type="text"
-                        required
-                        value={slug}
-                        onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
-                        className={`w-full pr-10 pl-3 py-3 rounded-r-xl border focus:outline-none transition-all ${
-                          slugAvailable === true ? 'border-green-500 focus:ring-1 focus:ring-green-500' :
-                          slugAvailable === false ? 'border-red-500 focus:ring-1 focus:ring-red-500' :
-                          'border-gray-200 focus:ring-1 focus:ring-blue-500'
-                        }`}
-                        placeholder="minha-loja"
-                      />
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                        {checkingSlug ? (
-                          <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
-                        ) : slugAvailable === true ? (
-                          <Check className="w-5 h-5 text-green-500" />
-                        ) : slugAvailable === false ? (
-                          <X className="w-5 h-5 text-red-500" />
-                        ) : null}
-                      </div>
+                {storeName && (
+                  <div className="mt-4">
+                    <p className="text-xs font-medium text-gray-500 mb-1">
+                      Sua loja ficará disponível em:
+                    </p>
+                    <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
+                      <span className="text-gray-400 text-sm">mostrua.com.br/</span>
+                      <span className="font-bold text-gray-900 text-sm">{generateSlug(storeName)}</span>
                     </div>
+                    <p className="text-xs text-gray-400 mt-1.5">
+                      Você pode personalizar esse endereço depois nas configurações.
+                    </p>
                   </div>
-                  {slugAvailable === false && slug.length > 0 && (
-                    <p className="mt-1 text-xs text-red-500">Este link não está disponível ou é inválido.</p>
-                  )}
-                </div>
+                )}
 
                 <div className="flex gap-3 mt-6">
                   <button
@@ -488,17 +537,22 @@ export default function RegisterPage() {
                 exit={{ opacity: 0, x: -20 }}
                 className="space-y-5"
               >
-                <p className="text-sm text-gray-600 text-center mb-4">
-                  Escolha o nicho principal da sua loja. Isso definirá os catálogos e produtos iniciais.
-                </p>
+                <div className="text-center mb-6">
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">Qual tipo de produto você vende?</h3>
+                  <p className="text-gray-500 text-sm">
+                    Isso define quais catálogos e produtos estarão disponíveis na sua loja.
+                    <br />
+                    <span className="text-xs text-gray-400">Não se preocupe — você pode ajustar depois.</span>
+                  </p>
+                </div>
 
-                <div className="grid grid-cols-2 gap-4 max-h-64 overflow-y-auto custom-scrollbar p-1">
+                <div className="grid grid-cols-2 gap-4 max-h-80 overflow-y-auto custom-scrollbar p-1">
                   {niches.map((niche) => (
                     <div
                       key={niche.id}
                       onClick={() => setNicheId(niche.id)}
                       className={`cursor-pointer rounded-xl border-2 overflow-hidden transition-all ${
-                        nicheId === niche.id ? 'border-blue-600 ring-2 ring-blue-600/20 shadow-md' : 'border-transparent hover:border-gray-200 bg-gray-50'
+                        nicheId === niche.id ? 'border-blue-600 ring-2 ring-blue-600/20 shadow-md transform scale-[1.02]' : 'border-transparent hover:border-gray-200 bg-gray-50 hover:bg-white hover:shadow-sm'
                       }`}
                     >
                       <div className="aspect-video relative">
@@ -509,8 +563,11 @@ export default function RegisterPage() {
                           </div>
                         )}
                       </div>
-                      <div className="p-3 text-center">
+                      <div className="p-3 text-center sm:text-left">
                         <p className="font-bold text-gray-900 text-sm">{niche.name}</p>
+                        {niche.description && (
+                          <p className="text-xs text-gray-500 mt-1 line-clamp-2 hidden sm:block">{niche.description}</p>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -524,8 +581,128 @@ export default function RegisterPage() {
                     Voltar
                   </button>
                   <button
-                    onClick={handleSubmit}
+                    onClick={handleNextStep}
                     disabled={loading || !nicheId}
+                    className="flex-[2] flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                  >
+                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Continuar <ChevronRight className="w-4 h-4 ml-2" /></>}
+                  </button>
+                </div>
+                
+                <p className="text-center text-xs text-gray-400 mt-4">
+                  Você pode mudar ou adicionar nichos depois nas configurações da sua conta.
+                </p>
+              </motion.div>
+            )}
+
+            {step === 4 && (
+              <motion.div
+                key="step4"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="space-y-5"
+              >
+                <div className="text-center mb-6">
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">Módulos e Categorias</h3>
+                  <p className="text-gray-500 text-sm">
+                    Selecione quais categorias aparecerão no menu de acesso rápido da sua loja.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-80 overflow-y-auto custom-scrollbar p-1">
+                  {nicheCatalogs.map((catalog) => {
+                    const isSelected = selectedCatalogs.includes(catalog.id);
+                    return (
+                      <div
+                        key={catalog.id}
+                        onClick={() => {
+                          setSelectedCatalogs(prev => 
+                            isSelected ? prev.filter(id => id !== catalog.id) : [...prev, catalog.id]
+                          );
+                        }}
+                        className={`cursor-pointer rounded-xl border-2 px-4 py-3 flex items-center justify-between transition-all ${
+                         isSelected ? 'border-green-500 bg-green-50/20' : 'border-gray-200 bg-transparent hover:border-gray-300'
+                        }`}
+                      >
+                        <span className={`font-bold text-sm ${isSelected ? 'text-green-700' : 'text-gray-700'}`}>
+                          {catalog.name}
+                        </span>
+                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${isSelected ? 'border-green-500 bg-green-500 text-white' : 'border-gray-300 bg-transparent'}`}>
+                          {isSelected && <Check className="w-3 h-3" />}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="flex gap-3 mt-6">
+                  <button
+                    onClick={() => setStep(3)}
+                    className="flex-1 py-3 px-4 border border-gray-200 rounded-xl shadow-sm text-sm font-bold text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                  >
+                    Voltar
+                  </button>
+                  <button
+                    onClick={handleNextStep}
+                    disabled={selectedCatalogs.length === 0}
+                    className="flex-[2] flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                  >
+                    Continuar <ChevronRight className="w-4 h-4 ml-2" />
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {step === 5 && (
+              <motion.div
+                key="step5"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="space-y-5"
+              >
+                <div className="text-center mb-4">
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">Tabela de Preços</h3>
+                  <p className="text-gray-500 text-sm">
+                    Preencha o valor de venda (em R$) para cada categoria habilitada.
+                  </p>
+                </div>
+
+                <div className="space-y-3 max-h-80 overflow-y-auto custom-scrollbar p-1 pb-4">
+                  {selectedCatalogs.map((catalogId) => {
+                    const catalog = nicheCatalogs.find(c => c.id === catalogId);
+                    if (!catalog) return null;
+                    return (
+                      <div key={catalogId} className="flex items-center gap-3 bg-gray-50/50 border border-gray-200 rounded-xl p-3 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 transition-colors">
+                        <span className="font-bold text-sm text-gray-700 flex-1">{catalog.name}</span>
+                        <div className="flex items-center gap-2 bg-transparent">
+                          <span className="text-sm font-bold text-gray-400">R$</span>
+                          <input 
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            placeholder="Ex: 199.90"
+                            value={catalogPrices[catalogId] || ""}
+                            onChange={e => setCatalogPrices(prev => ({...prev, [catalogId]: e.target.value}))}
+                            className="w-24 bg-transparent outline-none text-right font-bold text-gray-900 placeholder:text-gray-300"
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="flex gap-3 mt-6">
+                  <button
+                    onClick={() => setStep(4)}
+                    className="flex-1 py-3 px-4 border border-gray-200 rounded-xl shadow-sm text-sm font-bold text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                  >
+                    Voltar
+                  </button>
+                  <button
+                    onClick={handleSubmit}
+                    disabled={loading}
                     className="flex-[2] flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 transition-colors"
                   >
                     {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Criar minha loja"}

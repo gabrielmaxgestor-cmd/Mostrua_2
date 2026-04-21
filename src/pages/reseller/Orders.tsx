@@ -6,6 +6,7 @@ import { Order, OrderStatus } from "../../types";
 import { ShoppingCart, Eye, Loader2, Clock, CheckCircle, Package, Truck, XCircle, Search, Check, Download } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { OrderDetailsModal } from "../../components/reseller/OrderDetailsModal";
+import { ErrorState } from '../../components/ErrorState';
 
 const statusConfig: Record<OrderStatus, { label: string, color: string, icon: any }> = {
   pending: { label: "Novo", color: "bg-blue-100 text-blue-700", icon: Clock },
@@ -19,7 +20,7 @@ const statusConfig: Record<OrderStatus, { label: string, color: string, icon: an
 export const Orders = () => {
   const { user } = useAuth();
   const { reseller } = useReseller(user?.uid);
-  const { orders, loading } = useOrders(user?.uid);
+  const { orders, loading, error } = useOrders(user?.uid);
   
   const [filterStatus, setFilterStatus] = useState<OrderStatus | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -99,6 +100,7 @@ export const Orders = () => {
   };
 
   if (loading) return <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-gray-400" /></div>;
+  if (error) return <ErrorState message={error} onRetry={() => window.location.reload()} />;
 
   return (
     <div className="space-y-6 relative">

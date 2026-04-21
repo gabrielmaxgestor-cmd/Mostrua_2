@@ -6,7 +6,7 @@ import { Order } from "../types";
 export const useOrders = (resellerId: string | undefined) => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!resellerId) {
@@ -33,7 +33,7 @@ export const useOrders = (resellerId: string | undefined) => {
       },
       (err) => {
         console.error("Error fetching orders:", err);
-        setError(err);
+        setError("Erro ao carregar pedidos. Verifique sua conexão.");
         setLoading(false);
       }
     );

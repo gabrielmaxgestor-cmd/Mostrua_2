@@ -29,7 +29,7 @@ export default function ResellerWelcome() {
         </h1>
         
         <p className="text-lg text-gray-600 mb-8">
-          Sua conta foi criada com sucesso e sua loja já está no ar.
+          Sua loja está no ar e pronta para receber pedidos.
         </p>
 
         <div className="bg-gray-50 rounded-2xl p-6 mb-10 border border-gray-200">

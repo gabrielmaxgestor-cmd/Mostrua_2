@@ -38,6 +38,23 @@ export default function PublicStore() {
   // Product page state
   const [selectedVariation, setSelectedVariation] = useState<string>("");
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [touchStartX, setTouchStartX] = useState(0);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStartX(e.touches[0].clientX);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const diff = touchStartX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) {
+      const images = selectedProduct?.images || [];
+      if (diff > 0) {
+        setCurrentImageIndex(prev => Math.min(prev + 1, images.length - 1));
+      } else {
+        setCurrentImageIndex(prev => Math.max(prev - 1, 0));
+      }
+    }
+  };
 
   const { items: cart, addItem, removeItem, updateQuantity, clearCart, total, itemCount: totalItems } = useCart(reseller?.id || '');
 
@@ -193,6 +210,7 @@ export default function PublicStore() {
   const navigate = useNavigate();
 
   const handleCheckoutSuccess = (orderId: string) => {
+    clearCart();
     setShowCheckout(false);
     setShowCart(false);
     navigate(`/store/${slug}/order-confirmed/${orderId}`);
@@ -300,13 +318,15 @@ export default function PublicStore() {
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             {view !== 'home' ? (
-              <div className="flex items-center gap-1">
-                <button onClick={goBack} className="p-2 -ml-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors" title="Voltar">
+              <div className="flex items-center gap-2">
+                <button onClick={goBack}
+                  className="p-2 -ml-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+                  title="Voltar">
                   <ArrowLeft className="w-5 h-5" />
                 </button>
-                <button onClick={goHome} className="p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors" title="Início da Loja">
-                  <Store className="w-5 h-5" />
-                </button>
+                <span className="text-sm font-medium text-gray-500 truncate max-w-[140px] cursor-pointer" onClick={goHome}>
+                  {reseller?.storeName}
+                </span>
               </div>
             ) : (
               <div className="cursor-pointer flex items-center gap-3" onClick={goHome}>
@@ -317,9 +337,9 @@ export default function PublicStore() {
                     {reseller?.storeName?.[0]?.toUpperCase()}
                   </div>
                 )}
+                <h1 className="font-bold text-lg text-gray-900 truncate max-w-[180px] cursor-pointer" onClick={goHome}>{reseller?.storeName}</h1>
               </div>
             )}
-            <h1 className="font-bold text-lg text-gray-900 truncate max-w-[180px] cursor-pointer" onClick={goHome}>{reseller?.storeName}</h1>
           </div>
           <button onClick={() => setShowCart(true)} className="relative p-2.5 bg-gray-50 rounded-full hover:bg-gray-100 transition-all">
             <ShoppingCart className="w-5 h-5 text-gray-700" />
@@ -433,6 +453,13 @@ export default function PublicStore() {
         {/* CATEGORY VIEW */}
         {view === 'category' && selectedCategory && (
           <div className="px-4 py-6">
+            <div className="flex items-center gap-2 mb-4 text-xs text-gray-400">
+              <button onClick={goHome} className="hover:text-gray-600 transition-colors">
+                {reseller?.storeName}
+              </button>
+              <span>/</span>
+              <span className="text-gray-700 font-medium">{selectedCategory?.name}</span>
+            </div>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
               <h2 className="font-bold text-xl text-gray-900">
                 {isSearching ? `Resultados para "${searchQuery}" em ${selectedCategory.name}` : selectedCategory.name}
@@ -485,7 +512,17 @@ export default function PublicStore() {
         {view === 'product' && selectedProduct && (
           <div className="bg-white min-h-screen pb-24">
             {/* Image Slider */}
-            <div className="relative aspect-square sm:aspect-[4/3] bg-gray-100">
+            <div 
+              className="relative aspect-square sm:aspect-[4/3] bg-gray-100"
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
+            >
+              {selectedProduct.images?.length > 1 && (
+                <div className="absolute top-3 right-3 bg-black/50 text-white text-xs font-bold px-2.5 py-1 rounded-full z-10">
+                  {currentImageIndex + 1} / {selectedProduct.images.length}
+                </div>
+              )}
+              
               {selectedProduct.images?.[currentImageIndex] ? (
                 <img src={selectedProduct.images[currentImageIndex]} alt={selectedProduct.name} className="w-full h-full object-cover" />
               ) : (
@@ -496,7 +533,7 @@ export default function PublicStore() {
                 <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
                   {selectedProduct.images.map((_: any, idx: number) => (
                     <button key={idx} onClick={() => setCurrentImageIndex(idx)}
-                      className={`w-2 h-2 rounded-full transition-all ${idx === currentImageIndex ? 'w-4 bg-white' : 'bg-white/50'}`} />
+                      className={`h-2.5 rounded-full transition-all ${idx === currentImageIndex ? 'w-6 bg-white' : 'w-2.5 bg-white/60'}`} />
                   ))}
                 </div>
               )}
