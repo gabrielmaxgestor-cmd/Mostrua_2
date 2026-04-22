@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from "react";
-import { collection, query, where, getDocs, writeBatch, doc } from "firebase/firestore";
+import React, { useState, useEffect, useRef } from "react";
+import { collection, query, where, getDocs, writeBatch, doc, updateDoc } from "firebase/firestore";
 import { db } from "../../firebase";
 import { useAuth } from "../../context/AuthContext";
 import { useReseller } from "../../hooks/useReseller";
 import { useResellerProducts } from "../../hooks/useResellerProducts";
+import { storageService } from "../../services/storageService";
 import { Catalog, BaseProduct } from "../../types";
-import { Layers, Loader2, Check } from "lucide-react";
+import { Layers, Loader2, Check, Image as ImageIcon } from "lucide-react";
 
 export const Catalogs = () => {
   const { user } = useAuth();
@@ -15,6 +16,8 @@ export const Catalogs = () => {
   const [catalogs, setCatalogs] = useState<Catalog[]>([]);
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingBannerId, setUploadingBannerId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchCatalogs = async () => {
@@ -154,16 +157,46 @@ export const Catalogs = () => {
     }
   };
 
+  const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !e.target.files[0] || !uploadingBannerId || !user?.uid) return;
+    
+    const file = e.target.files[0];
+    const catalogId = uploadingBannerId;
+    setProcessingId(catalogId);
+    
+    try {
+      const bannerUrl = await storageService.uploadImage(file, `resellers/${user.uid}/customBanners/${catalogId}`);
+      
+      const customBanners = reseller?.settings?.customBanners || {};
+      customBanners[catalogId] = bannerUrl;
+      
+      await updateDoc(doc(db, "resellers", user.uid), {
+        "settings.customBanners": customBanners
+      });
+      
+      alert("Banner atualizado com sucesso na loja principal.");
+    } catch (error) {
+      console.error("Error uploading custom banner:", error);
+      alert("Erro ao enviar imagem. Tente novamente.");
+    } finally {
+      setProcessingId(null);
+      setUploadingBannerId(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
   const activeCatalogs = catalogs.filter(c => catalogStatus[c.id]);
   const availableCatalogs = catalogs.filter(c => !catalogStatus[c.id]);
 
   const renderCatalogCard = (catalog: Catalog, isActive: boolean) => {
     const isProcessing = processingId === catalog.id;
+    const customBanner = reseller?.settings?.customBanners?.[catalog.id];
+    const displayBanner = customBanner || catalog.bannerUrl || catalog.imageUrl;
     return (
       <div key={catalog.id} className="bg-white rounded-3xl border border-gray-200 overflow-hidden shadow-sm flex flex-col">
         <div className="aspect-video relative bg-gray-100 group">
-          {catalog.imageUrl ? (
-            <img src={catalog.imageUrl} alt={catalog.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+          {displayBanner ? (
+            <img src={displayBanner} alt={catalog.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               <Layers className="w-12 h-12 text-gray-300" />
@@ -173,18 +206,28 @@ export const Catalogs = () => {
           <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-gray-700 shadow-sm">
             {catalog.productsCount || 0} produtos
           </div>
+
+          {isActive && (
+            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <button 
+                onClick={() => {
+                  setUploadingBannerId(catalog.id);
+                  fileInputRef.current?.click();
+                }}
+                disabled={isProcessing}
+                className="bg-white/90 backdrop-blur-sm text-gray-900 px-4 py-2 rounded-xl font-bold text-sm shadow-lg flex items-center gap-2 hover:bg-white transition-colors disabled:opacity-50"
+              >
+                <ImageIcon className="w-4 h-4" />
+                {customBanner ? 'Alterar Banner Customizado' : 'Adicionar Banner Customizado'}
+              </button>
+            </div>
+          )}
         </div>
         
         <div className="p-6 flex-1 flex flex-col">
           <h3 className="text-lg font-bold text-gray-900 mb-2">{catalog.name}</h3>
           <p className="text-sm text-gray-500 line-clamp-2 flex-1">{catalog.description}</p>
           
-          {isActive && (
-            <div className="mt-4 pb-2 border-b border-gray-50">
-               <p className="text-xs text-gray-400 mb-2">Para alterar o banner deste catálogo, vá até Configurações &gt; Minha Loja.</p>
-            </div>
-          )}
-
           <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
             <span className={`text-sm font-bold ${isActive ? 'text-green-600' : 'text-gray-500'}`}>
                {isActive ? 'Ativo na sua loja' : 'Inativo'}
@@ -266,6 +309,15 @@ export const Catalogs = () => {
           </section>
         </>
       )}
+
+      {/* Hidden file input for banner uploads */}
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        onChange={handleBannerUpload} 
+        accept="image/*" 
+        className="hidden" 
+      />
     </div>
   );
 };

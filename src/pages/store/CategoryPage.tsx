@@ -158,7 +158,9 @@ export default function CategoryPage() {
     );
   }
 
-  const bannerUrl = reseller?.settings?.customBanners?.[category?.id || ""] || category?.bannerUrl;
+  const bannerUrl = reseller?.settings?.customBanners?.[category?.id || ""] || 
+                    reseller?.settings?.customBanners?.[category?.catalogId || ""] || 
+                    category?.bannerUrl;
   const logoUrl = category?.imageUrl;
 
   return (

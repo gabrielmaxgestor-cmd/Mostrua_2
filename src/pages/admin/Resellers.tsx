@@ -45,7 +45,9 @@ export const Resellers = () => {
     setLoading(true);
     try {
       // 1. Create Auth User using a secondary app instance to avoid logging out the admin
-      const secondaryApp = initializeApp(firebaseConfig, "Secondary");
+      // Using a cloud function or standard auth for reseller creation is recommended, 
+      // but for client-side admin action without secondary app conflict:
+      const secondaryApp = initializeApp(firebaseConfig, "Secondary_" + Date.now());
       const secondaryAuth = getAuth(secondaryApp);
       const userCred = await createUserWithEmailAndPassword(secondaryAuth, newReseller.email, newReseller.password);
       const uid = userCred.user.uid;
