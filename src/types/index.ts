@@ -29,6 +29,7 @@ export interface Catalog {
   name: string;
   description: string;
   imageUrl: string;
+  bannerUrl?: string;
   active: boolean;
   order: number;
   productsCount: number;
@@ -42,6 +43,8 @@ export interface Category {
   catalogId: string;
   order: number;
   status: boolean;
+  imageUrl?: string;
+  bannerUrl?: string;
   createdAt?: Timestamp;
 }
 
@@ -78,6 +81,7 @@ export interface ResellerSettings {
   address?: string;
   hours?: string;
   autoMessage?: string;
+  customBanners?: Record<string, string>; // catalogId or categoryId -> bannerUrl
 }
 
 export interface Reseller {

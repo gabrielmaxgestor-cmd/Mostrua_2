@@ -161,7 +161,7 @@ export const Catalogs = () => {
     const isProcessing = processingId === catalog.id;
     return (
       <div key={catalog.id} className="bg-white rounded-3xl border border-gray-200 overflow-hidden shadow-sm flex flex-col">
-        <div className="aspect-video relative bg-gray-100">
+        <div className="aspect-video relative bg-gray-100 group">
           {catalog.imageUrl ? (
             <img src={catalog.imageUrl} alt={catalog.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
           ) : (
@@ -169,6 +169,7 @@ export const Catalogs = () => {
               <Layers className="w-12 h-12 text-gray-300" />
             </div>
           )}
+          
           <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-gray-700 shadow-sm">
             {catalog.productsCount || 0} produtos
           </div>
@@ -178,7 +179,13 @@ export const Catalogs = () => {
           <h3 className="text-lg font-bold text-gray-900 mb-2">{catalog.name}</h3>
           <p className="text-sm text-gray-500 line-clamp-2 flex-1">{catalog.description}</p>
           
-          <div className="mt-6 pt-6 border-t border-gray-100 flex items-center justify-between">
+          {isActive && (
+            <div className="mt-4 pb-2 border-b border-gray-50">
+               <p className="text-xs text-gray-400 mb-2">Para alterar o banner deste catálogo, vá até Configurações &gt; Minha Loja.</p>
+            </div>
+          )}
+
+          <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
             <span className={`text-sm font-bold ${isActive ? 'text-green-600' : 'text-gray-500'}`}>
                {isActive ? 'Ativo na sua loja' : 'Inativo'}
             </span>

@@ -23,6 +23,7 @@ export const Catalogs = () => {
     name: "",
     description: "",
     imageUrl: "",
+    bannerUrl: "",
     nicheId: "",
     active: true,
     order: 0
@@ -30,6 +31,10 @@ export const Catalogs = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [bannerFile, setBannerFile] = useState<File | null>(null);
+  const [bannerPreview, setBannerPreview] = useState<string>("");
+  const bannerInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const qCatalogs = query(collection(db, "catalogs"), orderBy("order", "asc"));
@@ -58,24 +63,29 @@ export const Catalogs = () => {
         name: catalog.name,
         description: catalog.description,
         imageUrl: catalog.imageUrl,
+        bannerUrl: catalog.bannerUrl || "",
         nicheId: catalog.nicheId,
         active: catalog.active,
         order: catalog.order
       });
       setImagePreview(catalog.imageUrl);
+      setBannerPreview(catalog.bannerUrl || "");
     } else {
       setEditingCatalog(null);
       setFormData({ 
         name: "", 
         description: "", 
         imageUrl: "", 
+        bannerUrl: "",
         nicheId: filterNiche !== "all" ? filterNiche : "", 
         active: true,
         order: catalogs.length > 0 ? Math.max(...catalogs.map(c => c.order)) + 1 : 0
       });
       setImagePreview("");
+      setBannerPreview("");
     }
     setImageFile(null);
+    setBannerFile(null);
     setIsModalOpen(true);
   };
 
@@ -84,6 +94,8 @@ export const Catalogs = () => {
     setEditingCatalog(null);
     setImageFile(null);
     setImagePreview("");
+    setBannerFile(null);
+    setBannerPreview("");
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -91,6 +103,14 @@ export const Catalogs = () => {
       const file = e.target.files[0];
       setImageFile(file);
       setImagePreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleBannerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setBannerFile(file);
+      setBannerPreview(URL.createObjectURL(file));
     }
   };
 
@@ -104,9 +124,13 @@ export const Catalogs = () => {
     setIsSubmitting(true);
     try {
       let finalImageUrl = formData.imageUrl;
+      let finalBannerUrl = formData.bannerUrl;
 
       if (imageFile) {
         finalImageUrl = await storageService.uploadImage(imageFile, "catalogs");
+      }
+      if (bannerFile) {
+        finalBannerUrl = await storageService.uploadImage(bannerFile, "catalogs_banners");
       }
 
       const selectedNiche = niches.find(n => n.id === formData.nicheId);
@@ -117,6 +141,7 @@ export const Catalogs = () => {
           name: formData.name,
           description: formData.description,
           imageUrl: finalImageUrl,
+          bannerUrl: finalBannerUrl,
           nicheId: formData.nicheId,
           nicheName: nicheName,
           active: formData.active,
@@ -131,6 +156,7 @@ export const Catalogs = () => {
           name: formData.name,
           description: formData.description,
           imageUrl: finalImageUrl,
+          bannerUrl: finalBannerUrl,
           nicheId: formData.nicheId,
           nicheName: nicheName,
           active: formData.active,
@@ -385,6 +411,42 @@ export const Catalogs = () => {
                         type="file" 
                         ref={fileInputRef} 
                         onChange={handleImageChange} 
+                        accept="image/*" 
+                        className="hidden" 
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Imagem de Banner (Opcional)</label>
+                      <div 
+                        onClick={() => bannerInputRef.current?.click()}
+                        className={`border-2 border-dashed rounded-2xl overflow-hidden cursor-pointer transition-all ${
+                          bannerPreview ? 'border-gray-200' : 'border-gray-300 hover:border-blue-500 bg-gray-50 hover:bg-blue-50/50'
+                        }`}
+                      >
+                        {bannerPreview ? (
+                          <div className="relative aspect-[3/1]">
+                            <img src={bannerPreview} alt="Banner Preview" className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                              <span className="text-white font-medium flex items-center gap-2 bg-black/50 px-4 py-2 rounded-full backdrop-blur-sm">
+                                <ImageIcon className="w-4 h-4" /> Trocar Banner
+                              </span>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="aspect-[3/1] flex flex-col items-center justify-center text-gray-500 p-6 text-center">
+                            <div className="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center mb-2">
+                              <ImageIcon className="w-5 h-5 text-gray-400" />
+                            </div>
+                            <span className="text-sm font-medium text-gray-700">Upload do Banner</span>
+                            <span className="text-xs text-gray-400 mt-1">Proporção ideal: 3:1 (ex: 1200x400)</span>
+                          </div>
+                        )}
+                      </div>
+                      <input 
+                        type="file" 
+                        ref={bannerInputRef} 
+                        onChange={handleBannerChange} 
                         accept="image/*" 
                         className="hidden" 
                       />

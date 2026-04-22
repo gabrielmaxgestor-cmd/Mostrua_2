@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
-import { Plus, Edit2, Search, Loader2, X, CheckCircle } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { Plus, Edit2, Search, Loader2, X, CheckCircle, Image as ImageIcon } from "lucide-react";
 import { Category, Niche, Catalog } from "../../types";
 import { getCategoriesByCatalog, createCategory, updateCategory } from "../../services/categoryService";
 import { nicheService } from "../../services/nicheService";
 import { catalogService } from "../../services/catalogService";
+import { storageService } from "../../services/storageService";
 
 export const Categories = () => {
   const [niches, setNiches] = useState<Niche[]>([]);
@@ -24,9 +25,19 @@ export const Categories = () => {
     nicheId: "",
     catalogId: "",
     order: 0,
-    status: true
+    status: true,
+    imageUrl: "",
+    bannerUrl: ""
   });
   const [editingId, setEditingId] = useState<string | null>(null);
+
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [bannerFile, setBannerFile] = useState<File | null>(null);
+  const [bannerPreview, setBannerPreview] = useState<string>("");
+  const bannerInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchNiches();
@@ -92,8 +103,12 @@ export const Categories = () => {
         nicheId: category.nicheId,
         catalogId: category.catalogId,
         order: category.order,
-        status: category.status
+        status: category.status,
+        imageUrl: category.imageUrl || "",
+        bannerUrl: category.bannerUrl || ""
       });
+      setImagePreview(category.imageUrl || "");
+      setBannerPreview(category.bannerUrl || "");
       // Ensure catalogs are loaded for the edit form if not already
       if (category.nicheId !== selectedNicheId) {
         fetchCatalogs(category.nicheId);
@@ -105,15 +120,41 @@ export const Categories = () => {
         nicheId: selectedNicheId || "",
         catalogId: selectedCatalogId || "",
         order: categories.length + 1,
-        status: true
+        status: true,
+        imageUrl: "",
+        bannerUrl: ""
       });
+      setImagePreview("");
+      setBannerPreview("");
     }
+    setImageFile(null);
+    setBannerFile(null);
     setIsModalOpen(true);
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
     setEditingId(null);
+    setImageFile(null);
+    setImagePreview("");
+    setBannerFile(null);
+    setBannerPreview("");
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleBannerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setBannerFile(file);
+      setBannerPreview(URL.createObjectURL(file));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -125,11 +166,27 @@ export const Categories = () => {
 
     setSaving(true);
     try {
+      let finalImageUrl = formData.imageUrl;
+      let finalBannerUrl = formData.bannerUrl;
+
+      if (imageFile) {
+        finalImageUrl = await storageService.uploadImage(imageFile, "categories");
+      }
+      if (bannerFile) {
+        finalBannerUrl = await storageService.uploadImage(bannerFile, "categories_banners");
+      }
+
+      const categoryData = {
+        ...formData,
+        imageUrl: finalImageUrl,
+        bannerUrl: finalBannerUrl
+      };
+
       if (editingId) {
-        await updateCategory(editingId, formData);
+        await updateCategory(editingId, categoryData);
         showToast("Categoria atualizada com sucesso", "success");
       } else {
-        await createCategory(formData);
+        await createCategory(categoryData);
         showToast("Categoria criada com sucesso", "success");
       }
       
@@ -310,8 +367,64 @@ export const Categories = () => {
                   value={formData.name}
                   onChange={e => setFormData({ ...formData, name: e.target.value })}
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-600 outline-none"
-                  placeholder="Ex: Camisetas"
+                  placeholder="Ex: Seleções Mundiais"
                 />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Logo/Ícone</label>
+                  <div 
+                    onClick={() => fileInputRef.current?.click()}
+                    className={`border-2 border-dashed rounded-2xl overflow-hidden cursor-pointer transition-all ${
+                      imagePreview ? 'border-gray-200' : 'border-gray-300 hover:border-blue-500 bg-gray-50 hover:bg-blue-50/50'
+                    }`}
+                  >
+                    {imagePreview ? (
+                      <div className="relative aspect-square">
+                        <img src={imagePreview} alt="Logo Preview" className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                          <span className="text-white text-xs font-medium flex items-center gap-1 bg-black/50 px-2 py-1 rounded backdrop-blur-sm">
+                            <ImageIcon className="w-3 h-3" /> Trocar
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="aspect-square flex flex-col items-center justify-center text-gray-500 p-2 text-center">
+                        <ImageIcon className="w-5 h-5 text-gray-400 mb-1" />
+                        <span className="text-xs font-medium">Logo</span>
+                      </div>
+                    )}
+                  </div>
+                  <input type="file" ref={fileInputRef} onChange={handleImageChange} accept="image/*" className="hidden" />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Banner de Fundo</label>
+                  <div 
+                    onClick={() => bannerInputRef.current?.click()}
+                    className={`border-2 border-dashed rounded-2xl overflow-hidden cursor-pointer transition-all h-full ${
+                      bannerPreview ? 'border-gray-200' : 'border-gray-300 hover:border-blue-500 bg-gray-50 hover:bg-blue-50/50'
+                    }`}
+                  >
+                    {bannerPreview ? (
+                      <div className="relative h-full min-h-[100px]">
+                        <img src={bannerPreview} alt="Banner Preview" className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                          <span className="text-white text-xs font-medium flex items-center gap-1 bg-black/50 px-2 py-1 rounded backdrop-blur-sm">
+                            <ImageIcon className="w-3 h-3" /> Trocar
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="h-full min-h-[100px] flex flex-col items-center justify-center text-gray-500 p-2 text-center">
+                        <ImageIcon className="w-5 h-5 text-gray-400 mb-1" />
+                        <span className="text-xs font-medium">Banner (Opcional)</span>
+                      </div>
+                    )}
+                  </div>
+                  <input type="file" ref={bannerInputRef} onChange={handleBannerChange} accept="image/*" className="hidden" />
+                </div>
               </div>
 
               <div className="flex gap-4">
