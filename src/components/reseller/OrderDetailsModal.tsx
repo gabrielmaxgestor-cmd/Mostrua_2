@@ -75,13 +75,14 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <motion.div 
-        initial={{ scale: 0.95, opacity: 0 }} 
-        animate={{ scale: 1, opacity: 1 }} 
-        exit={{ scale: 0.95, opacity: 0 }}
-        className="bg-white rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]"
-      >
+    <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 overflow-y-auto">
+      <div className="min-h-full flex items-center justify-center p-4 sm:p-6">
+        <motion.div 
+          initial={{ scale: 0.95, opacity: 0 }} 
+          animate={{ scale: 1, opacity: 1 }} 
+          exit={{ scale: 0.95, opacity: 0 }}
+          className="bg-white rounded-3xl w-full max-w-2xl shadow-2xl flex flex-col max-h-full"
+        >
         <div className="p-6 border-b border-gray-100 flex justify-between items-center shrink-0 bg-gray-50/50">
           <div>
             <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
@@ -224,7 +225,8 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
           )}
 
         </div>
-      </motion.div>
+        </motion.div>
+      </div>
     </div>
   );
 };

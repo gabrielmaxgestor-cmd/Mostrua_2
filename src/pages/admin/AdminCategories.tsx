@@ -177,18 +177,19 @@ export const AdminCategories = () => {
 
       <AnimatePresence>
         {isModalOpen && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl"
-            >
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                {editingCategory ? "Editar Categoria" : "Nova Categoria"}
-              </h2>
-              
-              <div className="space-y-4">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 overflow-y-auto">
+            <div className="min-h-full flex items-center justify-center p-4 sm:p-6">
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl flex flex-col max-h-full"
+              >
+                <h2 className="text-2xl font-bold text-gray-900 mb-6 shrink-0">
+                  {editingCategory ? "Editar Categoria" : "Nova Categoria"}
+                </h2>
+                
+                <div className="space-y-4 overflow-y-auto flex-1">
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-1">Nome da Categoria</label>
                   <input 
@@ -222,7 +223,7 @@ export const AdminCategories = () => {
                 </div>
               </div>
 
-              <div className="flex gap-3 mt-8">
+              <div className="flex gap-3 mt-8 shrink-0 pb-2 border-t pt-4 border-gray-100">
                 <button 
                   onClick={() => setIsModalOpen(false)}
                   className="flex-1 px-4 py-3 rounded-xl font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
@@ -237,6 +238,7 @@ export const AdminCategories = () => {
                 </button>
               </div>
             </motion.div>
+            </div>
           </div>
         )}
       </AnimatePresence>

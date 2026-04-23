@@ -458,17 +458,18 @@ export default function ProductPage() {
 
       {/* WhatsApp Modal */}
       {showWaModal && (
-        <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
-            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-[#25D366]/10">
-              <h3 className="font-bold text-lg text-[#25D366] flex items-center gap-2">
-                <MessageCircle className="w-5 h-5" /> Finalizar pelo WhatsApp
-              </h3>
-              <button onClick={() => setShowWaModal(false)} className="text-gray-400 hover:text-gray-600">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <form onSubmit={submitWhatsAppBuy} className="p-6 space-y-4">
+        <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 overflow-y-auto">
+          <div className="min-h-full flex items-center justify-center p-4 sm:p-6">
+            <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col max-h-full">
+              <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-[#25D366]/10 shrink-0">
+                <h3 className="font-bold text-lg text-[#25D366] flex items-center gap-2">
+                  <MessageCircle className="w-5 h-5" /> Finalizar pelo WhatsApp
+                </h3>
+                <button onClick={() => setShowWaModal(false)} className="text-gray-400 hover:text-gray-600">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <form onSubmit={submitWhatsAppBuy} className="p-6 space-y-4 overflow-y-auto flex-1">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Seu Nome</label>
                 <input 
@@ -491,13 +492,16 @@ export default function ProductPage() {
                   placeholder="(11) 99999-9999"
                 />
               </div>
-              <button 
-                type="submit"
-                className="w-full py-4 mt-2 rounded-xl font-bold text-white bg-[#25D366] hover:bg-[#20bd5a] transition-colors flex items-center justify-center gap-2"
-              >
-                Enviar Mensagem
-              </button>
+              <div className="mt-2 shrink-0 border-t border-gray-100 pt-4">
+                <button 
+                  type="submit"
+                  className="w-full py-4 rounded-xl font-bold text-white bg-[#25D366] hover:bg-[#20bd5a] transition-colors flex items-center justify-center gap-2"
+                >
+                  Enviar Mensagem
+                </button>
+              </div>
             </form>
+            </div>
           </div>
         </div>
       )}

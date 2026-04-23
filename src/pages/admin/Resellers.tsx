@@ -198,34 +198,36 @@ export const Resellers = () => {
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-6 z-50">
-          <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white p-8 rounded-3xl w-full max-w-lg max-h-[90vh] overflow-auto">
-            <h2 className="text-2xl font-bold mb-6">Cadastrar Revendedor</h2>
-            <div className="space-y-4">
-              <input placeholder="Nome Completo" value={newReseller.name} onChange={e => setNewReseller({...newReseller, name: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none" />
-              <div className="grid grid-cols-2 gap-4">
-                <input placeholder="Email" value={newReseller.email} onChange={e => setNewReseller({...newReseller, email: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none" />
-                <input type="password" placeholder="Senha" value={newReseller.password} onChange={e => setNewReseller({...newReseller, password: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none" />
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 overflow-y-auto">
+          <div className="min-h-full flex items-center justify-center p-4 sm:p-6">
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white p-8 rounded-3xl w-full max-w-lg shadow-2xl flex flex-col max-h-full">
+              <h2 className="text-2xl font-bold mb-6 shrink-0">Cadastrar Revendedor</h2>
+              <div className="space-y-4 overflow-y-auto flex-1">
+                <input placeholder="Nome Completo" value={newReseller.name} onChange={e => setNewReseller({...newReseller, name: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none" />
+                <div className="grid grid-cols-2 gap-4">
+                  <input placeholder="Email" value={newReseller.email} onChange={e => setNewReseller({...newReseller, email: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none" />
+                  <input type="password" placeholder="Senha" value={newReseller.password} onChange={e => setNewReseller({...newReseller, password: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <input placeholder="Telefone" value={newReseller.phone} onChange={e => setNewReseller({...newReseller, phone: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none" />
+                  <select value={newReseller.nicheId} onChange={e => setNewReseller({...newReseller, nicheId: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none bg-white">
+                    <option value="">Nicho</option>
+                    {niches.map(n => <option key={n.id} value={n.id}>{n.name}</option>)}
+                  </select>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <input placeholder="Nome da Loja" value={newReseller.storeName} onChange={e => setNewReseller({...newReseller, storeName: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none" />
+                  <input placeholder="Slug (ex: joao-store)" value={newReseller.slug} onChange={e => setNewReseller({...newReseller, slug: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none" />
+                </div>
+                <div className="flex gap-3 pt-4 shrink-0">
+                  <button onClick={() => setIsModalOpen(false)} className="flex-1 py-3 rounded-xl font-bold bg-gray-100 text-gray-600">Cancelar</button>
+                  <button onClick={handleCreate} disabled={loading} className="flex-1 py-3 rounded-xl font-bold bg-blue-600 text-white disabled:opacity-50">
+                    {loading ? "Criando..." : "Criar"}
+                  </button>
+                </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <input placeholder="Telefone" value={newReseller.phone} onChange={e => setNewReseller({...newReseller, phone: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none" />
-                <select value={newReseller.nicheId} onChange={e => setNewReseller({...newReseller, nicheId: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none bg-white">
-                  <option value="">Nicho</option>
-                  {niches.map(n => <option key={n.id} value={n.id}>{n.name}</option>)}
-                </select>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <input placeholder="Nome da Loja" value={newReseller.storeName} onChange={e => setNewReseller({...newReseller, storeName: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none" />
-                <input placeholder="Slug (ex: joao-store)" value={newReseller.slug} onChange={e => setNewReseller({...newReseller, slug: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none" />
-              </div>
-              <div className="flex gap-3 pt-4">
-                <button onClick={() => setIsModalOpen(false)} className="flex-1 py-3 rounded-xl font-bold bg-gray-100 text-gray-600">Cancelar</button>
-                <button onClick={handleCreate} disabled={loading} className="flex-1 py-3 rounded-xl font-bold bg-blue-600 text-white disabled:opacity-50">
-                  {loading ? "Criando..." : "Criar"}
-                </button>
-              </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          </div>
         </div>
       )}
     </>

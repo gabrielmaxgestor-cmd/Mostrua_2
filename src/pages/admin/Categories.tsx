@@ -314,17 +314,18 @@ export const Categories = () => {
 
       {/* Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl">
-            <div className="p-6 border-b border-gray-100 flex justify-between items-center">
-              <h3 className="font-bold text-lg text-gray-900">
-                {editingId ? "Editar Categoria" : "Nova Categoria"}
-              </h3>
-              <button onClick={closeModal} className="text-gray-400 hover:text-gray-600">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 overflow-y-auto">
+          <div className="min-h-full flex items-center justify-center p-4 sm:p-6">
+            <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl flex flex-col max-h-full">
+              <div className="p-6 border-b border-gray-100 flex justify-between items-center shrink-0">
+                <h3 className="font-bold text-lg text-gray-900">
+                  {editingId ? "Editar Categoria" : "Nova Categoria"}
+                </h3>
+                <button onClick={closeModal} className="text-gray-400 hover:text-gray-600">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto flex-1">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Nicho</label>
                 <select 
@@ -451,14 +452,17 @@ export const Categories = () => {
                 </div>
               </div>
 
-              <button 
-                type="submit"
-                disabled={saving}
-                className="w-full py-4 mt-4 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : "Salvar Categoria"}
-              </button>
+              <div className="pt-4 border-t border-gray-100 shrink-0 mt-2">
+                <button 
+                  type="submit"
+                  disabled={saving}
+                  className="w-full py-4 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : "Salvar Categoria"}
+                </button>
+              </div>
             </form>
+            </div>
           </div>
         </div>
       )}
