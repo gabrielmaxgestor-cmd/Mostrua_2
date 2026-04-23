@@ -2,57 +2,96 @@ import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage
 import { storage } from "../firebase";
 
 export const storageService = {
-  async compressImage(file: File, maxWidth = 800, maxKB = 200): Promise<File> {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      const objectUrl = URL.createObjectURL(file);
-      
-      img.onload = () => {
-        try {
+  async compressImage(file: File, maxWidth = 800, maxKB = 200, timeoutMs = 8000): Promise<File> {
+    // Skip compression if the file is already small enough
+    if (file.size / 1024 <= maxKB) {
+      return file;
+    }
+
+    return new Promise((resolve) => {
+      let isDone = false;
+
+      // Fallback timeout to ensure we NEVER hang infinitely
+      const timeout = setTimeout(() => {
+        if (isDone) return;
+        isDone = true;
+        console.warn("Image compression timed out. Using original file.");
+        resolve(file); // Fallback to original
+      }, timeoutMs);
+
+      try {
+        const img = new Image();
+        const objectUrl = URL.createObjectURL(file);
+        
+        img.onload = () => {
+          if (isDone) return;
+          try {
+            const canvas = document.createElement('canvas');
+            let width = img.width;
+            let height = img.height;
+
+            if (width > maxWidth) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+              throw new Error('Canvas context not available');
+            }
+            
+            ctx.drawImage(img, 0, 0, width, height);
+
+            // Revoke after drawing!
+            URL.revokeObjectURL(objectUrl);
+
+            // One-pass compression for maximum speed
+            const quality = 0.8;
+                    
+            canvas.toBlob(
+              (blob) => {
+                if (isDone) return;
+                isDone = true;
+                clearTimeout(timeout);
+
+                if (!blob) {
+                  console.warn('Blob creation failed, returning original file');
+                  resolve(file);
+                  return;
+                }
+                resolve(new File([blob], file.name || 'image.jpg', { type: file.type || 'image/jpeg', lastModified: Date.now() }));
+              },
+              file.type || 'image/jpeg',
+              quality
+            );
+          } catch (error) {
+            if (isDone) return;
+            isDone = true;
+            clearTimeout(timeout);
+            console.error("Compression error:", error);
+            resolve(file);
+          }
+        };
+        
+        img.onerror = (err) => {
+          if (isDone) return;
+          isDone = true;
+          clearTimeout(timeout);
           URL.revokeObjectURL(objectUrl);
-          const canvas = document.createElement('canvas');
-          let width = img.width;
-          let height = img.height;
-
-          if (width > maxWidth) {
-            height = Math.round((height * maxWidth) / width);
-            width = maxWidth;
-          }
-
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          if (!ctx) {
-            throw new Error('Canvas context not available');
-          }
-          
-          ctx.drawImage(img, 0, 0, width, height);
-
-          // One-pass compression for maximum speed
-          const quality = 0.8;
-                  
-          canvas.toBlob(
-            (blob) => {
-              if (!blob) {
-                reject(new Error('Blob creation failed'));
-                return;
-              }
-              resolve(new File([blob], file.name || 'image.jpg', { type: 'image/jpeg', lastModified: Date.now() }));
-            },
-            'image/jpeg',
-            quality
-          );
-        } catch (error) {
-          reject(error);
-        }
-      };
-      
-      img.onerror = (err) => {
-        URL.revokeObjectURL(objectUrl);
-        reject(err);
-      };
-      
-      img.src = objectUrl;
+          console.error("Image loading error:", err);
+          resolve(file);
+        };
+        
+        img.src = objectUrl;
+      } catch (err) {
+        if (isDone) return;
+        isDone = true;
+        clearTimeout(timeout);
+        console.error("Fatal compression error:", err);
+        resolve(file);
+      }
     });
   },
 
