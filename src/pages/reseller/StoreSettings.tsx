@@ -96,11 +96,20 @@ export const StoreSettings = () => {
       let logoUrl = logoPreview;
       let bannerUrl = bannerPreview;
 
+      const uploadPromises = [];
       if (logoFile) {
-        logoUrl = await storageService.uploadImage(logoFile, `resellers/${user.uid}/logo`);
+        uploadPromises.push(
+          storageService.uploadImage(logoFile, `resellers/${user.uid}/logo`).then(url => { logoUrl = url; })
+        );
       }
       if (bannerFile) {
-        bannerUrl = await storageService.uploadImage(bannerFile, `resellers/${user.uid}/banner`);
+        uploadPromises.push(
+          storageService.uploadImage(bannerFile, `resellers/${user.uid}/banner`).then(url => { bannerUrl = url; })
+        );
+      }
+
+      if (uploadPromises.length > 0) {
+        await Promise.all(uploadPromises);
       }
 
       await updateDoc(doc(db, "resellers", user.uid), {

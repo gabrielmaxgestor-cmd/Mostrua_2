@@ -126,11 +126,20 @@ export const Catalogs = () => {
       let finalImageUrl = formData.imageUrl;
       let finalBannerUrl = formData.bannerUrl;
 
+      const uploadPromises = [];
       if (imageFile) {
-        finalImageUrl = await storageService.uploadImage(imageFile, "catalogs");
+        uploadPromises.push(
+          storageService.uploadImage(imageFile, "catalogs").then(url => { finalImageUrl = url; })
+        );
       }
       if (bannerFile) {
-        finalBannerUrl = await storageService.uploadImage(bannerFile, "catalogs_banners");
+        uploadPromises.push(
+          storageService.uploadImage(bannerFile, "catalogs_banners").then(url => { finalBannerUrl = url; })
+        );
+      }
+      
+      if (uploadPromises.length > 0) {
+        await Promise.all(uploadPromises);
       }
 
       const selectedNiche = niches.find(n => n.id === formData.nicheId);

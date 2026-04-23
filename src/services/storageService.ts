@@ -23,23 +23,17 @@ export const storageService = {
         
         ctx.drawImage(img, 0, 0, width, height);
 
-        let quality = 0.9;
-        const compress = () => {
-          canvas.toBlob(
-            (blob) => {
-              if (!blob) return reject(new Error('Blob creation failed'));
-              if (blob.size / 1024 > maxKB && quality > 0.1) {
-                quality -= 0.1;
-                compress();
-              } else {
-                resolve(new File([blob], file.name, { type: 'image/jpeg', lastModified: Date.now() }));
-              }
-            },
-            'image/jpeg',
-            quality
-          );
-        };
-        compress();
+        // One-pass compression for maximum speed
+        const quality = 0.8;
+                
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) return reject(new Error('Blob creation failed'));
+            resolve(new File([blob], file.name, { type: 'image/jpeg', lastModified: Date.now() }));
+          },
+          'image/jpeg',
+          quality
+        );
       };
       img.onerror = (err) => reject(err);
     });

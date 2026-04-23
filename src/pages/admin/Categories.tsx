@@ -169,11 +169,20 @@ export const Categories = () => {
       let finalImageUrl = formData.imageUrl;
       let finalBannerUrl = formData.bannerUrl;
 
+      const uploadPromises = [];
       if (imageFile) {
-        finalImageUrl = await storageService.uploadImage(imageFile, "categories");
+        uploadPromises.push(
+          storageService.uploadImage(imageFile, "categories").then(url => { finalImageUrl = url; })
+        );
       }
       if (bannerFile) {
-        finalBannerUrl = await storageService.uploadImage(bannerFile, "categories_banners");
+        uploadPromises.push(
+          storageService.uploadImage(bannerFile, "categories_banners").then(url => { finalBannerUrl = url; })
+        );
+      }
+
+      if (uploadPromises.length > 0) {
+        await Promise.all(uploadPromises);
       }
 
       const categoryData = {
