@@ -301,10 +301,10 @@ export default function RegisterPage() {
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-xl">
         <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4 mb-6">
           <p className="text-orange-800 font-bold text-center">
-            Oferta de lançamento — 14 dias grátis
+            Comece grátis por 7 dias
           </p>
           <p className="text-orange-600 text-sm text-center mt-1">
-            Válido para cadastros realizados esta semana.<br className="sm:hidden" />
+            Teste todas as funcionalidades sem compromisso.<br className="sm:hidden" />
             Sem cartão de crédito.
           </p>
         </div>

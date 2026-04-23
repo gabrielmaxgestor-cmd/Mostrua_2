@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useWhatsAppOrder } from '../../hooks/useWhatsAppOrder';
-import { MessageCircle, Minus, Plus, Loader2 } from 'lucide-react';
+import { MessageCircle, Minus, Plus, Loader2, Sparkles } from 'lucide-react';
 import { OrderProduct } from '../../utils/whatsappUtils';
 
 interface SizeStock {
@@ -27,6 +27,9 @@ export const OrderButton: React.FC<OrderButtonProps> = ({
   
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [quantity, setQuantity] = useState<number>(1);
+  const [customizationEnabled, setCustomizationEnabled] = useState<boolean>(false);
+  const [customName, setCustomName] = useState<string>('');
+  const [customNumber, setCustomNumber] = useState<string>('');
 
   const handleMinus = () => setQuantity(prev => Math.max(1, prev - 1));
   const handlePlus = () => setQuantity(prev => Math.min(10, prev + 1)); // Limita a 10 peças no pedido
@@ -41,7 +44,10 @@ export const OrderButton: React.FC<OrderButtonProps> = ({
       product: product,
       selectedSize,
       quantity,
-      catalogId
+      catalogId,
+      customizationEnabled,
+      customName: customName.trim(),
+      customNumber: customNumber.trim()
     });
   };
 
@@ -82,6 +88,56 @@ export const OrderButton: React.FC<OrderButtonProps> = ({
             </button>
           ))}
         </div>
+      </div>
+
+      {/* Opção de Personalização */}
+      <div className="mb-6 bg-gray-50 p-4 rounded-2xl border border-gray-100 transition-all">
+        <label className="flex items-center gap-3 cursor-pointer select-none">
+          <div className="relative flex items-center justify-center w-6 h-6">
+            <input 
+              type="checkbox" 
+              className="peer sr-only"
+              checked={customizationEnabled}
+              onChange={(e) => setCustomizationEnabled(e.target.checked)}
+            />
+            <div className="w-5 h-5 bg-white border-2 border-gray-300 rounded shadow-sm peer-checked:bg-blue-600 peer-checked:border-blue-600 transition-colors flex items-center justify-center">
+              {customizationEnabled && <Sparkles className="w-3 h-3 text-white" />}
+            </div>
+          </div>
+          <p className="text-sm font-bold text-gray-800">
+            Deseja personalizar a camisa? <span className="text-blue-600 font-medium">(Nome e Número)</span>
+          </p>
+        </label>
+
+        {customizationEnabled && (
+          <div className="mt-4 grid grid-cols-2 gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+            <div>
+              <label className="block text-xs font-bold text-gray-500 mb-1">Nome na Camisa</label>
+              <input 
+                type="text" 
+                placeholder="Ex: GABRIEL"
+                maxLength={12}
+                value={customName}
+                onChange={(e) => setCustomName(e.target.value.toUpperCase())}
+                className="w-full h-11 bg-white border border-gray-200 rounded-xl px-3 outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium text-sm placeholder:text-gray-300 placeholder:font-normal"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-gray-500 mb-1">Número</label>
+              <input 
+                type="text" 
+                placeholder="Ex: 10"
+                maxLength={2}
+                value={customNumber}
+                onChange={(e) => {
+                   const val = e.target.value.replace(/\D/g, ''); // só números
+                   setCustomNumber(val);
+                }}
+                className="w-full h-11 bg-white border border-gray-200 rounded-xl px-3 outline-none focus:ring-2 focus:ring-blue-500 transition-all font-bold text-sm placeholder:text-gray-300 placeholder:font-normal"
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Quantidade e Checkout */}

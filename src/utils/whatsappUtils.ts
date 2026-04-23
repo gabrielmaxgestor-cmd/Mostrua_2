@@ -15,13 +15,16 @@ export interface WhatsAppOrderParams {
   selectedSize: string;
   quantity: number;
   catalogId: string; // Útil para analytics posterior no hook
+  customizationEnabled?: boolean;
+  customName?: string;
+  customNumber?: string;
 }
 
 /**
  * Gera a URL completa para redirecionamento do WhatsApp com a mensagem formatada.
  */
 export function generateWhatsAppOrder(params: WhatsAppOrderParams): string {
-  const { phone, resellerName, catalogUrl, product, selectedSize, quantity } = params;
+  const { phone, resellerName, catalogUrl, product, selectedSize, quantity, customizationEnabled, customName, customNumber } = params;
   
   // Formatando o preço: Ex: R$ 249,90
   const totalPrice = (product.price * quantity);
@@ -29,6 +32,11 @@ export function generateWhatsAppOrder(params: WhatsAppOrderParams): string {
     minimumFractionDigits: 2, 
     maximumFractionDigits: 2 
   }).format(totalPrice);
+
+  let customText = "";
+  if (customizationEnabled && (customName || customNumber)) {
+    customText = `\n✨ *Personalização:*\n- Nome: ${customName || "Sem nome"}\n- Número: ${customNumber || "Sem número"}\n`;
+  }
 
   const text = `Olá, ${resellerName}! 👋
 
@@ -39,7 +47,7 @@ Quero fazer um pedido pelo catálogo:
 📐 Tamanho: ${selectedSize}
 🔢 Quantidade: ${quantity}
 💰 Valor: R$ ${formattedPrice}
-
+${customText}
 🔗 Vi em: ${catalogUrl}
 
 Aguardo confirmação! 😊`;

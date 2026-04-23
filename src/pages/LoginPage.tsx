@@ -91,7 +91,7 @@ export default function LoginPage() {
           <img src="/logo.svg" alt="Mostrua Logo" className="h-10" />
         </div>
         <h1 className="text-2xl font-bold text-center text-gray-900 mb-2">Entrar na plataforma</h1>
-        <p className="text-center text-gray-500 mb-8 text-sm">Acesse seu painel de revendedor ou administrador</p>
+        <p className="text-center text-gray-500 mb-8 text-sm">Acesse o seu painel de controle</p>
 
         {error && (
           <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6 text-sm">

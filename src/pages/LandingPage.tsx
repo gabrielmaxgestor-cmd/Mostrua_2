@@ -30,9 +30,7 @@ export default function LandingPage() {
       {/* Top Banner */}
       <div className="bg-orange-500 text-white text-center py-2.5 px-4">
         <p className="text-sm font-medium">
-          Lançamento — teste grátis por{' '}
-          <strong>14 dias</strong> nas primeiras 2 semanas
-          (normalmente 7 dias)
+          Lançamento — comece <strong>grátis por 7 dias</strong>
           <Link to="/register" className="ml-3 underline font-bold">
             Criar conta agora →
           </Link>

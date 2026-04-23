@@ -173,17 +173,6 @@ export default function OrderConfirmedPage() {
           >
             Acompanhar no WhatsApp
           </button>
-          
-          <button
-            onClick={() => {
-              const resellerPhone = reseller?.settings?.whatsapp?.replace(/\D/g, '');
-              const msg = `Pedido #${order.id.slice(-6).toUpperCase()} finalizado. Por favor, confirme o recebimento.`;
-              window.open(`https://wa.me/55${resellerPhone}?text=${encodeURIComponent(msg)}`, '_blank');
-            }}
-            className="w-full py-4 bg-green-500 text-white rounded-xl font-bold flex justify-center items-center gap-2 hover:bg-green-600 transition-colors"
-          >
-            Reenviar para WhatsApp
-          </button>
 
           <Link
             to={storeUrl}
@@ -193,6 +182,7 @@ export default function OrderConfirmedPage() {
           </Link>
         </div>
 
+        {/* 1. Compartilhamento da loja */}
         <div className="mt-8 p-5 bg-gray-50 rounded-2xl border border-gray-100">
           <p className="text-sm font-bold text-gray-700 mb-3 text-center">
             Gostou? Indique para um amigo
@@ -215,6 +205,7 @@ export default function OrderConfirmedPage() {
           </div>
         </div>
 
+        {/* 2. Instalar como app (PWA) */}
         <div className="mt-4 text-center">
           <p className="text-xs text-gray-400 mb-3">
             Adicione esta loja à tela inicial para acessar mais rápido na próxima vez.

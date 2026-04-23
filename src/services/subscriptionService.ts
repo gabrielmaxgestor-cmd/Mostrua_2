@@ -135,7 +135,7 @@ export const subscriptionService = {
           'Link da loja',
           'Botao WhatsApp',
           'Receber pedidos',
-          'Painel do revendedor',
+          'Meu Painel administrativo',
           'Teste gratis de 7 dias'
         ],
         active: true,

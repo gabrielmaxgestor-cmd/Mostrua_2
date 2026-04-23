@@ -238,7 +238,7 @@ export default function CategoryPage() {
            <div className="bg-white rounded-3xl p-8 text-center border border-gray-100 shadow-sm">
              <Store className="w-16 h-16 text-gray-200 mx-auto mb-4" />
              <h2 className="text-xl font-bold text-gray-900 mb-2">Nenhum produto encontrado nesta categoria</h2>
-             <p className="text-gray-500 mb-6">Em breve o revendedor adicionará mais itens.</p>
+             <p className="text-gray-500 mb-6">Em breve teremos mais novidades nesta seção.</p>
              <Link 
                to={storeUrl}
                className="inline-flex px-8 py-3 rounded-xl text-white font-bold transition-all shadow-sm"
