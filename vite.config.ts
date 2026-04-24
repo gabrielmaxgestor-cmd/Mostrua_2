@@ -56,5 +56,17 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Vendor chunks
+          'firebase': ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/storage'],
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'ui-vendor': ['lucide-react', 'motion', 'recharts', 'canvas-confetti'],
+          // Large libraries
+          'pdf': ['jspdf', 'html2canvas'],
+        }
+      }
+    }
   },
 });
