@@ -3,7 +3,7 @@ import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { db } from "../../firebase";
 import { BaseProduct, Catalog, Niche, Category } from "../../types";
 import { productService } from "../../services/productService";
-import { storageService } from "../../services/storageService";
+import { cloudinaryService } from "../../services/cloudinaryService";
 import { getCategoriesByCatalog } from "../../services/categoryService";
 import { notificationService } from "../../services/notificationService";
 import { Plus, Settings, Edit, Trash2, Image as ImageIcon, Loader2, Search, AlertCircle, Filter, Package, X } from "lucide-react";
@@ -198,7 +198,7 @@ export const Products = () => {
     try {
       // Upload new images
       const uploadedUrls = await Promise.all(
-        imageFiles.map(file => storageService.uploadImage(file, "products"))
+        imageFiles.map(file => cloudinaryService.uploadImage(file))
       );
       
       const finalImages = [...imageUrls, ...uploadedUrls];

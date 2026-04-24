@@ -4,7 +4,7 @@ import { db } from "../../firebase";
 import { useAuth } from "../../context/AuthContext";
 import { useReseller } from "../../hooks/useReseller";
 import { useResellerProducts } from "../../hooks/useResellerProducts";
-import { storageService } from "../../services/storageService";
+import { cloudinaryService } from "../../services/cloudinaryService";
 import { Catalog, BaseProduct } from "../../types";
 import { Layers, Loader2, Check, Image as ImageIcon } from "lucide-react";
 
@@ -165,7 +165,7 @@ export const Catalogs = () => {
     setProcessingId(catalogId);
     
     try {
-      const bannerUrl = await storageService.uploadImage(file, `resellers/${user.uid}/customBanners/${catalogId}`);
+      const bannerUrl = await cloudinaryService.uploadImage(file);
       
       const customBanners = reseller?.settings?.customBanners || {};
       customBanners[catalogId] = bannerUrl;

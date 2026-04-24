@@ -4,7 +4,7 @@ import { Category, Niche, Catalog } from "../../types";
 import { getCategoriesByCatalog, createCategory, updateCategory } from "../../services/categoryService";
 import { nicheService } from "../../services/nicheService";
 import { catalogService } from "../../services/catalogService";
-import { storageService } from "../../services/storageService";
+import { cloudinaryService } from "../../services/cloudinaryService";
 
 export const Categories = () => {
   const [niches, setNiches] = useState<Niche[]>([]);
@@ -172,12 +172,12 @@ export const Categories = () => {
       const uploadPromises = [];
       if (imageFile) {
         uploadPromises.push(
-          storageService.uploadImage(imageFile, "categories").then(url => { finalImageUrl = url; })
+          cloudinaryService.uploadImage(imageFile).then(url => { finalImageUrl = url; })
         );
       }
       if (bannerFile) {
         uploadPromises.push(
-          storageService.uploadImage(bannerFile, "categories_banners").then(url => { finalBannerUrl = url; })
+          cloudinaryService.uploadImage(bannerFile).then(url => { finalBannerUrl = url; })
         );
       }
 

@@ -3,7 +3,7 @@ import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "../../firebase";
 import { Niche } from "../../types";
 import { nicheService } from "../../services/nicheService";
-import { storageService } from "../../services/storageService";
+import { cloudinaryService } from "../../services/cloudinaryService";
 import { Plus, Settings, Edit, Trash2, Image as ImageIcon, Loader2, Search, AlertCircle, Layers } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -81,7 +81,7 @@ export const Niches = () => {
       let finalImageUrl = formData.imageUrl;
 
       if (imageFile) {
-        finalImageUrl = await storageService.uploadImage(imageFile, "niches");
+        finalImageUrl = await cloudinaryService.uploadImage(imageFile);
       }
 
       if (editingNiche) {

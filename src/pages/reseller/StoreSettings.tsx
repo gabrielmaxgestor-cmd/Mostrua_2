@@ -3,7 +3,7 @@ import { doc, updateDoc } from "firebase/firestore";
 import { db } from "../../firebase";
 import { useAuth } from "../../context/AuthContext";
 import { useReseller } from "../../hooks/useReseller";
-import { storageService } from "../../services/storageService";
+import { cloudinaryService } from "../../services/cloudinaryService";
 import { Save, Image as ImageIcon, Loader2, Share2, Info, Check, AlertCircle, MessageCircle, AtSign, Copy } from "lucide-react";
 import { QRCodeGenerator } from "../../components/reseller/QRCodeGenerator";
 import { CatalogExporter } from "../../components/reseller/CatalogExporter";
@@ -93,6 +93,12 @@ export const StoreSettings = () => {
     e.preventDefault();
     if (!user?.uid) return;
 
+    if (!formData.storeName?.trim()) {
+      setToast({ type: "error", text: "Nome da loja é obrigatório." });
+      setTimeout(() => setToast(null), 5000);
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       let logoUrl = logoPreview;
@@ -101,12 +107,12 @@ export const StoreSettings = () => {
       const uploadPromises = [];
       if (logoFile) {
         uploadPromises.push(
-          storageService.uploadImage(logoFile, `resellers/${user.uid}/logo`).then(url => { logoUrl = url; })
+          cloudinaryService.uploadImage(logoFile).then(url => { logoUrl = url; })
         );
       }
       if (bannerFile) {
         uploadPromises.push(
-          storageService.uploadImage(bannerFile, `resellers/${user.uid}/banner`).then(url => { bannerUrl = url; })
+          cloudinaryService.uploadImage(bannerFile).then(url => { bannerUrl = url; })
         );
       }
 
@@ -114,19 +120,26 @@ export const StoreSettings = () => {
         await Promise.all(uploadPromises);
       }
 
-      const newSettings = {
+      const newSettings: any = {
         ...(reseller?.settings || {}),
-        primaryColor: formData.primaryColor,
-        secondaryColor: formData.secondaryColor,
-        description: formData.description,
-        whatsapp: formData.whatsapp.replace(/\D/g, ""),
-        instagram: formData.instagram,
-        pixKey: formData.pixKey,
-        pixName: formData.pixName,
-        pixCity: formData.pixCity,
+        primaryColor: formData.primaryColor || "#2563eb",
+        secondaryColor: formData.secondaryColor || "#1e40af",
+        description: formData.description || "",
+        whatsapp: (formData.whatsapp || "").replace(/\D/g, ""),
+        instagram: formData.instagram || "",
+        pixKey: formData.pixKey || "",
+        pixName: formData.pixName || "",
+        pixCity: formData.pixCity || "",
         logo: logoUrl || "",
         banner: bannerUrl || ""
       };
+
+      // Remove undefined fields just to be safe with Firestore
+      Object.keys(newSettings).forEach(key => {
+        if (newSettings[key] === undefined) {
+          delete newSettings[key];
+        }
+      });
 
       const updates: any = {
         settings: newSettings,
@@ -137,10 +150,27 @@ export const StoreSettings = () => {
         updates.storeName = formData.storeName;
       }
 
-      await updateDoc(doc(db, "resellers", user.uid), updates);
+      let hasStoreNameFallback = false;
+      try {
+        await updateDoc(doc(db, "resellers", user.uid), updates);
+      } catch (err: any) {
+        // Se a regra no servidor não permite atualizar o storeName
+        if (err.code === 'permission-denied' && updates.storeName) {
+          console.warn("Permissão negada ao atualizar storeName. Tentando sem o storeName...");
+          delete updates.storeName;
+          await updateDoc(doc(db, "resellers", user.uid), updates);
+          hasStoreNameFallback = true;
+        } else {
+          throw err;
+        }
+      }
 
-      setToast({ type: "success", text: "Configurações salvas com sucesso!" });
-      setTimeout(() => setToast(null), 3000);
+      if (hasStoreNameFallback) {
+        setToast({ type: "success", text: "Opções salvas, mas Nome da Loja bloqueado (regras desatualizadas)." });
+      } else {
+        setToast({ type: "success", text: "Configurações salvas com sucesso!" });
+      }
+      setTimeout(() => setToast(null), 5000);
     } catch (error: any) {
       console.error("[StoreSettings] Código:", error?.code);
       console.error("[StoreSettings] Mensagem:", error?.message);
@@ -195,7 +225,7 @@ export const StoreSettings = () => {
       </div>
 
       {toast && (
-        <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] flex items-center gap-3 px-5 py-3.5 rounded-full text-white text-sm font-medium shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-200 ${
+        <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] flex items-center gap-3 px-5 py-3.5 rounded-full text-white text-sm font-medium shadow-xl transition-all duration-300 transform translate-y-0 opacity-100 ${
           toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'
         }`}>
           {toast.type === 'success' ? <Check className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
@@ -353,7 +383,6 @@ export const StoreSettings = () => {
                   type="text"
                   value={formData.storeName}
                   onChange={e => setFormData({ ...formData, storeName: e.target.value })}
-                  required
                   maxLength={50}
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
                   placeholder="Ex: Moda da Ana, Loja do João..."
@@ -458,8 +487,8 @@ export const StoreSettings = () => {
               
               <div>
                 <div className="flex items-center">
-                  <span className="text-gray-500 bg-gray-50 border border-r-0 border-gray-200 rounded-l-xl px-3 py-3 text-sm">
-                    {window.location.host}/
+                  <span className="text-gray-500 bg-gray-50 border border-r-0 border-gray-200 rounded-l-xl px-3 py-3 text-sm truncate max-w-[200px] sm:max-w-none">
+                    {(import.meta.env.VITE_APP_URL || window.location.origin).replace(/^https?:\/\//, '')}/store/
                   </span>
                   <input 
                     type="text" 
@@ -467,6 +496,7 @@ export const StoreSettings = () => {
                     disabled
                     className="w-full pl-3 pr-4 py-3 rounded-r-xl border border-gray-200 bg-gray-50 focus:outline-none text-gray-500 cursor-not-allowed"
                     title="Para alterar seu link, entre em contato com o suporte."
+                    placeholder="seudominio"
                   />
                 </div>
                 <p className="text-xs text-orange-500 mt-2 font-medium">
@@ -503,10 +533,14 @@ export const StoreSettings = () => {
               <h3 className="font-bold text-gray-900 mb-1">Link da sua loja</h3>
               <p className="text-sm text-gray-500 mb-4">Compartilhe esse link para que seus clientes possam comprar.</p>
               <div className="flex gap-2">
-                <div className="flex-1 bg-white rounded-xl px-4 py-3 border border-blue-100 text-sm text-gray-700 font-medium truncate">
-                  {storeUrl}
+                <div className="flex-1 bg-white rounded-xl px-4 py-3 border border-blue-100 text-sm font-medium truncate flex items-center">
+                  {storeUrl ? (
+                    <span className="text-gray-700">{storeUrl}</span>
+                  ) : (
+                    <span className="text-gray-400 italic">Sua loja ainda não possui um link ativo (Verifique o slug)</span>
+                  )}
                 </div>
-                <button onClick={handleCopy} className="p-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors">
+                <button onClick={handleCopy} disabled={!storeUrl} className="p-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50">
                   <Copy className="w-4 h-4" />
                 </button>
               </div>

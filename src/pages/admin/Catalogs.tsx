@@ -3,7 +3,7 @@ import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { db } from "../../firebase";
 import { Catalog, Niche } from "../../types";
 import { catalogService } from "../../services/catalogService";
-import { storageService } from "../../services/storageService";
+import { cloudinaryService } from "../../services/cloudinaryService";
 import { Plus, Settings, Edit, Trash2, Image as ImageIcon, Loader2, Search, AlertCircle, Filter, Layers } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -129,12 +129,12 @@ export const Catalogs = () => {
       const uploadPromises = [];
       if (imageFile) {
         uploadPromises.push(
-          storageService.uploadImage(imageFile, "catalogs").then(url => { finalImageUrl = url; })
+          cloudinaryService.uploadImage(imageFile).then(url => { finalImageUrl = url; })
         );
       }
       if (bannerFile) {
         uploadPromises.push(
-          storageService.uploadImage(bannerFile, "catalogs_banners").then(url => { finalBannerUrl = url; })
+          cloudinaryService.uploadImage(bannerFile).then(url => { finalBannerUrl = url; })
         );
       }
       
