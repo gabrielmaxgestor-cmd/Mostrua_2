@@ -1,38 +1,37 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import React, { useEffect, useState, Suspense } from "react";
+import React, { useEffect, useState } from "react";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { auth, db } from "./firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { TenantProvider } from "./hooks/useTenant";
 
-// Lazy load all page components
-const LandingPage = React.lazy(() => import("./pages/LandingPage"));
-const LoginPage = React.lazy(() => import("./pages/LoginPage"));
-const RegisterPage = React.lazy(() => import("./pages/RegisterPage"));
-const ForgotPasswordPage = React.lazy(() => import("./pages/ForgotPasswordPage"));
-const PublicStore = React.lazy(() => import("./pages/PublicStore"));
-const ProductPage = React.lazy(() => import("./pages/store/ProductPage"));
+import LandingPage from "./pages/LandingPage";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import PublicStore from "./pages/PublicStore";
+import ProductPage from "./pages/store/ProductPage";
 
-const AdminLayout = React.lazy(() => import("./pages/admin/AdminLayout").then(module => ({ default: module.AdminLayout })));
-const AdminDashboard = React.lazy(() => import("./pages/admin/AdminDashboard").then(module => ({ default: module.AdminDashboard })));
-const Niches = React.lazy(() => import("./pages/admin/Niches").then(module => ({ default: module.Niches })));
-const AdminCatalogs = React.lazy(() => import("./pages/admin/Catalogs").then(module => ({ default: module.Catalogs })));
-const AdminCategories = React.lazy(() => import("./pages/admin/Categories").then(module => ({ default: module.Categories })));
-const AdminProducts = React.lazy(() => import("./pages/admin/Products").then(module => ({ default: module.Products })));
-const Resellers = React.lazy(() => import("./pages/admin/Resellers").then(module => ({ default: module.Resellers })));
+import { AdminLayout } from "./pages/admin/AdminLayout";
+import { AdminDashboard } from "./pages/admin/AdminDashboard";
+import { Niches } from "./pages/admin/Niches";
+import { Catalogs as AdminCatalogs } from "./pages/admin/Catalogs";
+import { Categories as AdminCategories } from "./pages/admin/Categories";
+import { Products as AdminProducts } from "./pages/admin/Products";
+import { Resellers } from "./pages/admin/Resellers";
 
-const ResellerLayout = React.lazy(() => import("./pages/reseller/ResellerLayout").then(module => ({ default: module.ResellerLayout })));
-const ResellerDashboard = React.lazy(() => import("./pages/reseller/Dashboard").then(module => ({ default: module.Dashboard })));
-const ResellerCatalogs = React.lazy(() => import("./pages/reseller/Catalogs").then(module => ({ default: module.Catalogs })));
-const ResellerProducts = React.lazy(() => import("./pages/reseller/Products").then(module => ({ default: module.Products })));
-const ResellerOrders = React.lazy(() => import("./pages/reseller/Orders").then(module => ({ default: module.Orders })));
-const ResellerSettings = React.lazy(() => import("./pages/reseller/StoreSettings").then(module => ({ default: module.StoreSettings })));
-const CustomDomain = React.lazy(() => import("./pages/reseller/CustomDomain").then(module => ({ default: module.CustomDomain })));
-const ResellerWelcome = React.lazy(() => import("./pages/reseller/ResellerWelcome"));
-const Analytics = React.lazy(() => import("./pages/reseller/Analytics"));
-const ResellerCustomers = React.lazy(() => import("./pages/ResellerCustomers"));
-const OrderConfirmedPage = React.lazy(() => import("./pages/store/OrderConfirmedPage"));
-const CategoryPage = React.lazy(() => import("./pages/store/CategoryPage"));
+import { ResellerLayout } from "./pages/reseller/ResellerLayout";
+import { Dashboard as ResellerDashboard } from "./pages/reseller/Dashboard";
+import { Catalogs as ResellerCatalogs } from "./pages/reseller/Catalogs";
+import { Products as ResellerProducts } from "./pages/reseller/Products";
+import { Orders as ResellerOrders } from "./pages/reseller/Orders";
+import { StoreSettings as ResellerSettings } from "./pages/reseller/StoreSettings";
+import { CustomDomain } from "./pages/reseller/CustomDomain";
+import ResellerWelcome from "./pages/reseller/ResellerWelcome";
+import Analytics from "./pages/reseller/Analytics";
+import { ResellerCustomers } from "./pages/ResellerCustomers";
+import OrderConfirmedPage from "./pages/store/OrderConfirmedPage";
+import CategoryPage from "./pages/store/CategoryPage";
 
 function ProtectedRoute({ children, requiredRole }: { children: React.ReactNode; requiredRole?: string }) {
   const [user, setUser] = useState<User | null>(null);
@@ -71,14 +70,12 @@ export default function App() {
     return (
       <TenantProvider>
         <Router>
-          <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" /></div>}>
-            <Routes>
-              <Route path="/product/:productId" element={<ProductPage />} />
-              <Route path="/categoria/:categoryId" element={<CategoryPage />} />
-              <Route path="/order-confirmed/:orderId" element={<OrderConfirmedPage />} />
-              <Route path="/*" element={<PublicStore />} />
-            </Routes>
-          </Suspense>
+          <Routes>
+            <Route path="/product/:productId" element={<ProductPage />} />
+            <Route path="/categoria/:categoryId" element={<CategoryPage />} />
+            <Route path="/order-confirmed/:orderId" element={<OrderConfirmedPage />} />
+            <Route path="/*" element={<PublicStore />} />
+          </Routes>
         </Router>
       </TenantProvider>
     );
@@ -86,8 +83,7 @@ export default function App() {
 
   return (
     <Router>
-      <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" /></div>}>
-        <Routes>
+      <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
@@ -121,7 +117,6 @@ export default function App() {
         <Route path="/store/:slug/*" element={<TenantProviderWrapper><PublicStore /></TenantProviderWrapper>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-      </Suspense>
     </Router>
   );
 }

@@ -77,6 +77,7 @@ export const resellerService = {
 
       batch.set(resellerRef, {
         ...resellerData,
+        id: data.uid,
         createdAt: Timestamp.now()
       });
 
@@ -168,6 +169,7 @@ export const resellerService = {
 
         batch.set(resellerRef, {
           ...resellerData,
+          id: user.uid,
           createdAt: Timestamp.now()
         });
 

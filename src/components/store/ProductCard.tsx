@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Tag, Shirt, Smartphone, Watch, Laptop, Headphones, Book, Coffee, Dumbbell, Gift, Home, Camera, Check } from 'lucide-react';
+import { Plus, Tag, Shirt, Smartphone, Watch, Laptop, Headphones, Book, Coffee, Dumbbell, Gift, Home, Camera, Check, ChevronRight, Bell } from 'lucide-react';
 import { ImageWithFallback } from '../ui/ImageWithFallback';
 
 export interface StoreProduct {
@@ -54,11 +54,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   resellerPrimaryColor = '#16a34a',
 }) => {
   const [isAdded, setIsAdded] = useState(false);
-  const [selectedVariation, setSelectedVariation] = useState<string>('');
+  const [hovered, setHovered] = useState(false);
 
   const hasVariations = product.variations && product.variations.length > 0;
   const isOutOfStock = product.stock === 0;
-  const canAddToCart = !isOutOfStock && (!hasVariations || !!selectedVariation);
+  const canAddToCart = !isOutOfStock && !hasVariations;
 
   const displayName = product.customName || product.name;
   const displayPrice = product.promotionalPrice ?? product.customPrice ?? product.basePrice ?? product.price ?? 0;
@@ -74,17 +74,28 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     currency: 'BRL',
   }).format(originalPrice) : null;
 
+  const displayImage = hovered && product.images?.[1] ? product.images[1] : product.images?.[0];
+
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (!canAddToCart) return;
-    onAddToCart({ ...product, variation: selectedVariation } as any);
+    onAddToCart({ ...product } as any);
     
     // Show visual confirmation
     setIsAdded(true);
     setTimeout(() => {
       setIsAdded(false);
     }, 1500);
+  };
+
+  const handleNotify = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const phone = window.prompt("Seu WhatsApp para aviso (com DDD):", "");
+    if (phone) {
+      alert("Aviso configurado! Você será notificado quando o produto chegar.");
+    }
   };
 
   const CategoryIcon = getCategoryIcon(product.category);
@@ -96,20 +107,41 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         e.preventDefault();
         onClick(product);
       }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       className="bg-white rounded-2xl border border-gray-100 overflow-hidden cursor-pointer group hover:shadow-md transition-all flex flex-col"
     >
       <div className="aspect-square bg-gray-50 relative overflow-hidden">
         <ImageWithFallback
-          src={product.images?.[0]}
+          src={displayImage}
           alt={displayName}
-          className="w-full h-full group-hover:scale-105 transition-transform duration-500"
+          className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ${isOutOfStock ? 'opacity-50' : ''}`}
         />
-        {product.stock === 0 && (
-          <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center">
-            <span className="bg-gray-900 text-white text-xs font-bold px-3 py-1 rounded-full">Esgotado</span>
+        
+        {isOutOfStock && (
+          <div className="absolute top-2 left-2 bg-gray-900 text-white text-[10px] font-bold px-2.5 py-1 rounded-full">
+            Esgotado
+          </div>
+        )}
+        
+        {product.promotionalPrice && originalPrice && !isOutOfStock && (
+          <div 
+            className="absolute top-2 right-2 text-white text-[10px] font-black px-2 py-1 rounded-full"
+            style={{ backgroundColor: resellerPrimaryColor }}
+          >
+            -{Math.round((1 - product.promotionalPrice / originalPrice) * 100)}%
+          </div>
+        )}
+
+        {product.images && product.images.length > 1 && (
+          <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1">
+            {product.images.slice(0, 4).map((_, i) => (
+              <div key={i} className={`rounded-full transition-all ${i === 0 ? 'w-3 h-1.5' : 'w-1.5 h-1.5'} bg-white/80 shadow-sm`} />
+            ))}
           </div>
         )}
       </div>
+
       <div className="p-3 sm:p-4 flex flex-col flex-1">
         {product.category && (
           <div className="flex items-center gap-1.5 text-gray-500 mb-1.5">
@@ -117,69 +149,67 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             <span className="text-xs font-medium uppercase tracking-wider">{product.category}</span>
           </div>
         )}
-        <h3 className="font-medium text-gray-900 text-sm mb-1 leading-tight line-clamp-2 flex-1">
+        
+        <h3 className="font-medium text-gray-900 text-sm mb-1 leading-tight line-clamp-2">
           {displayName}
         </h3>
-        <div className="mt-2 flex flex-col gap-2">
-          {hasVariations && (
-            <div className="mt-1">
-              <p className="text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">
-                Tamanho <span className="text-red-500">*</span>
-              </p>
-              <div className="flex overflow-x-auto gap-1.5 pb-1 hide-scrollbar">
-                {product.variations!.map((v: string) => {
-                  const isSelected = selectedVariation === v;
-                  return (
-                    <button key={v}
-                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (!isOutOfStock) setSelectedVariation(v); }}
-                      disabled={isOutOfStock}
-                      className={`min-h-[36px] min-w-[36px] px-3 py-2 rounded-lg border text-xs font-bold transition-all relative overflow-hidden flex items-center justify-center gap-1 ${
-                        isSelected
-                          ? 'text-white border-transparent shadow-sm'
-                          : 'border-gray-200 text-gray-600 hover:border-gray-300 bg-white'
-                      } ${isOutOfStock ? 'opacity-40 cursor-not-allowed' : ''}`}
-                      style={isSelected ? { backgroundColor: resellerPrimaryColor } : {}}
-                    >
-                      {v}
-                      {isSelected && <Check className="w-3.5 h-3.5 ml-1" />}
-                    </button>
-                  );
-                })}
-              </div>
-              {!selectedVariation && (
-                <p className="text-[10px] text-red-500 mt-1">Selecione um tamanho</p>
-              )}
-            </div>
-          )}
         
-          <div className="flex items-center justify-between mt-2">
-            <div className="flex flex-col">
-              {formattedOriginalPrice && (
-                <span className="text-[10px] sm:text-xs text-gray-400 line-through">
-                  {formattedOriginalPrice}
-                </span>
-              )}
-              <span className="font-bold text-base sm:text-lg" style={{ color: resellerPrimaryColor }}>
-                {formattedPrice}
+        {hasVariations && !isOutOfStock && (
+          <p className="text-[10px] text-gray-400 mt-0.5 mb-1.5 font-medium">
+            {product.variations!.length} {product.variations!.length === 1 ? 'opção disponível' : 'opções disponíveis'}
+          </p>
+        )}
+        
+        <div className="mt-auto pt-2 flex items-center justify-between">
+          <div className="flex flex-col">
+            {formattedOriginalPrice && (
+              <span className="text-[10px] sm:text-xs text-gray-400 line-through leading-tight mb-0.5">
+                {formattedOriginalPrice}
               </span>
-            </div>
-            <button
-              onClick={handleAddToCart}
-              disabled={isAdded || !canAddToCart}
-              className={`w-8 h-8 rounded-full flex items-center justify-center text-white transition-all duration-300 relative ${
-                isAdded ? 'scale-110' : 'active:scale-95 hover:scale-105'
-              } ${!canAddToCart ? 'opacity-50 cursor-not-allowed hover:scale-100' : ''}`}
-              style={{ backgroundColor: isAdded ? '#22c55e' : resellerPrimaryColor }}
-            >
-              {isAdded ? (
-                <>
-                  <span className="absolute inset-0 rounded-full animate-ping opacity-75" style={{ backgroundColor: '#22c55e' }} />
-                  <Check className="w-4 h-4 animate-in zoom-in duration-200 relative z-10" />
-                </>
-              ) : (
-                <Plus className="w-4 h-4" />
-              )}
-            </button>
+            )}
+            <span className="font-black text-base sm:text-lg leading-tight" style={{ color: resellerPrimaryColor }}>
+              {formattedPrice}
+            </span>
+          </div>
+          
+          <div className="shrink-0 flex items-center justify-center">
+            {isOutOfStock ? (
+              <button
+                onClick={handleNotify}
+                title="Avisar quando chegar"
+                className="w-9 h-9 rounded-full flex items-center justify-center text-gray-500 bg-gray-100 hover:bg-gray-200 transition-colors active:scale-95"
+              >
+                <Bell className="w-4 h-4" />
+              </button>
+            ) : hasVariations ? (
+              <button
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); onClick(product); }}
+                title="Ver opções"
+                className="w-9 h-9 rounded-full flex items-center justify-center text-white transition-all active:scale-95 hover:scale-105 shadow-sm"
+                style={{ backgroundColor: resellerPrimaryColor }}
+              >
+                <ChevronRight className="w-4.5 h-4.5" />
+              </button>
+            ) : (
+              <button
+                onClick={handleAddToCart}
+                disabled={isAdded}
+                title="Adicionar"
+                className={`w-9 h-9 rounded-full flex items-center justify-center text-white transition-all duration-300 relative ${
+                  isAdded ? 'scale-110' : 'active:scale-95 hover:scale-105 shadow-sm'
+                }`}
+                style={{ backgroundColor: isAdded ? '#22c55e' : resellerPrimaryColor }}
+              >
+                {isAdded ? (
+                  <>
+                    <span className="absolute inset-0 rounded-full animate-ping opacity-75" style={{ backgroundColor: '#22c55e' }} />
+                    <Check className="w-4.5 h-4.5 animate-in zoom-in duration-200 relative z-10" />
+                  </>
+                ) : (
+                  <Plus className="w-4.5 h-4.5" />
+                )}
+              </button>
+            )}
           </div>
         </div>
       </div>

@@ -241,11 +241,41 @@ export default function PublicStore() {
     </div>
   </div>;
 
-  if (loading) return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: primaryColor }} />
-    </div>
-  );
+  if (loading) {
+    const pColor = tenantReseller?.settings?.primaryColor || "#16a34a";
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <header className="bg-white sticky top-0 z-40 shadow-sm border-b border-gray-100">
+           <div className="max-w-5xl mx-auto px-4 py-3 flex items-center">
+              <div className="flex items-center gap-3">
+                {tenantReseller?.settings?.logo ? (
+                  <img src={tenantReseller.settings.logo} alt="Logo" className="h-10 w-auto object-contain max-w-[150px]" referrerPolicy="no-referrer" />
+                ) : (
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-lg" style={{ backgroundColor: pColor }}>
+                    {tenantReseller?.storeName?.[0]?.toUpperCase() || 'L'}
+                  </div>
+                )}
+                <h1 className="font-bold text-lg text-gray-900 truncate max-w-[180px]">{tenantReseller?.storeName || 'Carregando...'}</h1>
+              </div>
+           </div>
+        </header>
+
+        <div className="max-w-5xl mx-auto px-4 py-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {[1,2,3,4,5,6].map(i => (
+              <div key={i} className="bg-white rounded-2xl border border-gray-100 overflow-hidden animate-pulse">
+                <div className="aspect-square bg-gray-200" />
+                <div className="p-3 space-y-2">
+                  <div className="h-3 bg-gray-200 rounded w-3/4" />
+                  <div className="h-4 bg-gray-200 rounded w-1/2" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (storeInactive) return (
     <div className="min-h-screen flex flex-col items-center justify-center p-8 text-center"
@@ -314,9 +344,14 @@ export default function PublicStore() {
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
       {/* Header */}
-      <header className="bg-white sticky top-0 z-40 shadow-sm">
+      <header 
+        className="sticky top-0 z-40 shadow-sm transition-colors"
+        style={{ 
+          backgroundColor: view === 'home' && !reseller?.settings?.banner && !reseller?.settings?.logo ? `${primaryColor}1A` : '#ffffff' 
+        }}
+      >
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 w-full">
             {view !== 'home' ? (
               <div className="flex items-center gap-2">
                 <button onClick={goBack}
@@ -324,31 +359,43 @@ export default function PublicStore() {
                   title="Voltar">
                   <ArrowLeft className="w-5 h-5" />
                 </button>
-                <span className="text-sm font-medium text-gray-500 truncate max-w-[140px] cursor-pointer" onClick={goHome}>
+                <span className="text-sm font-medium text-gray-500 truncate max-w-[140px] cursor-pointer hover:text-gray-900" onClick={goHome}>
                   {reseller?.storeName}
                 </span>
               </div>
             ) : (
-              <div className="cursor-pointer flex items-center gap-3" onClick={goHome}>
+              <div className="cursor-pointer flex items-center gap-3 flex-1" onClick={goHome}>
                 {reseller?.settings?.logo ? (
                   <img src={reseller.settings.logo} alt="Logo" className="h-10 w-auto object-contain max-w-[150px]" referrerPolicy="no-referrer" />
                 ) : (
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-lg" style={{ backgroundColor: primaryColor }}>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-sm shrink-0" style={{ backgroundColor: primaryColor }}>
                     {reseller?.storeName?.[0]?.toUpperCase()}
                   </div>
                 )}
-                <h1 className="font-bold text-lg text-gray-900 truncate max-w-[180px] cursor-pointer" onClick={goHome}>{reseller?.storeName}</h1>
+                <div className="flex flex-col">
+                  <h1 className="font-bold text-lg text-gray-900 truncate max-w-[200px] sm:max-w-[300px] leading-tight">{reseller?.storeName}</h1>
+                  {reseller?.settings?.description && (
+                    <p className="text-xs text-gray-500 truncate max-w-[200px] sm:max-w-[300px] mt-0.5">{reseller.settings.description}</p>
+                  )}
+                </div>
               </div>
             )}
           </div>
-          <button onClick={() => setShowCart(true)} className="relative p-2.5 bg-gray-50 rounded-full hover:bg-gray-100 transition-all">
-            <ShoppingCart className="w-5 h-5 text-gray-700" />
-            {totalItems > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-white text-[10px] font-bold flex items-center justify-center border-2 border-white" style={{ backgroundColor: primaryColor }}>
-                {totalItems}
-              </span>
+          <div className="flex items-center gap-4 shrink-0">
+            {view === 'home' && (
+               <span className="text-xs font-medium text-gray-400 hidden sm:inline-block">
+                 {products.length} produtos
+               </span>
             )}
-          </button>
+            <button onClick={() => setShowCart(true)} className="relative p-2.5 bg-white rounded-full hover:bg-gray-50 transition-all shadow-sm border border-gray-100">
+              <ShoppingCart className="w-5 h-5 text-gray-700" />
+              {totalItems > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-white text-[10px] font-bold flex items-center justify-center border-2 border-white shadow-sm" style={{ backgroundColor: primaryColor }}>
+                  {totalItems}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
         
         {(view === 'home' || view === 'category') && (
@@ -377,13 +424,31 @@ export default function PublicStore() {
             {!isSearching && categories.length > 0 && (
               <div className="px-4 py-6">
                 <h2 className="font-bold text-gray-900 mb-4">Categorias</h2>
-                <div className="flex overflow-x-auto hide-scrollbar gap-3 pb-2 -mx-4 px-4">
-                  {categories.map(cat => (
-                    <button key={cat.id} onClick={() => openCategory(cat)}
-                      className="whitespace-nowrap px-5 py-2.5 bg-white border border-gray-200 rounded-full text-sm font-medium text-gray-700 hover:border-gray-300 transition-colors shadow-sm">
-                      {cat.name}
+                <div className="relative">
+                  {/* Fade-out gradiente na borda direita para indicar scroll */}
+                  <div className="absolute right-0 top-0 bottom-2 w-8 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
+                  <div className="flex overflow-x-auto hide-scrollbar gap-3 pb-2 -mx-4 px-4 pr-8">
+                    {/* botão "Todos" adicionado como primeiro item */}
+                    <button
+                      onClick={goHome}
+                      className={`whitespace-nowrap px-5 py-2.5 rounded-full text-sm font-medium border transition-colors shadow-sm ${
+                        view === 'home' ? 'text-white border-transparent' : 'bg-white border-gray-200 text-gray-700 hover:border-gray-300'
+                      }`}
+                      style={view === 'home' ? { backgroundColor: primaryColor } : {}}
+                    >
+                      Todos
                     </button>
-                  ))}
+                    {categories.map(cat => (
+                      <button key={cat.id} onClick={() => openCategory(cat)}
+                        className={`whitespace-nowrap px-5 py-2.5 rounded-full text-sm font-medium border transition-colors shadow-sm ${
+                          selectedCategory?.id === cat.id ? 'text-white border-transparent' : 'bg-white border-gray-200 text-gray-700'
+                        }`}
+                        style={selectedCategory?.id === cat.id ? { backgroundColor: primaryColor } : {}}
+                      >
+                        {cat.name}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
@@ -406,12 +471,23 @@ export default function PublicStore() {
               {!isSearching && <h2 className="font-bold text-gray-900 mb-4 text-lg">Todos os Produtos</h2>}
               
               {products.length === 0 && !loading && (
-                <div className="text-center py-20">
-                  <p className="text-gray-500 text-lg">Esta loja ainda esta configurando o catalogo.</p>
+                <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
+                  {reseller?.settings?.logo && (
+                    <img src={reseller.settings.logo} className="w-20 h-20 rounded-full object-cover mb-4 shadow-sm" />
+                  )}
+                  <h2 className="text-xl font-bold text-gray-900 mb-2">Em breve novidades! 🎉</h2>
+                  <p className="text-gray-500 mb-6 max-w-xs mx-auto">
+                    {reseller?.storeName} está preparando seu catálogo. Fale com a gente no WhatsApp para saber mais.
+                  </p>
                   {reseller?.settings?.whatsapp && (
-                    <a href={`https://wa.me/55${reseller.settings.whatsapp.replace(/\D/g,'')}`}
-                       className="mt-4 inline-block bg-green-500 text-white px-6 py-3 rounded-full font-bold">
-                      Falar pelo WhatsApp
+                    <a
+                      href={`https://wa.me/55${reseller.settings.whatsapp.replace(/\D/g,'')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 w-full max-w-xs mx-auto px-6 py-3.5 rounded-full font-bold text-white shadow-lg active:scale-95 transition-all"
+                      style={{ backgroundColor: primaryColor }}
+                    >
+                      <MessageCircle className="w-5 h-5" /> Falar no WhatsApp
                     </a>
                   )}
                 </div>
@@ -511,6 +587,19 @@ export default function PublicStore() {
         {/* PRODUCT VIEW */}
         {view === 'product' && selectedProduct && (
           <div className="bg-white min-h-screen pb-24">
+            {/* Breadcrumb */}
+            <div className="px-5 py-3 border-b border-gray-100 flex items-center gap-2 text-xs text-gray-500 font-medium overflow-x-auto hide-scrollbar whitespace-nowrap">
+              <span onClick={goHome} className="cursor-pointer hover:text-gray-900 transition-colors">
+                 ← {reseller?.storeName}
+              </span>
+              {selectedProduct.category && (
+                <>
+                  <span className="text-gray-300">/</span>
+                  <span className="text-gray-900">{selectedProduct.category}</span>
+                </>
+              )}
+            </div>
+
             {/* Image Slider */}
             <div 
               className="relative aspect-square sm:aspect-[4/3] bg-gray-100"
@@ -518,7 +607,7 @@ export default function PublicStore() {
               onTouchEnd={handleTouchEnd}
             >
               {selectedProduct.images?.length > 1 && (
-                <div className="absolute top-3 right-3 bg-black/50 text-white text-xs font-bold px-2.5 py-1 rounded-full z-10">
+                <div className="absolute top-3 right-3 bg-black/50 text-white text-xs font-bold px-2.5 py-1 rounded-full z-10 shadow-sm backdrop-blur-sm">
                   {currentImageIndex + 1} / {selectedProduct.images.length}
                 </div>
               )}
@@ -547,7 +636,10 @@ export default function PublicStore() {
 
               {selectedProduct.variations?.length > 0 && (
                 <div className="mb-6">
-                  <h3 className="text-sm font-bold text-gray-900 mb-3 uppercase tracking-wider">Opções</h3>
+                  <div className="mb-3">
+                    <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Opções disponíveis</h3>
+                    <p className="text-xs text-gray-400 mt-0.5">Selecione antes de adicionar ao carrinho</p>
+                  </div>
                   <div className="flex flex-wrap gap-2">
                     {selectedProduct.variations.map((v: string) => (
                       <button key={v} onClick={() => setSelectedVariation(v)}
@@ -571,7 +663,8 @@ export default function PublicStore() {
             {/* Fixed Bottom Actions */}
             <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 flex gap-3 z-30 max-w-5xl mx-auto">
               <button onClick={() => handleAddToCart(selectedProduct, selectedVariation)} disabled={selectedProduct.stock === 0}
-                className="flex-1 py-3.5 rounded-2xl font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors disabled:opacity-50">
+                className="flex-1 py-3.5 rounded-2xl font-bold border-2 transition-colors disabled:opacity-50 text-gray-700 hover:bg-gray-50 active:scale-95"
+                style={selectedProduct.stock !== 0 ? { borderColor: primaryColor, color: primaryColor } : {}}>
                 Adicionar
               </button>
               <button onClick={() => { handleAddToCart(selectedProduct, selectedVariation); setShowCart(false); setShowCheckout(true); }} disabled={selectedProduct.stock === 0}
@@ -586,9 +679,16 @@ export default function PublicStore() {
 
       {/* Floating WhatsApp Button (Only on Home/Category) */}
       {view !== 'product' && reseller?.settings?.whatsapp && (
-        <a href={`https://wa.me/${reseller.settings.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noreferrer"
-          className="fixed bottom-6 right-6 w-14 h-14 bg-[#25D366] text-white rounded-full flex items-center justify-center shadow-xl hover:scale-105 transition-transform z-30">
-          <MessageCircle className="w-7 h-7" />
+        <a 
+          href={`https://wa.me/55${reseller.settings.whatsapp.replace(/\D/g, '')}`}
+          target="_blank" rel="noreferrer"
+          className="fixed bottom-6 right-6 flex items-center gap-2 bg-[#25D366] text-white rounded-full shadow-xl hover:scale-105 transition-all z-30 overflow-hidden group"
+          style={{ paddingRight: '16px', paddingLeft: '16px', paddingTop: '12px', paddingBottom: '12px' }}
+        >
+          <MessageCircle className="w-6 h-6 shrink-0" />
+          <span className="text-sm font-bold max-w-0 group-hover:max-w-xs transition-all duration-300 overflow-hidden whitespace-nowrap">
+            Dúvidas?
+          </span>
         </a>
       )}
 

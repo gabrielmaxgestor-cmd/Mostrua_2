@@ -4,7 +4,7 @@ import { db } from "../../firebase";
 import { useAuth } from "../../context/AuthContext";
 import { useReseller } from "../../hooks/useReseller";
 import { storageService } from "../../services/storageService";
-import { Save, Image as ImageIcon, Loader2, Share2 } from "lucide-react";
+import { Save, Image as ImageIcon, Loader2, Share2, Info, Check, AlertCircle, MessageCircle, AtSign, Copy } from "lucide-react";
 import { QRCodeGenerator } from "../../components/reseller/QRCodeGenerator";
 import { CatalogExporter } from "../../components/reseller/CatalogExporter";
 
@@ -122,15 +122,22 @@ export const StoreSettings = () => {
         "settings.pixName": formData.pixName,
         "settings.pixCity": formData.pixCity,
         "settings.logo": logoUrl,
-        "settings.banner": bannerUrl
+        "settings.banner": bannerUrl,
+        "updatedAt": new Date().toISOString()
       });
 
       setToast({ type: "success", text: "Configurações salvas com sucesso!" });
       setTimeout(() => setToast(null), 3000);
     } catch (error: any) {
-      console.error("Error saving settings:", error);
-      setToast({ type: "error", text: "Erro ao salvar configurações." });
-      setTimeout(() => setToast(null), 3000);
+      console.error("[StoreSettings] Erro ao salvar:", error?.code, error?.message, error);
+      
+      // Mensagem específica para erro de permissão
+      const msg = error?.code === 'permission-denied'
+        ? "Sem permissão para salvar. Verifique se sua conta está ativa."
+        : error.message || "Erro ao salvar configurações.";
+        
+      setToast({ type: "error", text: msg });
+      setTimeout(() => setToast(null), 4000);
     } finally {
       setIsSubmitting(false);
     }
@@ -140,6 +147,12 @@ export const StoreSettings = () => {
 
   const storeUrl = reseller?.slug ? `${window.location.origin}/${reseller.slug}` : window.location.origin;
 
+  const handleCopy = () => {
+    navigator.clipboard.writeText(storeUrl);
+    setToast({ type: "success", text: "Link copiado para a área de transferência!" });
+    setTimeout(() => setToast(null), 3000);
+  };
+
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
       <div>
@@ -148,7 +161,10 @@ export const StoreSettings = () => {
       </div>
 
       {toast && (
-        <div className={`p-4 rounded-xl text-white ${toast.type === "success" ? "bg-green-600" : "bg-red-600"}`}>
+        <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-5 py-3.5 rounded-full text-white text-sm font-medium shadow-xl transition-all ${
+          toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'
+        }`}>
+          {toast.type === 'success' ? <Check className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
           {toast.text}
         </div>
       )}
@@ -175,6 +191,10 @@ export const StoreSettings = () => {
                     )}
                   </div>
                   <input type="file" ref={logoInputRef} onChange={handleLogoChange} accept="image/*" className="hidden" />
+                  <p className="text-xs text-gray-400 mt-2 flex items-center gap-1">
+                    <Info className="w-3 h-3" />
+                    Recomendado: 400×400px, PNG ou JPG, máx. 1MB
+                  </p>
                 </div>
 
                 <div>
@@ -190,6 +210,10 @@ export const StoreSettings = () => {
                     )}
                   </div>
                   <input type="file" ref={bannerInputRef} onChange={handleBannerChange} accept="image/*" className="hidden" />
+                  <p className="text-xs text-gray-400 mt-2 flex items-center gap-1">
+                    <Info className="w-3 h-3" />
+                    Recomendado: 1200×400px (proporção 3:1), máx. 2MB
+                  </p>
                 </div>
               </div>
             </div>
@@ -199,40 +223,45 @@ export const StoreSettings = () => {
             {/* Cores */}
             <div className="space-y-4">
               <h3 className="text-lg font-bold text-gray-900">Cores da Marca</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Cor Primária</label>
-                  <div className="flex items-center gap-3">
-                    <input 
-                      type="color" 
-                      value={formData.primaryColor}
-                      onChange={e => setFormData({...formData, primaryColor: e.target.value})}
-                      className="w-12 h-12 rounded cursor-pointer border-0 p-0"
-                    />
-                    <input 
-                      type="text" 
-                      value={formData.primaryColor}
-                      onChange={e => setFormData({...formData, primaryColor: e.target.value})}
-                      className="flex-1 px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
-                    />
-                  </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-900 mb-3">Cor da sua loja</label>
+                <div className="grid grid-cols-4 gap-2 mb-3">
+                  {[
+                    { name: "Azul Clássico", primary: "#2563eb" },
+                    { name: "Verde Fresco", primary: "#16a34a" },
+                    { name: "Rosa Feminino", primary: "#db2777" },
+                    { name: "Laranja Vibrante", primary: "#ea580c" },
+                    { name: "Roxo Elegante", primary: "#7c3aed" },
+                    { name: "Preto Premium", primary: "#111827" },
+                    { name: "Vermelho Forte", primary: "#dc2626" },
+                    { name: "Teal Moderno", primary: "#0d9488" },
+                  ].map(palette => (
+                    <button
+                      key={palette.primary}
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, primaryColor: palette.primary }))}
+                      className={`flex flex-col items-center gap-1.5 p-2 rounded-xl border-2 transition-all ${
+                        formData.primaryColor === palette.primary 
+                          ? 'border-gray-900 bg-gray-50' 
+                          : 'border-transparent hover:border-gray-200'
+                      }`}
+                    >
+                      <div className="w-8 h-8 rounded-full shadow-sm" style={{ backgroundColor: palette.primary }} />
+                      <span className="text-[10px] text-gray-600 text-center leading-tight">{palette.name}</span>
+                    </button>
+                  ))}
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Cor Secundária</label>
-                  <div className="flex items-center gap-3">
-                    <input 
-                      type="color" 
-                      value={formData.secondaryColor}
-                      onChange={e => setFormData({...formData, secondaryColor: e.target.value})}
-                      className="w-12 h-12 rounded cursor-pointer border-0 p-0"
-                    />
-                    <input 
-                      type="text" 
-                      value={formData.secondaryColor}
-                      onChange={e => setFormData({...formData, secondaryColor: e.target.value})}
-                      className="flex-1 px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
-                    />
-                  </div>
+                
+                {/* Opção customizada */}
+                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                  <label className="text-xs text-gray-600 font-medium">Personalizar:</label>
+                  <input
+                    type="color"
+                    value={formData.primaryColor}
+                    onChange={e => setFormData(prev => ({ ...prev, primaryColor: e.target.value }))}
+                    className="w-8 h-8 rounded cursor-pointer border border-gray-200 p-0"
+                  />
+                  <span className="text-xs text-gray-500 font-mono">{formData.primaryColor}</span>
                 </div>
               </div>
             </div>
@@ -257,23 +286,29 @@ export const StoreSettings = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">WhatsApp</label>
-                  <input 
-                    type="tel" 
-                    value={formData.whatsapp}
-                    onChange={handlePhoneChange}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
-                    placeholder="(11) 99999-9999"
-                  />
+                  <div className="relative">
+                    <MessageCircle className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input 
+                      type="tel" 
+                      value={formData.whatsapp}
+                      onChange={handlePhoneChange}
+                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
+                      placeholder="(11) 99999-9999"
+                    />
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Instagram</label>
-                  <input 
-                    type="text" 
-                    value={formData.instagram}
-                    onChange={handleInstagramChange}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
-                    placeholder="@sualoja"
-                  />
+                  <div className="relative">
+                    <AtSign className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input 
+                      type="text" 
+                      value={formData.instagram}
+                      onChange={handleInstagramChange}
+                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
+                      placeholder="@sualoja"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -294,6 +329,7 @@ export const StoreSettings = () => {
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
                   placeholder="Seu CPF, CNPJ, email, telefone ou chave aleatória"
                 />
+                <p className="text-xs text-gray-500 mt-1">Sua chave PIX para facilitar o pagamento dos clientes</p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -354,69 +390,116 @@ export const StoreSettings = () => {
                 disabled={isSubmitting}
                 className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors disabled:opacity-50"
               >
-                {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
-                Salvar Configurações
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Salvando...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-5 h-5" />
+                    Salvar Configurações
+                  </>
+                )}
               </button>
             </div>
           </form>
 
-          {/* Divulgação */}
-          <div className="mt-8">
-            <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <Share2 className="w-6 h-6 text-gray-400" /> Divulgação
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <QRCodeGenerator 
-                storeUrl={storeUrl} 
-                primaryColor={formData.primaryColor} 
-                storeName={reseller?.storeName || 'Minha Loja'} 
-              />
-              {reseller?.id && reseller?.slug && (
-                <CatalogExporter 
-                  resellerId={reseller.id}
-                  storeName={reseller.storeName || 'Minha Loja'}
-                  slug={reseller.slug}
-                  logo={logoPreview}
-                  banner={bannerPreview}
-                  whatsapp={formData.whatsapp}
-                  primaryColor={formData.primaryColor}
+          {/* Divulgação e Compartilhamento */}
+          <div className="space-y-6 mt-8">
+            {/* Compartilhe sua loja */}
+            <div className="bg-blue-50 rounded-3xl border border-blue-100 p-6">
+              <h3 className="font-bold text-gray-900 mb-1">Link da sua loja</h3>
+              <p className="text-sm text-gray-500 mb-4">Compartilhe esse link para que seus clientes possam comprar.</p>
+              <div className="flex gap-2">
+                <div className="flex-1 bg-white rounded-xl px-4 py-3 border border-blue-100 text-sm text-gray-700 font-medium truncate">
+                  {storeUrl}
+                </div>
+                <button onClick={handleCopy} className="p-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors">
+                  <Copy className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <Share2 className="w-6 h-6 text-gray-400" /> Kit de Divulgação
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <QRCodeGenerator 
+                  storeUrl={storeUrl} 
+                  primaryColor={formData.primaryColor} 
+                  storeName={reseller?.storeName || 'Minha Loja'} 
                 />
-              )}
+                {reseller?.id && reseller?.slug && (
+                  <CatalogExporter 
+                    resellerId={reseller.id}
+                    storeName={reseller.storeName || 'Minha Loja'}
+                    slug={reseller.slug}
+                    logo={logoPreview}
+                    banner={bannerPreview}
+                    whatsapp={formData.whatsapp}
+                    primaryColor={formData.primaryColor}
+                  />
+                )}
+              </div>
             </div>
           </div>
         </div>
 
         {/* Preview */}
         <div className="lg:col-span-1">
-          <div className="sticky top-6">
-            <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">Preview da Loja</h3>
-            <div className="bg-white rounded-3xl border border-gray-200 overflow-hidden shadow-sm">
-              <div 
-                className="h-32 bg-gray-100 relative"
-                style={bannerPreview ? { backgroundImage: `url(${bannerPreview})`, backgroundSize: 'cover', backgroundPosition: 'center' } : { backgroundColor: formData.primaryColor }}
-              >
-                <div className="absolute -bottom-8 left-6 w-16 h-16 rounded-xl border-4 border-white bg-white overflow-hidden shadow-sm">
+          <div className="lg:sticky lg:top-6 h-fit">
+            <div className="bg-white rounded-3xl border border-gray-200 p-4 overflow-hidden">
+              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Preview da sua loja</p>
+              
+              {/* Mini mockup do header da loja */}
+              <div className="rounded-2xl overflow-hidden border border-gray-100">
+                {/* Header simulado */}
+                <div className="p-4 flex items-center gap-3" style={{ backgroundColor: formData.primaryColor + '15' }}>
                   {logoPreview ? (
-                    <img src={logoPreview} alt="Logo" className="w-full h-full object-contain p-1" />
+                    <img src={logoPreview} className="w-10 h-10 rounded-xl object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-white font-bold text-xl" style={{ backgroundColor: formData.primaryColor }}>
-                      {reseller?.storeName?.charAt(0) || "L"}
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm"
+                      style={{ backgroundColor: formData.primaryColor }}>
+                      {reseller?.storeName?.[0]?.toUpperCase() || 'L'}
                     </div>
                   )}
+                  <div>
+                    <p className="font-bold text-gray-900 text-sm">{reseller?.storeName || 'Minha Loja'}</p>
+                    {formData.description && <p className="text-xs text-gray-500 line-clamp-1">{formData.description}</p>}
+                  </div>
+                </div>
+                
+                {/* Banner simulado */}
+                {bannerPreview ? (
+                  <div className="aspect-[3/1] overflow-hidden">
+                    <img src={bannerPreview} className="w-full h-full object-cover" />
+                  </div>
+                ) : (
+                  <div className="aspect-[3/1] flex items-center justify-center text-xs text-gray-400 bg-gray-50">
+                    Sem banner
+                  </div>
+                )}
+                
+                {/* Botão de compra simulado */}
+                <div className="p-3 bg-gray-50">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-xs text-gray-400">Exemplo de produto</p>
+                  </div>
+                  <button
+                    className="w-full py-2 rounded-xl text-white text-xs font-bold transition-all"
+                    style={{ backgroundColor: formData.primaryColor }}
+                  >
+                    Adicionar ao carrinho
+                  </button>
                 </div>
               </div>
-              <div className="pt-12 pb-6 px-6">
-                <h4 className="font-bold text-lg text-gray-900">{reseller?.storeName || "Nome da Loja"}</h4>
-                <p className="text-sm text-gray-500 mt-1 line-clamp-2">{formData.description || "Descrição da sua loja aparecerá aqui."}</p>
-                
-                <div className="mt-6 space-y-3">
-                  <div className="h-10 rounded-xl flex items-center justify-center text-white font-medium text-sm" style={{ backgroundColor: formData.primaryColor }}>
-                    Botão Principal
-                  </div>
-                  <div className="h-10 rounded-xl flex items-center justify-center text-white font-medium text-sm" style={{ backgroundColor: formData.secondaryColor }}>
-                    Botão Secundário
-                  </div>
-                </div>
+              
+              {/* Cor atual */}
+              <div className="mt-3 flex items-center gap-2">
+                <div className="w-4 h-4 rounded-full border border-gray-200" style={{ backgroundColor: formData.primaryColor }} />
+                <p className="text-xs text-gray-500">Cor principal: {formData.primaryColor}</p>
               </div>
             </div>
           </div>
