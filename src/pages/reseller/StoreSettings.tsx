@@ -15,6 +15,7 @@ export const StoreSettings = () => {
   const [toast, setToast] = useState<{ type: "success" | "error", text: string } | null>(null);
 
   const [formData, setFormData] = useState({
+    storeName: "",
     primaryColor: "#2563eb",
     secondaryColor: "#1e40af",
     description: "",
@@ -36,6 +37,7 @@ export const StoreSettings = () => {
   useEffect(() => {
     if (reseller?.settings) {
       setFormData({
+        storeName: reseller.storeName || "",
         primaryColor: reseller.settings.primaryColor || "#2563eb",
         secondaryColor: reseller.settings.secondaryColor || "#1e40af",
         description: reseller.settings.description || "",
@@ -112,32 +114,49 @@ export const StoreSettings = () => {
         await Promise.all(uploadPromises);
       }
 
-      await updateDoc(doc(db, "resellers", user.uid), {
-        "settings.primaryColor": formData.primaryColor,
-        "settings.secondaryColor": formData.secondaryColor,
-        "settings.description": formData.description,
-        "settings.whatsapp": formData.whatsapp.replace(/\D/g, ""),
-        "settings.instagram": formData.instagram,
-        "settings.pixKey": formData.pixKey,
-        "settings.pixName": formData.pixName,
-        "settings.pixCity": formData.pixCity,
-        "settings.logo": logoUrl,
-        "settings.banner": bannerUrl,
-        "updatedAt": new Date().toISOString()
-      });
+      const newSettings = {
+        ...(reseller?.settings || {}),
+        primaryColor: formData.primaryColor,
+        secondaryColor: formData.secondaryColor,
+        description: formData.description,
+        whatsapp: formData.whatsapp.replace(/\D/g, ""),
+        instagram: formData.instagram,
+        pixKey: formData.pixKey,
+        pixName: formData.pixName,
+        pixCity: formData.pixCity,
+        logo: logoUrl || "",
+        banner: bannerUrl || ""
+      };
+
+      const updates: any = {
+        settings: newSettings,
+        updatedAt: new Date().toISOString()
+      };
+
+      if (formData.storeName !== reseller?.storeName) {
+        updates.storeName = formData.storeName;
+      }
+
+      await updateDoc(doc(db, "resellers", user.uid), updates);
 
       setToast({ type: "success", text: "Configurações salvas com sucesso!" });
       setTimeout(() => setToast(null), 3000);
     } catch (error: any) {
-      console.error("[StoreSettings] Erro ao salvar:", error?.code, error?.message, error);
-      
-      // Mensagem específica para erro de permissão
-      const msg = error?.code === 'permission-denied'
-        ? "Sem permissão para salvar. Verifique se sua conta está ativa."
-        : error.message || "Erro ao salvar configurações.";
-        
+      console.error("[StoreSettings] Código:", error?.code);
+      console.error("[StoreSettings] Mensagem:", error?.message);
+      console.error("[StoreSettings] Objeto completo:", JSON.stringify(error));
+
+      let msg = "Erro ao salvar configurações.";
+      if (error?.code === 'permission-denied') {
+        msg = "Permissão negada (Regras do Firestore). Ocorreu um erro ao salvar as configurações. Suas regras do Firestore (`firestore.rules`) parecem estar desatualizadas. Por favor, faça o deploy das novas regras usando `firebase deploy --only firestore:rules`.";
+      } else if (error?.code === 'storage/unauthorized') {
+        msg = "Sem permissão para fazer upload de imagens.";
+      } else if (error?.message) {
+        msg = error.message;
+      }
+
       setToast({ type: "error", text: msg });
-      setTimeout(() => setToast(null), 4000);
+      setTimeout(() => setToast(null), 5000);
     } finally {
       setIsSubmitting(false);
     }
@@ -145,7 +164,22 @@ export const StoreSettings = () => {
 
   if (loading) return <div>Carregando...</div>;
 
-  const storeUrl = reseller?.slug ? `${window.location.origin}/${reseller.slug}` : window.location.origin;
+  const getStoreUrl = (slug: string | undefined, customDomain?: string, customDomainStatus?: string): string => {
+    if (!slug) return "";
+    // Se tem domínio customizado ativo, usar ele
+    if (customDomain && customDomainStatus === "active") {
+      return `https://${customDomain}`;
+    }
+    // URL base do app — usar variável de ambiente ou fallback
+    const appBaseUrl = import.meta.env.VITE_APP_URL || "https://mostrua.com.br";
+    return `${appBaseUrl}/store/${slug}`;
+  };
+
+  const storeUrl = getStoreUrl(
+    reseller?.slug,
+    reseller?.customDomain,
+    reseller?.customDomainStatus
+  );
 
   const handleCopy = () => {
     navigator.clipboard.writeText(storeUrl);
@@ -161,7 +195,7 @@ export const StoreSettings = () => {
       </div>
 
       {toast && (
-        <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-5 py-3.5 rounded-full text-white text-sm font-medium shadow-xl transition-all ${
+        <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] flex items-center gap-3 px-5 py-3.5 rounded-full text-white text-sm font-medium shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-200 ${
           toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'
         }`}>
           {toast.type === 'success' ? <Check className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
@@ -263,6 +297,45 @@ export const StoreSettings = () => {
                   />
                   <span className="text-xs text-gray-500 font-mono">{formData.primaryColor}</span>
                 </div>
+
+                {/* Cor Secundária */}
+                <div className="mt-4">
+                  <label className="block text-sm font-bold text-gray-900 mb-2">
+                    Cor secundária
+                    <span className="ml-2 text-xs font-normal text-gray-400">
+                      Usada em fundos, badges e destaques
+                    </span>
+                  </label>
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                    <label className="text-xs text-gray-600 font-medium">Cor:</label>
+                    <input
+                      type="color"
+                      value={formData.secondaryColor}
+                      onChange={e => setFormData(prev => ({ ...prev, secondaryColor: e.target.value }))}
+                      className="w-8 h-8 rounded cursor-pointer border border-gray-200 p-0"
+                    />
+                    <span className="text-xs text-gray-500 font-mono">{formData.secondaryColor}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const hex = formData.primaryColor.replace('#', '');
+                        const r = parseInt(hex.slice(0, 2), 16);
+                        const g = parseInt(hex.slice(2, 4), 16);
+                        const b = parseInt(hex.slice(4, 6), 16);
+                        const lighten = (c: number) => Math.min(255, Math.floor(c + (255 - c) * 0.4));
+                        const toHex = (c: number) => c.toString(16).padStart(2, '0');
+                        const secondary = `#${toHex(lighten(r))}${toHex(lighten(g))}${toHex(lighten(b))}`;
+                        setFormData(prev => ({ ...prev, secondaryColor: secondary }));
+                      }}
+                      className="ml-auto text-xs text-blue-600 font-medium hover:text-blue-700 transition-colors"
+                    >
+                      Gerar automaticamente ✨
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-400 mt-1 ml-1">
+                    Dica: clique em "Gerar automaticamente" para criar uma versão harmoniosa da cor principal.
+                  </p>
+                </div>
               </div>
             </div>
 
@@ -272,6 +345,24 @@ export const StoreSettings = () => {
             <div className="space-y-4">
               <h3 className="text-lg font-bold text-gray-900">Informações</h3>
               
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Nome da Loja <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.storeName}
+                  onChange={e => setFormData({ ...formData, storeName: e.target.value })}
+                  required
+                  maxLength={50}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
+                  placeholder="Ex: Moda da Ana, Loja do João..."
+                />
+                <p className="text-xs text-gray-400 mt-1">
+                  Este é o nome que aparece na sua loja e no painel.
+                </p>
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Descrição da Loja</label>
                 <textarea 
@@ -497,9 +588,15 @@ export const StoreSettings = () => {
               </div>
               
               {/* Cor atual */}
-              <div className="mt-3 flex items-center gap-2">
-                <div className="w-4 h-4 rounded-full border border-gray-200" style={{ backgroundColor: formData.primaryColor }} />
-                <p className="text-xs text-gray-500">Cor principal: {formData.primaryColor}</p>
+              <div className="mt-3 flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full border border-gray-200" style={{ backgroundColor: formData.primaryColor }} />
+                  <p className="text-xs text-gray-500">Cor principal: {formData.primaryColor}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full border border-gray-200" style={{ backgroundColor: formData.secondaryColor }} />
+                  <p className="text-xs text-gray-500">Cor secundária: {formData.secondaryColor}</p>
+                </div>
               </div>
             </div>
           </div>
