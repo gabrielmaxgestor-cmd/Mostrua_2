@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Store, ChevronRight, Check, X, Loader2, Mail, Lock, User, Phone, ArrowLeft, Info, HelpCircle } from "lucide-react";
+import { Store, ChevronRight, Check, Loader2, Mail, Lock, User, Phone, ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { generateSlug, validateSlug, isSlugAvailable } from "../utils/slug";
+import { generateSlug, isSlugAvailable } from "../utils/slug";
 import { nicheService } from "../services/nicheService";
 import { resellerService } from "../services/resellerService";
 import { catalogService } from "../services/catalogService";
@@ -69,7 +69,6 @@ export default function RegisterPage() {
     nicheService.getActiveNiches().then(setNiches).catch(console.error);
   }, []);
 
-  // Slug generation and validation
   useEffect(() => {
     if (storeName && !slug) {
       setSlug(generateSlug(storeName));
@@ -79,7 +78,6 @@ export default function RegisterPage() {
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value.replace(/\D/g, "");
     if (value.length > 11) value = value.slice(0, 11);
-    
     if (value.length > 2) {
       value = `(${value.slice(0, 2)}) ${value.slice(2)}`;
     }
@@ -135,19 +133,12 @@ export default function RegisterPage() {
       setLoading(true);
       try {
         const catalogs = await catalogService.getCatalogsByNiche(nicheId);
-        // Filter out inactive catalogs from onboarding
         const activeCatalogs = catalogs.filter(c => c.active);
         setNicheCatalogs(activeCatalogs);
-        // Auto select all by default
         setSelectedCatalogs(activeCatalogs.map(c => c.id));
-        
-        // Setup default prices mapping
         const defaultPrices: Record<string, string> = {};
-        activeCatalogs.forEach(c => {
-          defaultPrices[c.id] = "";
-        });
+        activeCatalogs.forEach(c => { defaultPrices[c.id] = ""; });
         setCatalogPrices(defaultPrices);
-
         setStep(4);
       } catch (err: any) {
         setError("Erro ao carregar categorias do nicho. Tente novamente.");
@@ -176,7 +167,6 @@ export default function RegisterPage() {
         else navigate("/");
         return;
       }
-      
       setIsGoogleSignIn(true);
       setGoogleUid(cred.user.uid);
       setEmail(cred.user.email || "");
@@ -201,14 +191,23 @@ export default function RegisterPage() {
 
     try {
       let uidToUse = googleUid;
-      
+      let finalSlug = "";
+
+      // PASSO 1: Criar usuário no Auth
       if (!isGoogleSignIn) {
+        console.log("[1] Criando usuário no Auth...");
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         uidToUse = userCredential.user.uid;
+        console.log("[1] Usuário criado:", uidToUse);
       }
 
-      const finalSlug = await resellerService.generateUniqueSlug(storeName);
+      // PASSO 2: Gerar slug
+      console.log("[2] Gerando slug...");
+      finalSlug = await resellerService.generateUniqueSlug(storeName);
+      console.log("[2] Slug gerado:", finalSlug);
 
+      // PASSO 3: Criar perfil do revendedor
+      console.log("[3] Criando perfil do revendedor...");
       const result = await resellerService.createResellerProfile({
         uid: uidToUse,
         name,
@@ -218,25 +217,38 @@ export default function RegisterPage() {
         slug: finalSlug,
         nicheId
       });
+      console.log("[3] Perfil criado:", result);
 
       if (result.success) {
-        // Process catalog selection and pricing
+        // PASSO 4: Aguardar propagação do Firestore
+        console.log("[4] Aguardando propagação do Firestore (2s)...");
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        // PASSO 5: Buscar e criar reseller_products
+        console.log("[5] Iniciando criação de reseller_products...");
         let currentBatch = writeBatch(db);
         let operationCount = 0;
 
         for (const catId of selectedCatalogs) {
           const rawPrice = catalogPrices[catId];
           let customPrice: number | null = null;
-          
+
           if (rawPrice) {
-             const parsed = parseFloat(rawPrice.replace(",", "."));
-             if (!isNaN(parsed) && parsed > 0) {
-                customPrice = parsed;
-             }
+            const parsed = parseFloat(rawPrice.replace(",", "."));
+            if (!isNaN(parsed) && parsed > 0) {
+              customPrice = parsed;
+            }
           }
 
-          const baseProductsQ = query(collection(db, "products"), where("catalogId", "==", catId), where("active", "==", true));
+          const baseProductsQ = query(
+            collection(db, "products"),
+            where("catalogId", "==", catId),
+            where("active", "==", true)
+          );
+
+          console.log(`[5] Buscando produtos do catálogo ${catId}...`);
           const snap = await getDocs(baseProductsQ);
+          console.log(`[5] Encontrados ${snap.size} produtos no catálogo ${catId}`);
 
           for (const docSnap of snap.docs) {
             const bp = { id: docSnap.id, ...docSnap.data() } as BaseProduct;
@@ -255,7 +267,9 @@ export default function RegisterPage() {
             });
 
             operationCount++;
+
             if (operationCount >= 450) {
+              console.log("[5] Commitando batch parcial (450 ops)...");
               await currentBatch.commit();
               currentBatch = writeBatch(db);
               operationCount = 0;
@@ -264,12 +278,29 @@ export default function RegisterPage() {
         }
 
         if (operationCount > 0) {
+          console.log(`[5] Commitando batch final com ${operationCount} operações...`);
           await currentBatch.commit();
+          console.log("[5] Batch commitado com sucesso!");
+        } else {
+          console.log("[5] Nenhum produto encontrado para criar reseller_products.");
         }
 
+        // PASSO 6: Navegar para welcome
+        console.log("[6] Navegando para /reseller/welcome...");
         navigate("/reseller/welcome", { state: { slug: result.slug } });
       }
     } catch (err: any) {
+      console.error("[ERRO] Código:", err?.code);
+      console.error("[ERRO] Mensagem:", err?.message);
+      console.error("[ERRO] Objeto completo:", err);
+
+      // Se o perfil foi criado mas os produtos falharam, navega mesmo assim
+      if (err?.code === 'permission-denied') {
+        console.warn("[AVISO] Permissão negada ao criar produtos. Conta criada. Redirecionando...");
+        navigate("/reseller/welcome", { state: { slug: slug } });
+        return;
+      }
+
       setError(err.message || "Erro ao criar conta. Tente novamente.");
       setLoading(false);
     }
@@ -308,20 +339,20 @@ export default function RegisterPage() {
             Sem cartão de crédito.
           </p>
         </div>
+
         <div className="bg-white py-8 px-4 shadow-xl shadow-gray-200/50 sm:rounded-2xl sm:px-10 border border-gray-100">
-          
+
           {/* Progress Bar */}
           <div className="mb-8">
             <div className="flex items-center justify-between relative">
               <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-gray-100 rounded-full -z-10"></div>
-              <div 
+              <div
                 className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-blue-600 rounded-full -z-10 transition-all duration-500"
                 style={{ width: `${((step - 1) / 4) * 100}%` }}
               ></div>
-              
               {[1, 2, 3, 4, 5].map((i) => (
-                <div 
-                  key={i} 
+                <div
+                  key={i}
                   className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-colors ${
                     step >= i ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20' : 'bg-white text-gray-400 border-2 border-gray-200'
                   }`}
@@ -348,18 +379,8 @@ export default function RegisterPage() {
 
           <AnimatePresence mode="wait">
             {step === 1 && (
-              <motion.div
-                key="step1"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="space-y-5"
-              >
-                <button
-                  onClick={handleGoogleSignup}
-                  disabled={loading}
-                  className="w-full flex justify-center items-center gap-3 py-3 px-4 border border-gray-300 rounded-xl shadow-sm bg-white text-gray-700 font-bold hover:bg-gray-50 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
-                >
+              <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
+                <button onClick={handleGoogleSignup} disabled={loading} className="w-full flex justify-center items-center gap-3 py-3 px-4 border border-gray-300 rounded-xl shadow-sm bg-white text-gray-700 font-bold hover:bg-gray-50 transition-all disabled:opacity-60 disabled:cursor-not-allowed">
                   <svg className="w-5 h-5" viewBox="0 0 24 24">
                     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
                     <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
@@ -370,31 +391,15 @@ export default function RegisterPage() {
                 </button>
 
                 <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-200"></div>
-                  </div>
-                  <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-white text-gray-500">Ou crie com seu email</span>
-                  </div>
+                  <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200"></div></div>
+                  <div className="relative flex justify-center text-sm"><span className="px-2 bg-white text-gray-500">Ou crie com seu email</span></div>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                   <div className="relative">
                     <Mail className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                    <input
-                      type="email"
-                      required
-                      value={email}
-                      onChange={(e) => {
-                        setEmail(e.target.value);
-                        validateEmail(e.target.value);
-                      }}
-                      className={`w-full pl-10 pr-4 py-3 rounded-xl border focus:ring-2 outline-none transition-all ${
-                        emailError ? 'border-red-500 focus:ring-red-500' : 'border-gray-200 focus:ring-blue-500'
-                      }`}
-                      placeholder="seu@email.com"
-                    />
+                    <input type="email" required value={email} onChange={(e) => { setEmail(e.target.value); validateEmail(e.target.value); }} className={`w-full pl-10 pr-4 py-3 rounded-xl border focus:ring-2 outline-none transition-all ${emailError ? 'border-red-500 focus:ring-red-500' : 'border-gray-200 focus:ring-blue-500'}`} placeholder="seu@email.com" />
                     {emailError && <p className="text-xs text-red-500 mt-1">{emailError}</p>}
                   </div>
                 </div>
@@ -403,14 +408,7 @@ export default function RegisterPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Senha</label>
                   <div className="relative">
                     <Lock className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                    <input
-                      type="password"
-                      required
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                      placeholder="Mínimo 8 caracteres"
-                    />
+                    <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="Mínimo 8 caracteres" />
                   </div>
                 </div>
 
@@ -418,46 +416,23 @@ export default function RegisterPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Confirmar Senha</label>
                   <div className="relative">
                     <Lock className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                    <input
-                      type="password"
-                      required
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                      placeholder="Confirme sua senha"
-                    />
+                    <input type="password" required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="Confirme sua senha" />
                   </div>
                 </div>
 
-                <button
-                  onClick={handleNextStep}
-                  className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors mt-6"
-                >
+                <button onClick={handleNextStep} className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors mt-6">
                   Continuar <ChevronRight className="w-4 h-4 ml-2" />
                 </button>
               </motion.div>
             )}
 
             {step === 2 && (
-              <motion.div
-                key="step2"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="space-y-5"
-              >
+              <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Nome Completo</label>
                   <div className="relative">
                     <User className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                    <input
-                      type="text"
-                      required
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                      placeholder="João da Silva"
-                    />
+                    <input type="text" required value={name} onChange={(e) => setName(e.target.value)} className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="João da Silva" />
                   </div>
                 </div>
 
@@ -465,14 +440,7 @@ export default function RegisterPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">WhatsApp</label>
                   <div className="relative">
                     <Phone className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                    <input
-                      type="tel"
-                      required
-                      value={phone}
-                      onChange={handlePhoneChange}
-                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                      placeholder="(11) 99999-9999"
-                    />
+                    <input type="tel" required value={phone} onChange={handlePhoneChange} className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="(11) 99999-9999" />
                   </div>
                 </div>
 
@@ -480,154 +448,73 @@ export default function RegisterPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Nome da Loja</label>
                   <div className="relative">
                     <Store className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                    <input
-                      type="text"
-                      required
-                      value={storeName}
-                      onChange={(e) => setStoreName(e.target.value)}
-                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                      placeholder="Minha Loja Inc"
-                    />
+                    <input type="text" required value={storeName} onChange={(e) => setStoreName(e.target.value)} className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="Minha Loja Inc" />
                   </div>
                 </div>
 
                 {storeName && (
                   <div className="mt-4">
-                    <p className="text-xs font-medium text-gray-500 mb-1">
-                      Sua loja ficará disponível em:
-                    </p>
+                    <p className="text-xs font-medium text-gray-500 mb-1">Sua loja ficará disponível em:</p>
                     <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
                       <span className="text-gray-400 text-sm">mostrua.com.br/</span>
                       <span className="font-bold text-gray-900 text-sm">{generateSlug(storeName)}</span>
                     </div>
-                    <p className="text-xs text-gray-400 mt-1.5">
-                      Você pode personalizar esse endereço depois nas configurações.
-                    </p>
+                    <p className="text-xs text-gray-400 mt-1.5">Você pode personalizar esse endereço depois nas configurações.</p>
                   </div>
                 )}
 
                 <div className="flex gap-3 mt-6">
-                  <button
-                    onClick={() => {
-                      if (isGoogleSignIn) {
-                        setIsGoogleSignIn(false);
-                        auth.signOut();
-                      }
-                      setStep(1);
-                    }}
-                    className="flex-1 py-3 px-4 border border-gray-200 rounded-xl shadow-sm text-sm font-bold text-gray-700 bg-white hover:bg-gray-50 transition-colors"
-                  >
-                    Voltar
-                  </button>
-                  <button
-                    onClick={handleNextStep}
-                    className="flex-1 flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 transition-colors"
-                  >
-                    Continuar <ChevronRight className="w-4 h-4 ml-2" />
-                  </button>
+                  <button onClick={() => { if (isGoogleSignIn) { setIsGoogleSignIn(false); auth.signOut(); } setStep(1); }} className="flex-1 py-3 px-4 border border-gray-200 rounded-xl shadow-sm text-sm font-bold text-gray-700 bg-white hover:bg-gray-50 transition-colors">Voltar</button>
+                  <button onClick={handleNextStep} className="flex-1 flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 transition-colors">Continuar <ChevronRight className="w-4 h-4 ml-2" /></button>
                 </div>
               </motion.div>
             )}
 
             {step === 3 && (
-              <motion.div
-                key="step3"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="space-y-5"
-              >
+              <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
                 <div className="text-center mb-6">
                   <h3 className="text-xl font-bold text-gray-900 mb-2">Qual tipo de produto você vende?</h3>
-                  <p className="text-gray-500 text-sm">
-                    Isso define quais catálogos e produtos estarão disponíveis na sua loja.
-                    <br />
-                    <span className="text-xs text-gray-400">Não se preocupe — você pode ajustar depois.</span>
-                  </p>
+                  <p className="text-gray-500 text-sm">Isso define quais catálogos e produtos estarão disponíveis na sua loja.<br /><span className="text-xs text-gray-400">Não se preocupe — você pode ajustar depois.</span></p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 max-h-80 overflow-y-auto custom-scrollbar p-1">
                   {niches.map((niche) => (
-                    <div
-                      key={niche.id}
-                      onClick={() => setNicheId(niche.id)}
-                      className={`cursor-pointer rounded-xl border-2 overflow-hidden transition-all ${
-                        nicheId === niche.id ? 'border-blue-600 ring-2 ring-blue-600/20 shadow-md transform scale-[1.02]' : 'border-transparent hover:border-gray-200 bg-gray-50 hover:bg-white hover:shadow-sm'
-                      }`}
-                    >
+                    <div key={niche.id} onClick={() => setNicheId(niche.id)} className={`cursor-pointer rounded-xl border-2 overflow-hidden transition-all ${nicheId === niche.id ? 'border-blue-600 ring-2 ring-blue-600/20 shadow-md transform scale-[1.02]' : 'border-transparent hover:border-gray-200 bg-gray-50 hover:bg-white hover:shadow-sm'}`}>
                       <div className="aspect-video relative">
                         <img src={niche.imageUrl} alt={niche.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                        {nicheId === niche.id && (
-                          <div className="absolute top-2 right-2 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-sm">
-                            <Check className="w-4 h-4" />
-                          </div>
-                        )}
+                        {nicheId === niche.id && (<div className="absolute top-2 right-2 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-sm"><Check className="w-4 h-4" /></div>)}
                       </div>
                       <div className="p-3 text-center sm:text-left">
                         <p className="font-bold text-gray-900 text-sm">{niche.name}</p>
-                        {niche.description && (
-                          <p className="text-xs text-gray-500 mt-1 line-clamp-2 hidden sm:block">{niche.description}</p>
-                        )}
+                        {niche.description && (<p className="text-xs text-gray-500 mt-1 line-clamp-2 hidden sm:block">{niche.description}</p>)}
                       </div>
                     </div>
                   ))}
                 </div>
 
                 <div className="flex gap-3 mt-6">
-                  <button
-                    onClick={() => setStep(2)}
-                    className="flex-1 py-3 px-4 border border-gray-200 rounded-xl shadow-sm text-sm font-bold text-gray-700 bg-white hover:bg-gray-50 transition-colors"
-                  >
-                    Voltar
-                  </button>
-                  <button
-                    onClick={handleNextStep}
-                    disabled={loading || !nicheId}
-                    className="flex-[2] flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 transition-colors"
-                  >
+                  <button onClick={() => setStep(2)} className="flex-1 py-3 px-4 border border-gray-200 rounded-xl shadow-sm text-sm font-bold text-gray-700 bg-white hover:bg-gray-50 transition-colors">Voltar</button>
+                  <button onClick={handleNextStep} disabled={loading || !nicheId} className="flex-[2] flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 transition-colors">
                     {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Continuar <ChevronRight className="w-4 h-4 ml-2" /></>}
                   </button>
                 </div>
-                
-                <p className="text-center text-xs text-gray-400 mt-4">
-                  Você pode mudar ou adicionar nichos depois nas configurações da sua conta.
-                </p>
+                <p className="text-center text-xs text-gray-400 mt-4">Você pode mudar ou adicionar nichos depois nas configurações da sua conta.</p>
               </motion.div>
             )}
 
             {step === 4 && (
-              <motion.div
-                key="step4"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="space-y-5"
-              >
+              <motion.div key="step4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
                 <div className="text-center mb-6">
                   <h3 className="text-xl font-bold text-gray-900 mb-2">Módulos e Categorias</h3>
-                  <p className="text-gray-500 text-sm">
-                    Selecione quais categorias aparecerão no menu de acesso rápido da sua loja.
-                  </p>
+                  <p className="text-gray-500 text-sm">Selecione quais categorias aparecerão no menu de acesso rápido da sua loja.</p>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-80 overflow-y-auto custom-scrollbar p-1">
                   {nicheCatalogs.map((catalog) => {
                     const isSelected = selectedCatalogs.includes(catalog.id);
                     return (
-                      <div
-                        key={catalog.id}
-                        onClick={() => {
-                          setSelectedCatalogs(prev => 
-                            isSelected ? prev.filter(id => id !== catalog.id) : [...prev, catalog.id]
-                          );
-                        }}
-                        className={`cursor-pointer rounded-xl border-2 px-4 py-3 flex items-center justify-between transition-all ${
-                         isSelected ? 'border-green-500 bg-green-50/20' : 'border-gray-200 bg-transparent hover:border-gray-300'
-                        }`}
-                      >
-                        <span className={`font-bold text-sm ${isSelected ? 'text-green-700' : 'text-gray-700'}`}>
-                          {catalog.name}
-                        </span>
+                      <div key={catalog.id} onClick={() => { setSelectedCatalogs(prev => isSelected ? prev.filter(id => id !== catalog.id) : [...prev, catalog.id]); }} className={`cursor-pointer rounded-xl border-2 px-4 py-3 flex items-center justify-between transition-all ${isSelected ? 'border-green-500 bg-green-50/20' : 'border-gray-200 bg-transparent hover:border-gray-300'}`}>
+                        <span className={`font-bold text-sm ${isSelected ? 'text-green-700' : 'text-gray-700'}`}>{catalog.name}</span>
                         <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${isSelected ? 'border-green-500 bg-green-500 text-white' : 'border-gray-300 bg-transparent'}`}>
                           {isSelected && <Check className="w-3 h-3" />}
                         </div>
@@ -637,17 +524,8 @@ export default function RegisterPage() {
                 </div>
 
                 <div className="flex gap-3 mt-6">
-                  <button
-                    onClick={() => setStep(3)}
-                    className="flex-1 py-3 px-4 border border-gray-200 rounded-xl shadow-sm text-sm font-bold text-gray-700 bg-white hover:bg-gray-50 transition-colors"
-                  >
-                    Voltar
-                  </button>
-                  <button
-                    onClick={handleNextStep}
-                    disabled={selectedCatalogs.length === 0}
-                    className="flex-[2] flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 transition-colors"
-                  >
+                  <button onClick={() => setStep(3)} className="flex-1 py-3 px-4 border border-gray-200 rounded-xl shadow-sm text-sm font-bold text-gray-700 bg-white hover:bg-gray-50 transition-colors">Voltar</button>
+                  <button onClick={handleNextStep} disabled={selectedCatalogs.length === 0} className="flex-[2] flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 transition-colors">
                     Continuar <ChevronRight className="w-4 h-4 ml-2" />
                   </button>
                 </div>
@@ -655,18 +533,10 @@ export default function RegisterPage() {
             )}
 
             {step === 5 && (
-              <motion.div
-                key="step5"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="space-y-5"
-              >
+              <motion.div key="step5" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
                 <div className="text-center mb-4">
                   <h3 className="text-xl font-bold text-gray-900 mb-2">Tabela de Preços</h3>
-                  <p className="text-gray-500 text-sm">
-                    Preencha o valor de venda (em R$) para cada categoria habilitada.
-                  </p>
+                  <p className="text-gray-500 text-sm">Preencha o valor de venda (em R$) para cada categoria habilitada.</p>
                 </div>
 
                 <div className="space-y-3 max-h-80 overflow-y-auto custom-scrollbar p-1 pb-4">
@@ -678,15 +548,7 @@ export default function RegisterPage() {
                         <span className="font-bold text-sm text-gray-700 flex-1">{catalog.name}</span>
                         <div className="flex items-center gap-2 bg-transparent">
                           <span className="text-sm font-bold text-gray-400">R$</span>
-                          <input 
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            placeholder="Ex: 199.90"
-                            value={catalogPrices[catalogId] || ""}
-                            onChange={e => setCatalogPrices(prev => ({...prev, [catalogId]: e.target.value}))}
-                            className="w-24 bg-transparent outline-none text-right font-bold text-gray-900 placeholder:text-gray-300"
-                          />
+                          <input type="number" min="0" step="0.01" placeholder="Ex: 199.90" value={catalogPrices[catalogId] || ""} onChange={e => setCatalogPrices(prev => ({ ...prev, [catalogId]: e.target.value }))} className="w-24 bg-transparent outline-none text-right font-bold text-gray-900 placeholder:text-gray-300" />
                         </div>
                       </div>
                     );
@@ -694,17 +556,8 @@ export default function RegisterPage() {
                 </div>
 
                 <div className="flex gap-3 mt-6">
-                  <button
-                    onClick={() => setStep(4)}
-                    className="flex-1 py-3 px-4 border border-gray-200 rounded-xl shadow-sm text-sm font-bold text-gray-700 bg-white hover:bg-gray-50 transition-colors"
-                  >
-                    Voltar
-                  </button>
-                  <button
-                    onClick={handleSubmit}
-                    disabled={loading}
-                    className="flex-[2] flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 transition-colors"
-                  >
+                  <button onClick={() => setStep(4)} className="flex-1 py-3 px-4 border border-gray-200 rounded-xl shadow-sm text-sm font-bold text-gray-700 bg-white hover:bg-gray-50 transition-colors">Voltar</button>
+                  <button onClick={handleSubmit} disabled={loading} className="flex-[2] flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 transition-colors">
                     {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Criar minha loja"}
                   </button>
                 </div>
@@ -719,18 +572,7 @@ export default function RegisterPage() {
 
 function AlertCircle(props: any) {
   return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="12" r="10" />
       <line x1="12" y1="8" x2="12" y2="12" />
       <line x1="12" y1="16" x2="12.01" y2="16" />
