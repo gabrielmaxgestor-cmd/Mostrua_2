@@ -1,12 +1,10 @@
 export const cloudinaryService = {
   async uploadImage(file: File, onProgress?: (progress: number) => void): Promise<string> {
-    // CORREÇÃO: cloudName deve vir da variável de ambiente, não hardcoded
-    const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-    const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || "mostrua_uploads";
-
-    if (!cloudName) {
-      throw new Error("VITE_CLOUDINARY_CLOUD_NAME não configurado. Verifique as variáveis de ambiente no Vercel.");
-    }
+    const cloudName = "mostrua_uploads";
+    // Many times the default unsigned preset in Cloudinary is "ml_default"
+    // If it fails, the user will need to configure an unsigned preset in Cloudinary named "ml_default"
+    // or provide the correct name via env variable VITE_CLOUDINARY_UPLOAD_PRESET
+    const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || "ml_default";
 
     const formData = new FormData();
     formData.append("file", file);
@@ -14,11 +12,17 @@ export const cloudinaryService = {
 
     try {
       if (onProgress) onProgress(10);
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
 
       const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
         method: "POST",
         body: formData,
+        signal: controller.signal
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -36,6 +40,8 @@ export const cloudinaryService = {
   },
 
   async deleteImage(url: string): Promise<void> {
+    // Client-side delete is not supported by default in Cloudinary without a backend token/signature.
+    // We'll leave it as a no-op or log a warning.
     console.warn("Cloudinary images must be deleted via Admin API or signature. URL:", url);
   }
 };

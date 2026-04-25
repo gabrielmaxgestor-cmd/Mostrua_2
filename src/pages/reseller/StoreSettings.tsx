@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
-import { doc, updateDoc } from "firebase/firestore";
+import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../../firebase";
 import { useAuth } from "../../context/AuthContext";
 import { useReseller } from "../../hooks/useReseller";
-import { useNavigate } from "react-router-dom";
 import { cloudinaryService } from "../../services/cloudinaryService";
 import { Save, Image as ImageIcon, Loader2, Share2, Info, Check, AlertCircle, MessageCircle, AtSign, Copy } from "lucide-react";
 import { QRCodeGenerator } from "../../components/reseller/QRCodeGenerator";
@@ -12,7 +11,6 @@ import { CatalogExporter } from "../../components/reseller/CatalogExporter";
 export const StoreSettings = () => {
   const { user } = useAuth();
   const { reseller, loading } = useReseller(user?.uid);
-  const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toast, setToast] = useState<{ type: "success" | "error", text: string } | null>(null);
 
@@ -57,14 +55,21 @@ export const StoreSettings = () => {
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value.replace(/\D/g, "");
     if (value.length > 11) value = value.slice(0, 11);
-    if (value.length > 2) value = `(${value.slice(0, 2)}) ${value.slice(2)}`;
-    if (value.length > 10) value = `${value.slice(0, 10)}-${value.slice(10)}`;
+    
+    if (value.length > 2) {
+      value = `(${value.slice(0, 2)}) ${value.slice(2)}`;
+    }
+    if (value.length > 10) {
+      value = `${value.slice(0, 10)}-${value.slice(10)}`;
+    }
     setFormData({ ...formData, whatsapp: value });
   };
 
   const handleInstagramChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value;
-    if (!value.startsWith("@") && value.length > 0) value = "@" + value;
+    if (!value.startsWith("@") && value.length > 0) {
+      value = "@" + value;
+    }
     setFormData({ ...formData, instagram: value });
   };
 
@@ -86,28 +91,42 @@ export const StoreSettings = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user?.uid) return;
+    console.log("[StoreSettings] handleSubmit triggered");
+    if (!user?.uid) {
+      console.warn("[StoreSettings] No user UID");
+      return;
+    }
 
     if (!formData.storeName?.trim()) {
+      console.warn("[StoreSettings] Store name is empty");
       setToast({ type: "error", text: "Nome da loja é obrigatório." });
       setTimeout(() => setToast(null), 5000);
       return;
     }
 
     setIsSubmitting(true);
+    console.log("[StoreSettings] Starting submission...", formData);
     try {
       let logoUrl = logoPreview;
       let bannerUrl = bannerPreview;
 
       const uploadPromises = [];
       if (logoFile) {
+        console.log("[StoreSettings] Uploading logo...");
         uploadPromises.push(
-          cloudinaryService.uploadImage(logoFile).then(url => { logoUrl = url; })
+          cloudinaryService.uploadImage(logoFile).then(url => { 
+            console.log("[StoreSettings] Logo uploaded:", url);
+            logoUrl = url; 
+          })
         );
       }
       if (bannerFile) {
+        console.log("[StoreSettings] Uploading banner...");
         uploadPromises.push(
-          cloudinaryService.uploadImage(bannerFile).then(url => { bannerUrl = url; })
+          cloudinaryService.uploadImage(bannerFile).then(url => { 
+            console.log("[StoreSettings] Banner uploaded:", url);
+            bannerUrl = url; 
+          })
         );
       }
 
@@ -115,8 +134,9 @@ export const StoreSettings = () => {
         await Promise.all(uploadPromises);
       }
 
+      const currentSettings = reseller?.settings || {};
       const newSettings: any = {
-        ...(reseller?.settings || {}),
+        ...currentSettings,
         primaryColor: formData.primaryColor || "#2563eb",
         secondaryColor: formData.secondaryColor || "#1e40af",
         description: formData.description || "",
@@ -129,13 +149,16 @@ export const StoreSettings = () => {
         banner: bannerUrl || ""
       };
 
+      // Remove undefined fields just to be safe with Firestore
       Object.keys(newSettings).forEach(key => {
-        if (newSettings[key] === undefined) delete newSettings[key];
+        if (newSettings[key] === undefined) {
+          delete newSettings[key];
+        }
       });
 
       const updates: any = {
         settings: newSettings,
-        updatedAt: new Date().toISOString()
+        updatedAt: serverTimestamp()
       };
 
       if (formData.storeName !== reseller?.storeName) {
@@ -146,6 +169,7 @@ export const StoreSettings = () => {
       try {
         await updateDoc(doc(db, "resellers", user.uid), updates);
       } catch (err: any) {
+        // Se a regra no servidor não permite atualizar o storeName
         if (err.code === 'permission-denied' && updates.storeName) {
           console.warn("Permissão negada ao atualizar storeName. Tentando sem o storeName...");
           delete updates.storeName;
@@ -156,28 +180,12 @@ export const StoreSettings = () => {
         }
       }
 
-      const successMsg = hasStoreNameFallback
-        ? "Opções salvas, mas Nome da Loja bloqueado (regras desatualizadas)."
-        : "Configurações salvas com sucesso!";
-
-      setToast({ type: "success", text: successMsg });
-
-      // CORREÇÃO: redirecionar para o próximo passo pendente após 1.5s
-      setTimeout(() => {
-        setToast(null);
-        const hasWhatsapp = !!(formData.whatsapp || "").replace(/\D/g, "");
-        const hasLogo = !!logoUrl;
-        const hasBanner = !!bannerUrl;
-
-        if (!hasWhatsapp || !hasLogo || !hasBanner) {
-          // Ainda há passos pendentes de loja — permanecer na página
-          return;
-        }
-
-        // Todos os passos de loja concluídos — ir para catálogos
-        navigate("/dashboard/catalogs");
-      }, 1500);
-
+      if (hasStoreNameFallback) {
+        setToast({ type: "success", text: "Opções salvas, mas Nome da Loja bloqueado (regras desatualizadas)." });
+      } else {
+        setToast({ type: "success", text: "Configurações salvas com sucesso!" });
+      }
+      setTimeout(() => setToast(null), 5000);
     } catch (error: any) {
       console.error("[StoreSettings] Código:", error?.code);
       console.error("[StoreSettings] Mensagem:", error?.message);
@@ -185,7 +193,7 @@ export const StoreSettings = () => {
 
       let msg = "Erro ao salvar configurações.";
       if (error?.code === 'permission-denied') {
-        msg = "Permissão negada. Verifique as regras do Firestore.";
+        msg = "Permissão negada (Regras do Firestore). Ocorreu um erro ao salvar as configurações. Suas regras do Firestore (`firestore.rules`) parecem estar desatualizadas. Por favor, faça o deploy das novas regras usando `firebase deploy --only firestore:rules`.";
       } else if (error?.code === 'storage/unauthorized') {
         msg = "Sem permissão para fazer upload de imagens.";
       } else if (error?.message) {
@@ -199,16 +207,28 @@ export const StoreSettings = () => {
     }
   };
 
+  const cleanOrigin = (import.meta.env.VITE_APP_URL || window.location.origin)
+    .replace(/^https?:\/\//, '')
+    .split('/')[0];
+
   if (loading) return <div>Carregando...</div>;
 
   const getStoreUrl = (slug: string | undefined, customDomain?: string, customDomainStatus?: string): string => {
     if (!slug) return "";
-    if (customDomain && customDomainStatus === "active") return `https://${customDomain}`;
-    const appBaseUrl = import.meta.env.VITE_APP_URL || "https://mostrua.com.br";
+    // Se tem domínio customizado ativo, usar ele
+    if (customDomain && customDomainStatus === "active") {
+      return `https://${customDomain}`;
+    }
+    // URL base do app — usar variável de ambiente ou o origin atual
+    const appBaseUrl = import.meta.env.VITE_APP_URL || window.location.origin;
     return `${appBaseUrl}/store/${slug}`;
   };
 
-  const storeUrl = getStoreUrl(reseller?.slug, reseller?.customDomain, reseller?.customDomainStatus);
+  const storeUrl = getStoreUrl(
+    reseller?.slug,
+    reseller?.customDomain,
+    reseller?.customDomainStatus
+  );
 
   const handleCopy = () => {
     navigator.clipboard.writeText(storeUrl);
@@ -239,6 +259,7 @@ export const StoreSettings = () => {
             {/* Imagens */}
             <div className="space-y-4">
               <h3 className="text-lg font-bold text-gray-900">Imagens</h3>
+              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Logo</label>
@@ -314,6 +335,7 @@ export const StoreSettings = () => {
                   ))}
                 </div>
                 
+                {/* Opção customizada */}
                 <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
                   <label className="text-xs text-gray-600 font-medium">Personalizar:</label>
                   <input
@@ -325,10 +347,13 @@ export const StoreSettings = () => {
                   <span className="text-xs text-gray-500 font-mono">{formData.primaryColor}</span>
                 </div>
 
+                {/* Cor Secundária */}
                 <div className="mt-4">
                   <label className="block text-sm font-bold text-gray-900 mb-2">
                     Cor secundária
-                    <span className="ml-2 text-xs font-normal text-gray-400">Usada em fundos, badges e destaques</span>
+                    <span className="ml-2 text-xs font-normal text-gray-400">
+                      Usada em fundos, badges e destaques
+                    </span>
                   </label>
                   <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
                     <label className="text-xs text-gray-600 font-medium">Cor:</label>
@@ -381,7 +406,9 @@ export const StoreSettings = () => {
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
                   placeholder="Ex: Moda da Ana, Loja do João..."
                 />
-                <p className="text-xs text-gray-400 mt-1">Este é o nome que aparece na sua loja e no painel.</p>
+                <p className="text-xs text-gray-400 mt-1">
+                  Este é o nome que aparece na sua loja e no painel.
+                </p>
               </div>
 
               <div>
@@ -472,14 +499,15 @@ export const StoreSettings = () => {
 
             <hr className="border-gray-100" />
 
-            {/* URL */}
+            {/* Configurações de URL */}
             <div className="space-y-4">
               <h3 className="text-lg font-bold text-gray-900">Endereço da Loja (Link)</h3>
               <p className="text-sm text-gray-500">Este é o link que você compartilha no Instagram e WhatsApp.</p>
+              
               <div>
                 <div className="flex items-center">
-                  <span className="text-gray-500 bg-gray-50 border border-r-0 border-gray-200 rounded-l-xl px-3 py-3 text-sm truncate max-w-[200px] sm:max-w-none">
-                    {(import.meta.env.VITE_APP_URL || window.location.origin).replace(/^https?:\/\//, '')}/store/
+                  <span className="text-gray-500 bg-gray-50 border border-r-0 border-gray-200 rounded-l-xl px-3 py-3 text-sm truncate max-w-[150px] sm:max-w-none">
+                    {cleanOrigin}/store/
                   </span>
                   <input 
                     type="text" 
@@ -517,8 +545,9 @@ export const StoreSettings = () => {
             </div>
           </form>
 
-          {/* Divulgação */}
+          {/* Divulgação e Compartilhamento */}
           <div className="space-y-6 mt-8">
+            {/* Compartilhe sua loja */}
             <div className="bg-blue-50 rounded-3xl border border-blue-100 p-6">
               <h3 className="font-bold text-gray-900 mb-1">Link da sua loja</h3>
               <p className="text-sm text-gray-500 mb-4">Compartilhe esse link para que seus clientes possam comprar.</p>
@@ -568,7 +597,9 @@ export const StoreSettings = () => {
             <div className="bg-white rounded-3xl border border-gray-200 p-4 overflow-hidden">
               <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Preview da sua loja</p>
               
+              {/* Mini mockup do header da loja */}
               <div className="rounded-2xl overflow-hidden border border-gray-100">
+                {/* Header simulado */}
                 <div className="p-4 flex items-center gap-3" style={{ backgroundColor: formData.primaryColor + '15' }}>
                   {logoPreview ? (
                     <img src={logoPreview} className="w-10 h-10 rounded-xl object-cover" />
@@ -584,6 +615,7 @@ export const StoreSettings = () => {
                   </div>
                 </div>
                 
+                {/* Banner simulado */}
                 {bannerPreview ? (
                   <div className="aspect-[3/1] overflow-hidden">
                     <img src={bannerPreview} className="w-full h-full object-cover" />
@@ -594,6 +626,7 @@ export const StoreSettings = () => {
                   </div>
                 )}
                 
+                {/* Botão de compra simulado */}
                 <div className="p-3 bg-gray-50">
                   <div className="flex items-center justify-between mb-2">
                     <p className="text-xs text-gray-400">Exemplo de produto</p>
@@ -607,6 +640,7 @@ export const StoreSettings = () => {
                 </div>
               </div>
               
+              {/* Cor atual */}
               <div className="mt-3 flex flex-col gap-2">
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 rounded-full border border-gray-200" style={{ backgroundColor: formData.primaryColor }} />

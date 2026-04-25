@@ -15,35 +15,22 @@ export default function LoginPage() {
 
   const handleAuthRole = async (user: any) => {
     try {
-      // CORREÇÃO: fallback para evitar falha com 400 em tokens recém-criados
-      let tokenResult;
-      try {
-        tokenResult = await user.getIdTokenResult(true);
-      } catch {
-        tokenResult = await user.getIdTokenResult(false);
-      }
-
+      // Force refresh to get latest claims
+      const tokenResult = await user.getIdTokenResult(true);
       let role = null;
       if (tokenResult.claims.admin) {
-        role = "admin";
+         role = "admin";
       } else {
-        try {
-          const snap = await getDoc(doc(db, "users", user.uid));
-          role = snap.data()?.role || null;
-        } catch (firestoreErr) {
-          console.error("Erro ao buscar role no Firestore:", firestoreErr);
-          // CORREÇÃO: assume reseller se não conseguir buscar o perfil
-          role = "reseller";
-        }
+         const snap = await getDoc(doc(db, "users", user.uid));
+         role = snap.data()?.role;
       }
-
+      
       if (role === "admin") navigate("/admin");
       else if (role === "reseller") navigate("/dashboard");
       else navigate("/");
-    } catch (err: any) {
-      console.error("Erro no handleAuthRole:", err);
-      // CORREÇÃO: navega para dashboard como fallback em vez de /
-      navigate("/dashboard");
+    } catch (firestoreErr: any) {
+      console.error("Erro ao buscar dados do usuário no Firestore:", firestoreErr);
+      navigate("/");
     }
   };
 
@@ -73,6 +60,7 @@ export default function LoginPage() {
     setError("");
     try {
       const cred = await signInWithPopup(auth, googleProvider);
+      
       const snap = await getDoc(doc(db, "users", cred.user.uid));
       if (!snap.exists()) {
         navigate("/register", { state: { email: cred.user.email, name: cred.user.displayName, googleSignIn: true } });
@@ -92,6 +80,7 @@ export default function LoginPage() {
       
       {/* Left Column (Visual - hidden on mobile) */}
       <div className="hidden lg:flex relative bg-gradient-to-br from-blue-600 to-blue-800 p-12 flex-col justify-between overflow-hidden">
+        {/* Subtle dots pattern */}
         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "radial-gradient(#ffffff 1px, transparent 1px)", backgroundSize: "24px 24px" }}></div>
         
         <div className="relative z-10">
@@ -118,17 +107,21 @@ export default function LoginPage() {
 
       {/* Right Column (Form) */}
       <div className="relative flex flex-col justify-center min-h-screen px-6 py-12 sm:px-12 lg:px-24">
+        {/* Loading Progress Bar */}
         <div className="absolute top-0 left-0 right-0 h-1 bg-gray-100 overflow-hidden">
           <div className={`h-full bg-blue-600 transition-all duration-1000 ease-out ${loading ? 'w-full' : 'w-0'}`}></div>
         </div>
 
+        {/* Back Link */}
         <Link to="/" className="absolute top-6 left-6 flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors font-medium text-sm">
           <ArrowLeft className="w-4 h-4" />
           <span className="hidden sm:inline">Voltar para o início</span>
           <span className="sm:hidden">Voltar</span>
         </Link>
 
+        {/* Form Container */}
         <div className="w-full max-w-sm mx-auto">
+          {/* Logo only on mobile */}
           <div className="lg:hidden flex justify-center mb-10">
             <img src="/logo.svg" alt="Mostrua Logo" className="h-10" />
           </div>

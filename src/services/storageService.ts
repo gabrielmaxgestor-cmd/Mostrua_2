@@ -1,109 +1,132 @@
+import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
+import { storage } from "../firebase";
+
 export const storageService = {
   async compressImage(file: File, maxWidth = 800, maxKB = 200, timeoutMs = 8000): Promise<File> {
-    if (file.size / 1024 <= maxKB) return file;
+    // Skip compression if the file is already small enough
+    if (file.size / 1024 <= maxKB) {
+      return file;
+    }
 
     return new Promise((resolve) => {
       let isDone = false;
+
+      // Fallback timeout to ensure we NEVER hang infinitely
       const timeout = setTimeout(() => {
         if (isDone) return;
         isDone = true;
-        resolve(file);
+        console.warn("Image compression timed out. Using original file.");
+        resolve(file); // Fallback to original
       }, timeoutMs);
 
-      const img = new Image();
-      const objectUrl = URL.createObjectURL(file);
+      try {
+        const img = new Image();
+        const objectUrl = URL.createObjectURL(file);
+        
+        img.onload = () => {
+          if (isDone) return;
+          try {
+            const canvas = document.createElement('canvas');
+            let width = img.width;
+            let height = img.height;
 
-      img.onload = () => {
-        if (isDone) return;
-        try {
-          const canvas = document.createElement('canvas');
-          let width = img.width;
-          let height = img.height;
+            if (width > maxWidth) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            }
 
-          if (width > maxWidth) {
-            height = Math.round((height * maxWidth) / width);
-            width = maxWidth;
-          }
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+              throw new Error('Canvas context not available');
+            }
+            
+            ctx.drawImage(img, 0, 0, width, height);
 
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          if (!ctx) throw new Error('Canvas context not available');
+            // Revoke after drawing!
+            URL.revokeObjectURL(objectUrl);
 
-          ctx.drawImage(img, 0, 0, width, height);
-          URL.revokeObjectURL(objectUrl);
+            // One-pass compression for maximum speed
+            const quality = 0.8;
+                    
+            canvas.toBlob(
+              (blob) => {
+                if (isDone) return;
+                isDone = true;
+                clearTimeout(timeout);
 
-          canvas.toBlob((blob) => {
+                if (!blob) {
+                  console.warn('Blob creation failed, returning original file');
+                  resolve(file);
+                  return;
+                }
+                resolve(new File([blob], file.name || 'image.jpg', { type: file.type || 'image/jpeg', lastModified: Date.now() }));
+              },
+              file.type || 'image/jpeg',
+              quality
+            );
+          } catch (error) {
             if (isDone) return;
             isDone = true;
             clearTimeout(timeout);
-            if (!blob) { resolve(file); return; }
-            resolve(new File([blob], file.name || 'image.jpg', {
-              type: file.type || 'image/jpeg',
-              lastModified: Date.now()
-            }));
-          }, file.type || 'image/jpeg', 0.8);
-        } catch (error) {
+            console.error("Compression error:", error);
+            resolve(file);
+          }
+        };
+        
+        img.onerror = (err) => {
           if (isDone) return;
           isDone = true;
           clearTimeout(timeout);
+          URL.revokeObjectURL(objectUrl);
+          console.error("Image loading error:", err);
           resolve(file);
-        }
-      };
-
-      img.onerror = () => {
+        };
+        
+        img.src = objectUrl;
+      } catch (err) {
         if (isDone) return;
         isDone = true;
         clearTimeout(timeout);
-        URL.revokeObjectURL(objectUrl);
+        console.error("Fatal compression error:", err);
         resolve(file);
-      };
-
-      img.src = objectUrl;
+      }
     });
   },
 
   async uploadImage(file: File, path: string, onProgress?: (progress: number) => void): Promise<string> {
-    const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-    const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
-
-    if (!cloudName || !uploadPreset) {
-      throw new Error("Cloudinary não configurado. Verifique as variáveis de ambiente.");
-    }
-
     try {
       const compressedFile = await this.compressImage(file);
-
-      const formData = new FormData();
-      formData.append('file', compressedFile);
-      formData.append('upload_preset', uploadPreset);
-      formData.append('folder', path);
-
+      const storageRef = ref(storage, `${path}/${Date.now()}_${compressedFile.name}`);
+      
+      // Artificial progress for UI since uploadBytes doesn't support state_changed
       if (onProgress) onProgress(10);
-
-      const response = await fetch(
-        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-        { method: 'POST', body: formData }
-      );
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error?.message || 'Erro no upload');
-      }
-
+      
+      const snapshot = await uploadBytes(storageRef, compressedFile);
       if (onProgress) onProgress(100);
-
-      const data = await response.json();
-      return data.secure_url;
-
+      
+      const downloadURL = await getDownloadURL(snapshot.ref);
+      return downloadURL;
     } catch (error) {
-      console.error("Cloudinary upload error:", error);
+      console.error("Storage upload error:", error);
       throw error;
     }
   },
 
-  async deleteImage(_url: string): Promise<void> {
-    // Deleção via Cloudinary requer backend — ignorada no client por segurança
-    console.warn("Deleção de imagem não disponível no client. Configure via Cloudinary webhook se necessário.");
+  async deleteImage(url: string): Promise<void> {
+    try {
+      // Extract path from URL
+      const decodedUrl = decodeURIComponent(url);
+      const startIndex = decodedUrl.indexOf('/o/') + 3;
+      const endIndex = decodedUrl.indexOf('?alt=media');
+      if (startIndex > 2 && endIndex > -1) {
+        const filePath = decodedUrl.substring(startIndex, endIndex);
+        const storageRef = ref(storage, filePath);
+        await deleteObject(storageRef);
+      }
+    } catch (error) {
+      console.error('Error deleting image:', error);
+    }
   }
 };

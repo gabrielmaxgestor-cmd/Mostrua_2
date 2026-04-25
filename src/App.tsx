@@ -43,42 +43,23 @@ function ProtectedRoute({ children, requiredRole }: { children: React.ReactNode;
       setUser(u);
       if (u) {
         try {
-          // CORREÇÃO: tenta forçar refresh do token com fallback
-          // getIdTokenResult(true) pode falhar com 400 em tokens recém-criados
-          let tokenResult;
-          try {
-            tokenResult = await u.getIdTokenResult(true);
-          } catch {
-            tokenResult = await u.getIdTokenResult(false);
-          }
-
+          const tokenResult = await u.getIdTokenResult(true);
           const snap = await getDoc(doc(db, "users", u.uid));
-          const userRole = tokenResult.claims.admin
-            ? "admin"
-            : (snap.data()?.role || null);
+          const userRole = tokenResult.claims.admin ? "admin" : (snap.data()?.role || null);
           setRole(userRole);
         } catch (error) {
-          console.error("ProtectedRoute: erro ao obter role:", error);
-          setRole(null);
+          console.error("Error getting user claims:", error);
         }
-      } else {
-        setRole(null);
       }
-      // CORREÇÃO: setLoading(false) sempre executa — estava fora do if(u) mas
-      // dentro do try sem finally, causando loading infinito quando getIdTokenResult falhava
       setLoading(false);
     });
     return unsub;
   }, []);
 
-  if (loading) return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
-    </div>
-  );
+  if (loading) return <div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" /></div>;
   if (!user) return <Navigate to="/login" replace />;
   if (requiredRole && role !== requiredRole) return <Navigate to="/" replace />;
-  return <>{children}</>;
+  return children;
 }
 
 export default function App() {
@@ -107,7 +88,7 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-
+        
         <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminLayout /></ProtectedRoute>}>
           <Route index element={<AdminDashboard />} />
           <Route path="niches" element={<Niches />} />
@@ -140,6 +121,7 @@ export default function App() {
   );
 }
 
+// Helper to extract slug from URL and pass to TenantProvider
 import { useParams } from "react-router-dom";
 function TenantProviderWrapper({ children }: { children: React.ReactNode }) {
   const { slug } = useParams<{ slug: string }>();
