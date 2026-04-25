@@ -45,76 +45,125 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
-      if (currentUser) {
-        try {
-          // Force refresh token on login to get custom claims
-          const tokenResult = await currentUser.getIdTokenResult(true);
-          
-          let role = "reseller"; // Default assumption
-          
-          if (tokenResult.claims.admin) {
-             role = "admin";
-          }
-          
-          const profileDoc = await getDoc(doc(db, "users", currentUser.uid));
-          if (profileDoc.exists()) {
-            const profileData = profileDoc.data() as UserProfile;
-            
-            // Allow token claim to override DB role or fallback to DB role
-            const finalRole = tokenResult.claims.admin ? "admin" : profileData.role;
-            
-            setProfile({ ...profileData, role: finalRole as any });
-            
-            if (finalRole === "reseller") {
-              const resellerDoc = await getDoc(doc(db, "resellers", currentUser.uid));
-              if (resellerDoc.exists()) {
-                setReseller(resellerDoc.data() as Reseller);
-                
-                // Fetch subscription and plan
-                const sub = await subscriptionService.getResellerSubscription(currentUser.uid);
-                setSubscription(sub);
-                if (sub) {
-                  const p = await subscriptionService.getPlan(sub.planId);
-                  setPlan(p);
-                } else {
-                  setPlan(null);
-                }
-              } else {
-                setReseller(null);
-                setSubscription(null);
-                setPlan(null);
-              }
-            } else {
-              setReseller(null);
-              setSubscription(null);
-              setPlan(null);
-            }
-          } else {
-            // Profile doesn't exist, but maybe they are admin via claims
-            if (tokenResult.claims.admin) {
-               setProfile({ uid: currentUser.uid, email: currentUser.email || "", role: "admin", status: "active", createdAt: null as any });
-               setReseller(null);
-               setSubscription(null);
-               setPlan(null);
-            } else {
-               setProfile(null);
-               setReseller(null);
-               setSubscription(null);
-               setPlan(null);
-            }
-          }
-        } catch (error) {
-          console.error("Error refreshing token or fetching profile:", error);
-          setProfile(null);
-          setReseller(null);
-        }
-      } else {
+
+      if (!currentUser) {
         setProfile(null);
         setReseller(null);
         setSubscription(null);
         setPlan(null);
+        setLoading(false);
+        return;
       }
-      setLoading(false);
+
+      try {
+        console.log("[AuthContext] Usuário logado:", currentUser.uid);
+
+        // CORREÇÃO: token refresh com fallback para evitar travamento
+        let tokenResult;
+        try {
+          tokenResult = await currentUser.getIdTokenResult(true);
+          console.log("[AuthContext] Token refreshed com sucesso");
+        } catch (tokenError) {
+          console.warn("[AuthContext] Falha no refresh do token, usando cache:", tokenError);
+          tokenResult = await currentUser.getIdTokenResult(false);
+        }
+
+        const isAdminClaim = !!tokenResult.claims.admin;
+        console.log("[AuthContext] isAdmin:", isAdminClaim);
+
+        // Buscar perfil do usuário
+        let profileDoc;
+        try {
+          profileDoc = await getDoc(doc(db, "users", currentUser.uid));
+          console.log("[AuthContext] Profile existe:", profileDoc.exists());
+        } catch (profileError) {
+          console.error("[AuthContext] Erro ao buscar perfil:", profileError);
+          // Se admin por claim, continua mesmo sem profile no Firestore
+          if (isAdminClaim) {
+            setProfile({ uid: currentUser.uid, email: currentUser.email || "", role: "admin", status: "active", createdAt: null as any });
+            setReseller(null);
+            setSubscription(null);
+            setPlan(null);
+            setLoading(false);
+            return;
+          }
+          throw profileError;
+        }
+
+        if (profileDoc.exists()) {
+          const profileData = profileDoc.data() as UserProfile;
+          const finalRole = isAdminClaim ? "admin" : profileData.role;
+          setProfile({ ...profileData, role: finalRole as any });
+          console.log("[AuthContext] Role final:", finalRole);
+
+          if (finalRole === "reseller") {
+            // Buscar dados do revendedor
+            try {
+              const resellerDoc = await getDoc(doc(db, "resellers", currentUser.uid));
+              console.log("[AuthContext] Reseller existe:", resellerDoc.exists());
+
+              if (resellerDoc.exists()) {
+                setReseller(resellerDoc.data() as Reseller);
+              } else {
+                setReseller(null);
+              }
+            } catch (resellerError) {
+              console.error("[AuthContext] Erro ao buscar reseller:", resellerError);
+              setReseller(null);
+            }
+
+            // Buscar subscription — isolado para não bloquear o loading
+            try {
+              const sub = await subscriptionService.getResellerSubscription(currentUser.uid);
+              console.log("[AuthContext] Subscription:", sub?.status ?? "não encontrada");
+              setSubscription(sub);
+
+              if (sub) {
+                try {
+                  const p = await subscriptionService.getPlan(sub.planId);
+                  setPlan(p);
+                } catch (planError) {
+                  console.error("[AuthContext] Erro ao buscar plano:", planError);
+                  setPlan(null);
+                }
+              } else {
+                setPlan(null);
+              }
+            } catch (subError) {
+              console.error("[AuthContext] Erro ao buscar subscription:", subError);
+              setSubscription(null);
+              setPlan(null);
+            }
+
+          } else {
+            setReseller(null);
+            setSubscription(null);
+            setPlan(null);
+          }
+
+        } else {
+          // Profile não existe no Firestore
+          if (isAdminClaim) {
+            setProfile({ uid: currentUser.uid, email: currentUser.email || "", role: "admin", status: "active", createdAt: null as any });
+          } else {
+            setProfile(null);
+          }
+          setReseller(null);
+          setSubscription(null);
+          setPlan(null);
+        }
+
+      } catch (error) {
+        console.error("[AuthContext] Erro crítico no carregamento do perfil:", error);
+        setProfile(null);
+        setReseller(null);
+        setSubscription(null);
+        setPlan(null);
+      } finally {
+        // CORREÇÃO: setLoading(false) garantido no finally — nunca fica preso
+        console.log("[AuthContext] setLoading(false)");
+        setLoading(false);
+      }
     });
 
     return () => unsubscribe();
