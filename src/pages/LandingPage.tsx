@@ -458,22 +458,52 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Metrics Section replacing Fake Testimonials */}
+      {/* Trust & Benefits Section */}
       <section className="py-24 bg-white border-y border-gray-100">
-        <div className="max-w-4xl mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center mb-6">
+        <div className="max-w-5xl mx-auto px-4">
+          <p className="text-center text-sm font-bold text-blue-600 uppercase tracking-widest mb-4">Por que a Mostrua?</p>
+          <h2 className="text-center text-4xl font-black text-gray-900 mb-16">Tudo que você precisa para vender mais,<br className="hidden md:block" /> em um só lugar</h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
-              { number: "+2.400", label: "revendedores ativos" },
-              { number: "R$3,2M", label: "em pedidos gerados" },
-              { number: "4.8★", label: "avaliação média" }
-            ].map((stat, i) => (
-              <div key={i} className="flex flex-col items-center justify-center">
-                <p className="text-5xl font-black text-gray-900 mb-4">{stat.number}</p>
-                <p className="text-lg text-gray-500 font-medium">{stat.label}</p>
+              {
+                icon: "⚡",
+                title: "Pronto em minutos",
+                description: "Crie sua loja, adicione seus produtos e comece a vender no mesmo dia. Sem precisar de técnicos ou agências."
+              },
+              {
+                icon: "📲",
+                title: "Pedidos direto no WhatsApp",
+                description: "Cada pedido chega no seu celular em tempo real. Você negocia, combina o pagamento e entrega do seu jeito."
+              },
+              {
+                icon: "🔒",
+                title: "Sem taxas por venda",
+                description: "Você paga apenas a mensalidade do plano. Não cobramos comissão por pedido, então todo o lucro é seu."
+              },
+              {
+                icon: "🎨",
+                title: "Sua marca, sua identidade",
+                description: "Personalize cores, logo e banner da loja. Seus clientes veem a sua marca, não a nossa."
+              },
+              {
+                icon: "📦",
+                title: "Catálogo sempre atualizado",
+                description: "Novos produtos são adicionados pelos administradores automaticamente. Você foca em vender, não em cadastrar."
+              },
+              {
+                icon: "🆓",
+                title: "7 dias grátis para testar",
+                description: "Experimente todas as funcionalidades sem compromisso e sem precisar de cartão de crédito."
+              }
+            ].map((item, i) => (
+              <div key={i} className="flex flex-col items-start p-6 rounded-2xl bg-gray-50 hover:bg-gray-100 transition-colors">
+                <span className="text-3xl mb-4">{item.icon}</span>
+                <h3 className="text-lg font-bold text-gray-900 mb-2">{item.title}</h3>
+                <p className="text-gray-500 text-sm leading-relaxed">{item.description}</p>
               </div>
             ))}
           </div>
-          <p className="text-center text-sm text-gray-400 italic">Dados de novembro/2024</p>
         </div>
       </section>
 
