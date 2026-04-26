@@ -4,7 +4,7 @@ import {
   getDocs, 
   addDoc, 
   updateDoc, 
-  deleteDoc, 
+  deleteDoc,
   query, 
   where, 
   orderBy,
@@ -35,17 +35,14 @@ export const catalogService = {
   async createCatalog(data: Omit<Catalog, "id" | "productsCount" | "createdAt">): Promise<string> {
     const batch = writeBatch(db);
     
-    // Create new catalog reference
     const newCatalogRef = doc(collection(db, "catalogs"));
     
-    // Set catalog data
     batch.set(newCatalogRef, {
       ...data,
       productsCount: 0,
       createdAt: serverTimestamp()
     });
 
-    // Increment catalogsCount in the corresponding niche
     const nicheRef = doc(db, "niches", data.nicheId);
     batch.update(nicheRef, {
       catalogsCount: increment(1)
@@ -61,7 +58,6 @@ export const catalogService = {
     
     batch.update(catalogRef, data);
 
-    // If niche changed, update counts
     if (data.nicheId && data.nicheId !== oldNicheId) {
       const oldNicheRef = doc(db, "niches", oldNicheId);
       const newNicheRef = doc(db, "niches", data.nicheId);
@@ -73,20 +69,20 @@ export const catalogService = {
     await batch.commit();
   },
 
-  async deleteCatalog(id: string, productsCount: number, nicheId: string): Promise<void> {
-    if (productsCount > 0) {
-      throw new Error("Não é possível excluir um catálogo que possui produtos. Desative-o em vez disso.");
-    }
-
+  async deleteCatalog(id: string, nicheId: string): Promise<void> {
     const batch = writeBatch(db);
-    
-    // Delete catalog
-    const catalogRef = doc(db, "catalogs", id);
-    batch.delete(catalogRef);
 
-    // Decrement catalogsCount in niche
-    const nicheRef = doc(db, "niches", nicheId);
-    batch.update(nicheRef, {
+    // Deletar todos os produtos do catálogo
+    const productsSnap = await getDocs(
+      query(collection(db, "products"), where("catalogId", "==", id))
+    );
+    productsSnap.docs.forEach(p => batch.delete(p.ref));
+
+    // Deletar o catálogo
+    batch.delete(doc(db, "catalogs", id));
+
+    // Decrementar contador no nicho
+    batch.update(doc(db, "niches", nicheId), {
       catalogsCount: increment(-1)
     });
 
