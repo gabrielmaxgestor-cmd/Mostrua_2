@@ -183,9 +183,9 @@ export const Catalogs = () => {
   };
 
   const handleDelete = async (catalog: Catalog) => {
-    if (window.confirm(`Tem certeza que deseja excluir o catálogo "${catalog.name}"?`)) {
+    if (window.confirm(`Tem certeza que deseja excluir o catálogo "${catalog.name}"?\n\nISTO TAMBÉM EXCLUIRÁ todos os produtos associados.`)) {
       try {
-        await catalogService.deleteCatalog(catalog.id, catalog.productsCount || 0, catalog.nicheId);
+        await catalogService.deleteCatalog(catalog.id, catalog.nicheId);
         showToast("success", "Catálogo excluído com sucesso!");
       } catch (error: any) {
         showToast("error", error.message);
