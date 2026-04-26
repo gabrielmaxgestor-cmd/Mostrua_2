@@ -114,9 +114,9 @@ export const Niches = () => {
   };
 
   const handleDelete = async (niche: Niche) => {
-    if (window.confirm(`Tem certeza que deseja excluir o nicho "${niche.name}"?`)) {
+    if (window.confirm(`Tem certeza que deseja excluir o nicho "${niche.name}"?\n\nISTO TAMBÉM EXCLUIRÁ todos os catálogos e produtos associados.`)) {
       try {
-        await nicheService.deleteNiche(niche.id, niche.catalogsCount || 0);
+        await nicheService.deleteNiche(niche.id);
         showToast("success", "Nicho excluído com sucesso!");
       } catch (error: any) {
         showToast("error", error.message);
