@@ -27,6 +27,7 @@ import { Products as ResellerProducts } from "./pages/reseller/Products";
 import { Orders as ResellerOrders } from "./pages/reseller/Orders";
 import { StoreSettings as ResellerSettings } from "./pages/reseller/StoreSettings";
 import { CustomDomain } from "./pages/reseller/CustomDomain";
+import { StorePreview } from "./pages/reseller/StorePreview";
 import ResellerWelcome from "./pages/reseller/ResellerWelcome";
 import Analytics from "./pages/reseller/Analytics";
 import { ResellerCustomers } from "./pages/ResellerCustomers";
@@ -43,15 +44,12 @@ function ProtectedRoute({ children, requiredRole }: { children: React.ReactNode;
       setUser(u);
       if (u) {
         try {
-          // CORREÇÃO: tenta forçar refresh do token com fallback
-          // getIdTokenResult(true) pode falhar com 400 em tokens recém-criados
           let tokenResult;
           try {
             tokenResult = await u.getIdTokenResult(true);
           } catch {
             tokenResult = await u.getIdTokenResult(false);
           }
-
           const snap = await getDoc(doc(db, "users", u.uid));
           const userRole = tokenResult.claims.admin
             ? "admin"
@@ -64,8 +62,6 @@ function ProtectedRoute({ children, requiredRole }: { children: React.ReactNode;
       } else {
         setRole(null);
       }
-      // CORREÇÃO: setLoading(false) sempre executa — estava fora do if(u) mas
-      // dentro do try sem finally, causando loading infinito quando getIdTokenResult falhava
       setLoading(false);
     });
     return unsub;
@@ -124,6 +120,7 @@ export default function App() {
           <Route path="analytics" element={<Analytics />} />
           <Route path="customers" element={<ResellerCustomers />} />
           <Route path="store" element={<ResellerSettings />} />
+          <Route path="preview" element={<StorePreview />} />
           <Route path="domain" element={<CustomDomain />} />
           <Route path="catalogs" element={<ResellerCatalogs />} />
           <Route path="products" element={<ResellerProducts />} />
