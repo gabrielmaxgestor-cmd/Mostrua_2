@@ -7,7 +7,8 @@ import {
   deleteDoc, 
   query, 
   where, 
-  serverTimestamp 
+  serverTimestamp,
+  writeBatch
 } from "firebase/firestore";
 import { db } from "../firebase";
 import { Niche } from "../types";
@@ -39,11 +40,27 @@ export const nicheService = {
     await updateDoc(docRef, data);
   },
 
-  async deleteNiche(id: string, catalogsCount: number): Promise<void> {
-    if (catalogsCount > 0) {
-      throw new Error("Não é possível excluir um nicho que possui catálogos. Desative-o em vez disso.");
+  async deleteNiche(id: string): Promise<void> {
+    const batch = writeBatch(db);
+
+    // Buscar todos os catálogos do nicho
+    const catalogsSnap = await getDocs(
+      query(collection(db, "catalogs"), where("nicheId", "==", id))
+    );
+
+    // Para cada catálogo, deletar produtos associados
+    for (const catalogDoc of catalogsSnap.docs) {
+      const productsSnap = await getDocs(
+        query(collection(db, "products"), where("catalogId", "==", catalogDoc.id))
+      );
+      productsSnap.docs.forEach(p => batch.delete(p.ref));
+      batch.delete(catalogDoc.ref);
     }
-    await deleteDoc(doc(db, "niches", id));
+
+    // Deletar o nicho
+    batch.delete(doc(db, "niches", id));
+
+    await batch.commit();
   },
 
   async toggleNicheStatus(id: string, currentStatus: boolean): Promise<void> {
