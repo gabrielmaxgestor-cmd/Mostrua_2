@@ -1,47 +1,43 @@
 import React, { useState, useEffect, useRef } from "react";
 import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { db } from "../../firebase";
-import { BaseProduct, Catalog, Niche, Category } from "../../types";
+import { BaseProduct, Catalog, Niche } from "../../types";
 import { productService } from "../../services/productService";
 import { cloudinaryService } from "../../services/cloudinaryService";
-import { getCategoriesByCatalog } from "../../services/categoryService";
 import { notificationService } from "../../services/notificationService";
-import { Plus, Settings, Edit, Trash2, Image as ImageIcon, Loader2, Search, AlertCircle, Filter, Package, X } from "lucide-react";
+import { Plus, Edit, Trash2, Image as ImageIcon, Loader2, Search, AlertCircle, Filter, Package, X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
 export const Products = () => {
   const [products, setProducts] = useState<BaseProduct[]>([]);
   const [catalogs, setCatalogs] = useState<Catalog[]>([]);
   const [niches, setNiches] = useState<Niche[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingProduct, setEditingProduct] = useState<BaseProduct | null>(null);
-  
+
   const [searchTerm, setSearchTerm] = useState("");
   const [filterNiche, setFilterNiche] = useState<string>("all");
   const [filterCatalog, setFilterCatalog] = useState<string>("all");
   const [toastMessage, setToastMessage] = useState<{ type: "success" | "error", text: string } | null>(null);
-  
+
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     priceBase: 0,
     sku: "",
-    categoryId: "",
-    category: "",
     nicheId: "",
     catalogId: "",
     active: true,
   });
-  
+
   const [variations, setVariations] = useState<string[]>([]);
   const [newVariation, setNewVariation] = useState("");
-  
+
   const [imageFiles, setImageFiles] = useState<File[]>([]);
-  const [imageUrls, setImageUrls] = useState<string[]>([]); // For existing images when editing
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -64,14 +60,6 @@ export const Products = () => {
     return () => { unsubProducts(); unsubCatalogs(); unsubNiches(); };
   }, []);
 
-  useEffect(() => {
-    if (formData.catalogId) {
-      getCategoriesByCatalog(formData.catalogId).then(setCategories).catch(console.error);
-    } else {
-      setCategories([]);
-    }
-  }, [formData.catalogId]);
-
   const showToast = (type: "success" | "error", text: string) => {
     setToastMessage({ type, text });
     setTimeout(() => setToastMessage(null), 3000);
@@ -85,8 +73,6 @@ export const Products = () => {
         description: product.description,
         priceBase: product.priceBase,
         sku: product.sku,
-        categoryId: product.categoryId || "",
-        category: product.category || "",
         nicheId: product.nicheId,
         catalogId: product.catalogId,
         active: product.active
@@ -95,14 +81,12 @@ export const Products = () => {
       setImageUrls(product.images || []);
     } else {
       setEditingProduct(null);
-      setFormData({ 
-        name: "", 
-        description: "", 
+      setFormData({
+        name: "",
+        description: "",
         priceBase: 0,
         sku: "",
-        categoryId: "",
-        category: "",
-        nicheId: filterNiche !== "all" ? filterNiche : "", 
+        nicheId: filterNiche !== "all" ? filterNiche : "",
         catalogId: filterCatalog !== "all" ? filterCatalog : "",
         active: true
       });
@@ -162,8 +146,7 @@ export const Products = () => {
   };
 
   const makePrimaryFile = (index: number) => {
-    if (imageUrls.length > 0) return; // Can only make file primary if no URLs exist
-    if (index === 0) return;
+    if (index === 0 && imageUrls.length === 0) return;
     setImageFiles(prev => {
       const newFiles = [...prev];
       const [moved] = newFiles.splice(index, 1);
@@ -196,11 +179,10 @@ export const Products = () => {
 
     setIsSubmitting(true);
     try {
-      // Upload new images
       const uploadedUrls = await Promise.all(
         imageFiles.map(file => cloudinaryService.uploadImage(file))
       );
-      
+
       const finalImages = [...imageUrls, ...uploadedUrls];
 
       if (editingProduct) {
@@ -212,14 +194,13 @@ export const Products = () => {
         });
         showToast("success", "Produto atualizado com sucesso!");
       } else {
-        const newProductId = await productService.createProduct({
+        await productService.createProduct({
           ...formData,
           priceBase: Number(formData.priceBase),
           images: finalImages,
           variations
         });
-        
-        // Notify resellers in this niche
+
         const catalogName = catalogs.find(c => c.id === formData.catalogId)?.name || 'Catálogos';
         await notificationService.notifyNicheUpdate(
           formData.nicheId,
@@ -227,7 +208,7 @@ export const Products = () => {
           `O produto "${formData.name}" foi adicionado em ${catalogName}. Adicione à sua loja agora!`,
           "/dashboard/catalogs"
         );
-        
+
         showToast("success", "Produto criado com sucesso!");
       }
       closeModal();
@@ -261,7 +242,7 @@ export const Products = () => {
 
   const filteredProducts = products.filter(product => {
     const searchLower = searchTerm.toLowerCase();
-    const matchesSearch = product.name.toLowerCase().includes(searchLower) || 
+    const matchesSearch = product.name.toLowerCase().includes(searchLower) ||
                           product.sku.toLowerCase().includes(searchLower) ||
                           (product.description || "").toLowerCase().includes(searchLower);
     const matchesNiche = filterNiche === "all" || product.nicheId === filterNiche;
@@ -269,8 +250,8 @@ export const Products = () => {
     return matchesSearch && matchesNiche && matchesCatalog;
   });
 
-  const availableCatalogs = filterNiche === "all" 
-    ? catalogs 
+  const availableCatalogs = filterNiche === "all"
+    ? catalogs
     : catalogs.filter(c => c.nicheId === filterNiche);
 
   return (
@@ -284,9 +265,9 @@ export const Products = () => {
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full lg:w-auto flex-wrap">
             <div className="relative w-full sm:w-auto">
               <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input 
-                type="text" 
-                placeholder="Buscar produtos ou SKU..." 
+              <input
+                type="text"
+                placeholder="Buscar produtos ou SKU..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -298,7 +279,7 @@ export const Products = () => {
                 value={filterNiche}
                 onChange={(e) => {
                   setFilterNiche(e.target.value);
-                  setFilterCatalog("all"); // Reset catalog filter when niche changes
+                  setFilterCatalog("all");
                 }}
                 className="w-full pl-10 pr-8 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white font-medium text-gray-700"
               >
@@ -321,7 +302,7 @@ export const Products = () => {
                 ))}
               </select>
             </div>
-            <button 
+            <button
               onClick={() => openModal()}
               className="w-full sm:w-auto bg-blue-600 text-white px-6 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 whitespace-nowrap"
             >
@@ -348,7 +329,7 @@ export const Products = () => {
             <p className="text-gray-500 mt-2">
               Não há produtos que correspondam aos filtros selecionados.
             </p>
-            <button 
+            <button
               onClick={() => openModal()}
               className="mt-6 bg-blue-50 text-blue-600 px-6 py-2 rounded-xl font-bold hover:bg-blue-100 transition-colors"
             >
@@ -378,16 +359,15 @@ export const Products = () => {
                         <td className="py-4 px-6">
                           <div className="flex items-center gap-4">
                             <div className="w-12 h-12 rounded-xl overflow-hidden bg-gray-100 shrink-0">
-                              <img 
-                                src={product.images?.[0] || "https://picsum.photos/seed/product/100/100"} 
-                                alt={product.name} 
+                              <img
+                                src={product.images?.[0] || "https://picsum.photos/seed/product/100/100"}
+                                alt={product.name}
                                 className="w-full h-full object-cover"
                                 referrerPolicy="no-referrer"
                               />
                             </div>
                             <div>
                               <span className="font-bold text-gray-900 block line-clamp-1">{product.name}</span>
-                              <span className="text-xs text-gray-500">{product.category}</span>
                             </div>
                           </div>
                         </td>
@@ -412,11 +392,11 @@ export const Products = () => {
                           </span>
                         </td>
                         <td className="py-4 px-6">
-                          <button 
+                          <button
                             onClick={() => toggleStatus(product)}
                             className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${
-                              product.active 
-                                ? 'bg-green-100 text-green-700 hover:bg-green-200' 
+                              product.active
+                                ? 'bg-green-100 text-green-700 hover:bg-green-200'
                                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                             }`}
                           >
@@ -425,15 +405,15 @@ export const Products = () => {
                         </td>
                         <td className="py-4 px-6 text-right">
                           <div className="flex items-center justify-end gap-2">
-                            <button 
-                              onClick={() => openModal(product)} 
+                            <button
+                              onClick={() => openModal(product)}
                               className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                               title="Editar"
                             >
                               <Edit className="w-4 h-4" />
                             </button>
-                            <button 
-                              onClick={() => handleDelete(product)} 
+                            <button
+                              onClick={() => handleDelete(product)}
                               className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                               title="Excluir"
                             >
@@ -456,305 +436,283 @@ export const Products = () => {
         {isModalOpen && (
           <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 overflow-y-auto">
             <div className="min-h-full flex items-center justify-center p-4 sm:p-6">
-              <motion.div 
-                initial={{ scale: 0.95, opacity: 0, y: 20 }} 
-                animate={{ scale: 1, opacity: 1, y: 0 }} 
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
                 exit={{ scale: 0.95, opacity: 0, y: 20 }}
                 className="bg-white rounded-3xl w-full max-w-4xl overflow-hidden shadow-2xl my-8"
               >
-              <div className="p-6 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white z-10">
-                <h2 className="text-2xl font-bold text-gray-900">
-                  {editingProduct ? "Editar Produto" : "Novo Produto"}
-                </h2>
-                <button onClick={closeModal} className="text-gray-400 hover:text-gray-600 bg-gray-50 hover:bg-gray-100 p-2 rounded-full transition-colors">
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
+                <div className="p-6 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white z-10">
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    {editingProduct ? "Editar Produto" : "Novo Produto"}
+                  </h2>
+                  <button onClick={closeModal} className="text-gray-400 hover:text-gray-600 bg-gray-50 hover:bg-gray-100 p-2 rounded-full transition-colors">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
 
-              <form onSubmit={handleSubmit} className="p-6 space-y-8">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                  {/* Coluna Esquerda: Imagens */}
-                  <div className="lg:col-span-1 space-y-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Imagens do Produto</label>
-                      <div 
-                        onClick={() => fileInputRef.current?.click()}
-                        onDragOver={handleDragOver}
-                        onDrop={handleDrop}
-                        className="border-2 border-dashed border-gray-300 hover:border-blue-500 bg-gray-50 hover:bg-blue-50/50 rounded-2xl p-6 text-center cursor-pointer transition-all mb-4"
-                      >
-                        <div className="w-12 h-12 bg-white rounded-full shadow-sm flex items-center justify-center mx-auto mb-3">
-                          <ImageIcon className="w-6 h-6 text-gray-400" />
+                <form onSubmit={handleSubmit} className="p-6 space-y-8">
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Coluna Esquerda: Imagens */}
+                    <div className="lg:col-span-1 space-y-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Imagens do Produto</label>
+                        <div
+                          onClick={() => fileInputRef.current?.click()}
+                          onDragOver={handleDragOver}
+                          onDrop={handleDrop}
+                          className="border-2 border-dashed border-gray-300 hover:border-blue-500 bg-gray-50 hover:bg-blue-50/50 rounded-2xl p-6 text-center cursor-pointer transition-all mb-4"
+                        >
+                          <div className="w-12 h-12 bg-white rounded-full shadow-sm flex items-center justify-center mx-auto mb-3">
+                            <ImageIcon className="w-6 h-6 text-gray-400" />
+                          </div>
+                          <span className="text-sm font-medium text-gray-700 block">Clique ou arraste imagens aqui</span>
+                          <span className="text-xs text-gray-400 mt-1 block">PNG, JPG até 5MB (Múltiplas permitidas)</span>
                         </div>
-                        <span className="text-sm font-medium text-gray-700 block">Clique ou arraste imagens aqui</span>
-                        <span className="text-xs text-gray-400 mt-1 block">PNG, JPG até 5MB (Múltiplas permitidas)</span>
-                      </div>
-                      <input 
-                        type="file" 
-                        ref={fileInputRef} 
-                        onChange={handleImageChange} 
-                        accept="image/*" 
-                        multiple
-                        className="hidden" 
-                      />
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          onChange={handleImageChange}
+                          accept="image/*"
+                          multiple
+                          className="hidden"
+                        />
 
-                      {/* Preview de Imagens */}
-                      {(imageUrls.length > 0 || imageFiles.length > 0) && (
-                        <div className="grid grid-cols-2 gap-3">
-                          {imageUrls.map((url, index) => (
-                            <div key={`url-${index}`} className={`relative aspect-square rounded-xl overflow-hidden group border-2 ${index === 0 ? 'border-blue-500' : 'border-gray-200'}`}>
-                              <img src={url} alt={`Preview ${index}`} className="w-full h-full object-cover" />
-                              {index === 0 && (
-                                <div className="absolute top-1 left-1 bg-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                                  Principal
-                                </div>
-                              )}
-                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                {index !== 0 && (
-                                  <button 
-                                    type="button"
-                                    onClick={() => makePrimaryUrl(index)}
-                                    className="bg-white text-gray-900 text-xs font-bold px-2 py-1 rounded-lg hover:bg-gray-100 transition-colors"
-                                  >
-                                    Tornar Principal
-                                  </button>
-                                )}
-                                <button 
-                                  type="button"
-                                  onClick={() => removeImageUrl(index)}
-                                  className="bg-red-500 text-white p-1.5 rounded-lg hover:bg-red-600 transition-colors"
-                                >
-                                  <X className="w-4 h-4" />
-                                </button>
-                              </div>
-                            </div>
-                          ))}
-                          {imageFiles.map((file, index) => {
-                            const isPrimary = imageUrls.length === 0 && index === 0;
-                            return (
-                              <div key={`file-${index}`} className={`relative aspect-square rounded-xl overflow-hidden group border-2 ${isPrimary ? 'border-blue-500' : 'border-gray-200'}`}>
-                                <img src={URL.createObjectURL(file)} alt={`New Preview ${index}`} className="w-full h-full object-cover" />
-                                {isPrimary && (
+                        {/* Preview de Imagens */}
+                        {(imageUrls.length > 0 || imageFiles.length > 0) && (
+                          <div className="grid grid-cols-2 gap-3">
+                            {imageUrls.map((url, index) => (
+                              <div key={`url-${index}`} className={`relative aspect-square rounded-xl overflow-hidden group border-2 ${index === 0 ? 'border-blue-500' : 'border-gray-200'}`}>
+                                <img src={url} alt={`Preview ${index}`} className="w-full h-full object-cover" />
+                                {index === 0 && (
                                   <div className="absolute top-1 left-1 bg-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
                                     Principal
                                   </div>
                                 )}
                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                  {!isPrimary && imageUrls.length === 0 && (
-                                    <button 
+                                  {index !== 0 && (
+                                    <button
                                       type="button"
-                                      onClick={() => makePrimaryFile(index)}
+                                      onClick={() => makePrimaryUrl(index)}
                                       className="bg-white text-gray-900 text-xs font-bold px-2 py-1 rounded-lg hover:bg-gray-100 transition-colors"
                                     >
                                       Tornar Principal
                                     </button>
                                   )}
-                                  <button 
+                                  <button
                                     type="button"
-                                    onClick={() => removeImageFile(index)}
+                                    onClick={() => removeImageUrl(index)}
                                     className="bg-red-500 text-white p-1.5 rounded-lg hover:bg-red-600 transition-colors"
                                   >
                                     <X className="w-4 h-4" />
                                   </button>
                                 </div>
                               </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                      <div>
-                        <p className="font-medium text-gray-900">Produto Ativo</p>
-                        <p className="text-xs text-gray-500 mt-0.5">Visível nos catálogos</p>
-                      </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input 
-                          type="checkbox" 
-                          className="sr-only peer" 
-                          checked={formData.active}
-                          onChange={e => setFormData({...formData, active: e.target.checked})}
-                        />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                      </label>
-                    </div>
-                  </div>
-
-                  {/* Coluna Direita: Dados do Produto */}
-                  <div className="lg:col-span-2 space-y-5">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Nicho</label>
-                        <select 
-                          required
-                          value={formData.nicheId} 
-                          onChange={e => {
-                            setFormData({...formData, nicheId: e.target.value, catalogId: ""});
-                          }}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none bg-white transition-all appearance-none"
-                        >
-                          <option value="" disabled>Selecione um nicho...</option>
-                          {niches.map(n => (
-                            <option key={n.id} value={n.id}>{n.name}</option>
-                          ))}
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Catálogo</label>
-                        <select 
-                          required
-                          value={formData.catalogId} 
-                          onChange={e => setFormData({...formData, catalogId: e.target.value})}
-                          disabled={!formData.nicheId}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none bg-white transition-all appearance-none disabled:bg-gray-100 disabled:text-gray-400"
-                        >
-                          <option value="" disabled>Selecione um catálogo...</option>
-                          {catalogs.filter(c => c.nicheId === formData.nicheId).map(c => (
-                            <option key={c.id} value={c.id}>{c.name}</option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Nome do Produto</label>
-                      <input 
-                        required
-                        type="text"
-                        value={formData.name} 
-                        onChange={e => setFormData({...formData, name: e.target.value})} 
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all" 
-                        placeholder="Ex: Camiseta Básica Algodão"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
-                      <textarea 
-                        required
-                        rows={4}
-                        value={formData.description} 
-                        onChange={e => setFormData({...formData, description: e.target.value})} 
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all resize-none" 
-                        placeholder="Detalhes do produto, material, etc..."
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Preço Base (R$)</label>
-                        <input 
-                          required
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          value={formData.priceBase} 
-                          onChange={e => setFormData({...formData, priceBase: parseFloat(e.target.value) || 0})} 
-                          className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all" 
-                          placeholder="0.00"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Preço Sugerido (R$)</label>
-                        <input 
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          value={formData.suggestedPrice || ""} 
-                          onChange={e => setFormData({...formData, suggestedPrice: parseFloat(e.target.value) || 0})} 
-                          className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all" 
-                          placeholder="0.00"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">SKU</label>
-                        <input 
-                          required
-                          type="text"
-                          value={formData.sku} 
-                          onChange={e => setFormData({...formData, sku: e.target.value})} 
-                          className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all uppercase" 
-                          placeholder="EX: CAM-BAS-001"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
-                        <select 
-                          required
-                          value={formData.categoryId} 
-                          onChange={e => {
-                            const selectedCat = categories.find(c => c.id === e.target.value);
-                            setFormData({
-                              ...formData, 
-                              categoryId: e.target.value,
-                              category: selectedCat ? selectedCat.name : ""
-                            });
-                          }}
-                          disabled={!formData.catalogId}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none bg-white transition-all appearance-none disabled:bg-gray-100 disabled:text-gray-400"
-                        >
-                          <option value="" disabled>Selecione uma categoria...</option>
-                          {categories.map(c => (
-                            <option key={c.id} value={c.id}>{c.name}</option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Variações (Tamanhos, Cores, etc)</label>
-                      <div className="flex gap-2 mb-3">
-                        <input 
-                          type="text"
-                          value={newVariation} 
-                          onChange={e => setNewVariation(e.target.value)}
-                          onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addVariation())}
-                          className="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all" 
-                          placeholder="Ex: P, M, G, Azul, Vermelho..."
-                        />
-                        <button 
-                          type="button"
-                          onClick={addVariation}
-                          className="bg-gray-900 text-white px-6 py-3 rounded-xl font-bold hover:bg-gray-800 transition-colors"
-                        >
-                          Adicionar
-                        </button>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {variations.map(variation => (
-                          <span key={variation} className="bg-gray-100 text-gray-800 px-3 py-1.5 rounded-lg text-sm font-medium flex items-center gap-2 border border-gray-200">
-                            {variation}
-                            <button type="button" onClick={() => removeVariation(variation)} className="text-gray-400 hover:text-red-500">
-                              <X className="w-3 h-3" />
-                            </button>
-                          </span>
-                        ))}
-                        {variations.length === 0 && (
-                          <span className="text-sm text-gray-400 italic">Nenhuma variação adicionada.</span>
+                            ))}
+                            {imageFiles.map((file, index) => {
+                              const isPrimary = imageUrls.length === 0 && index === 0;
+                              return (
+                                <div key={`file-${index}`} className={`relative aspect-square rounded-xl overflow-hidden group border-2 ${isPrimary ? 'border-blue-500' : 'border-gray-200'}`}>
+                                  <img src={URL.createObjectURL(file)} alt={`New Preview ${index}`} className="w-full h-full object-cover" />
+                                  {isPrimary && (
+                                    <div className="absolute top-1 left-1 bg-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                                      Principal
+                                    </div>
+                                  )}
+                                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                    {!isPrimary && (
+                                      <button
+                                        type="button"
+                                        onClick={() => makePrimaryFile(index)}
+                                        className="bg-white text-gray-900 text-xs font-bold px-2 py-1 rounded-lg hover:bg-gray-100 transition-colors"
+                                      >
+                                        Tornar Principal
+                                      </button>
+                                    )}
+                                    <button
+                                      type="button"
+                                      onClick={() => removeImageFile(index)}
+                                      className="bg-red-500 text-white p-1.5 rounded-lg hover:bg-red-600 transition-colors"
+                                    >
+                                      <X className="w-4 h-4" />
+                                    </button>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
                         )}
                       </div>
+
+                      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                        <div>
+                          <p className="font-medium text-gray-900">Produto Ativo</p>
+                          <p className="text-xs text-gray-500 mt-0.5">Visível nos catálogos</p>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            className="sr-only peer"
+                            checked={formData.active}
+                            onChange={e => setFormData({...formData, active: e.target.checked})}
+                          />
+                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Coluna Direita: Dados do Produto */}
+                    <div className="lg:col-span-2 space-y-5">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Nicho</label>
+                          <select
+                            required
+                            value={formData.nicheId}
+                            onChange={e => {
+                              setFormData({...formData, nicheId: e.target.value, catalogId: ""});
+                            }}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none bg-white transition-all appearance-none"
+                          >
+                            <option value="" disabled>Selecione um nicho...</option>
+                            {niches.map(n => (
+                              <option key={n.id} value={n.id}>{n.name}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Catálogo</label>
+                          <select
+                            required
+                            value={formData.catalogId}
+                            onChange={e => setFormData({...formData, catalogId: e.target.value})}
+                            disabled={!formData.nicheId}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none bg-white transition-all appearance-none disabled:bg-gray-100 disabled:text-gray-400"
+                          >
+                            <option value="" disabled>Selecione um catálogo...</option>
+                            {catalogs.filter(c => c.nicheId === formData.nicheId).map(c => (
+                              <option key={c.id} value={c.id}>{c.name}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Nome do Produto</label>
+                        <input
+                          required
+                          type="text"
+                          value={formData.name}
+                          onChange={e => setFormData({...formData, name: e.target.value})}
+                          className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                          placeholder="Ex: Camiseta Básica Algodão"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
+                        <textarea
+                          required
+                          rows={4}
+                          value={formData.description}
+                          onChange={e => setFormData({...formData, description: e.target.value})}
+                          className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all resize-none"
+                          placeholder="Detalhes do produto, material, etc..."
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Preço Base (R$)</label>
+                          <input
+                            required
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            value={formData.priceBase}
+                            onChange={e => setFormData({...formData, priceBase: parseFloat(e.target.value) || 0})}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                            placeholder="0.00"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Preço Sugerido (R$)</label>
+                          <input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            value={(formData as any).suggestedPrice || ""}
+                            onChange={e => setFormData({...formData, suggestedPrice: parseFloat(e.target.value) || 0} as any)}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                            placeholder="0.00"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">SKU</label>
+                          <input
+                            required
+                            type="text"
+                            value={formData.sku}
+                            onChange={e => setFormData({...formData, sku: e.target.value})}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all uppercase"
+                            placeholder="EX: CAM-BAS-001"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Variações (Tamanhos, Cores, etc)</label>
+                        <div className="flex gap-2 mb-3">
+                          <input
+                            type="text"
+                            value={newVariation}
+                            onChange={e => setNewVariation(e.target.value)}
+                            onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addVariation())}
+                            className="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                            placeholder="Ex: P, M, G, Azul, Vermelho..."
+                          />
+                          <button
+                            type="button"
+                            onClick={addVariation}
+                            className="bg-gray-900 text-white px-6 py-3 rounded-xl font-bold hover:bg-gray-800 transition-colors"
+                          >
+                            Adicionar
+                          </button>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {variations.map(variation => (
+                            <span key={variation} className="bg-gray-100 text-gray-800 px-3 py-1.5 rounded-lg text-sm font-medium flex items-center gap-2 border border-gray-200">
+                              {variation}
+                              <button type="button" onClick={() => removeVariation(variation)} className="text-gray-400 hover:text-red-500">
+                                <X className="w-3 h-3" />
+                              </button>
+                            </span>
+                          ))}
+                          {variations.length === 0 && (
+                            <span className="text-sm text-gray-400 italic">Nenhuma variação adicionada.</span>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="flex gap-3 pt-6 border-t border-gray-100 mt-8">
-                  <button 
-                    type="button"
-                    onClick={closeModal} 
-                    className="flex-1 py-3.5 rounded-xl font-bold bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
-                  >
-                    Cancelar
-                  </button>
-                  <button 
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="flex-1 py-3.5 rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-blue-100"
-                  >
-                    {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Salvar Produto"}
-                  </button>
-                </div>
-              </form>
+                  <div className="flex gap-3 pt-6 border-t border-gray-100 mt-8">
+                    <button
+                      type="button"
+                      onClick={closeModal}
+                      className="flex-1 py-3.5 rounded-xl font-bold bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="flex-1 py-3.5 rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-blue-100"
+                    >
+                      {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Salvar Produto"}
+                    </button>
+                  </div>
+                </form>
               </motion.div>
             </div>
           </div>
@@ -764,7 +722,7 @@ export const Products = () => {
       {/* Toast Notification */}
       <AnimatePresence>
         {toastMessage && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 50 }}
