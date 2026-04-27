@@ -16,7 +16,6 @@ import { AdminLayout } from "./pages/admin/AdminLayout";
 import { AdminDashboard } from "./pages/admin/AdminDashboard";
 import { Niches } from "./pages/admin/Niches";
 import { Catalogs as AdminCatalogs } from "./pages/admin/Catalogs";
-import { Categories as AdminCategories } from "./pages/admin/Categories";
 import { Products as AdminProducts } from "./pages/admin/Products";
 import { Resellers } from "./pages/admin/Resellers";
 
@@ -108,7 +107,6 @@ export default function App() {
           <Route index element={<AdminDashboard />} />
           <Route path="niches" element={<Niches />} />
           <Route path="catalogs" element={<AdminCatalogs />} />
-          <Route path="categories" element={<AdminCategories />} />
           <Route path="products" element={<AdminProducts />} />
           <Route path="resellers" element={<Resellers />} />
         </Route>
