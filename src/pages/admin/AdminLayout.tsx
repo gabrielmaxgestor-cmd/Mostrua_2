@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate, Outlet, useLocation } from "react-router-dom";
-import { 
-  LogOut, LayoutDashboard, Package, Users, Layers, Search, Bell, List, ChevronDown, FolderOpen
+import {
+  LogOut, LayoutDashboard, Package, Users, Layers, Search, Bell, ChevronDown, FolderOpen
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 
@@ -10,7 +10,7 @@ export const AdminLayout: React.FC = () => {
   const location = useLocation();
   const { profile, logout } = useAuth();
 
-  const cadastrosRoutes = ["/admin/niches", "/admin/catalogs", "/admin/categories", "/admin/products"];
+  const cadastrosRoutes = ["/admin/niches", "/admin/catalogs", "/admin/products"];
   const isCadastrosActive = cadastrosRoutes.some(r => location.pathname.startsWith(r));
   const [cadastrosOpen, setCadastrosOpen] = useState(isCadastrosActive);
 
@@ -86,16 +86,6 @@ export const AdminLayout: React.FC = () => {
                   }`}
                 >
                   <Package className="w-4 h-4" /> Catálogos
-                </Link>
-                <Link
-                  to="/admin/categories"
-                  className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
-                    isActive("/admin/categories")
-                      ? "bg-blue-600 text-white shadow-md shadow-blue-500/20"
-                      : "text-gray-400 hover:bg-gray-800 hover:text-white"
-                  }`}
-                >
-                  <List className="w-4 h-4" /> Categorias
                 </Link>
                 <Link
                   to="/admin/products"
