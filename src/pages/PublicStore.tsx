@@ -22,6 +22,8 @@ export default function PublicStore() {
   const [reseller, setReseller] = useState<any>(null);
   const [products, setProducts] = useState<any[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  // Catálogos ativos com dados completos (para exibir banner 16:9 na loja)
+  const [activeCatalogs, setActiveCatalogs] = useState<any[]>([]);
   
   // Views: 'home', 'product', 'category'
   const [view, setView] = useState<'home' | 'product' | 'category'>('home');
@@ -118,9 +120,28 @@ export default function PublicStore() {
 
       if (activeCatalogIds.length === 0) {
         setProducts([]);
+        setActiveCatalogs([]);
         setLoading(false);
         return; // loja sem catalogos ativos
       }
+
+      // 1b. Buscar dados completos dos catálogos (para banner 16:9 na loja)
+      const catalogBatches: Promise<any>[] = [];
+      for (let i = 0; i < activeCatalogIds.length; i += 10) {
+        const batch = activeCatalogIds.slice(i, i + 10);
+        catalogBatches.push(getDocs(query(
+          collection(db, 'catalogs'),
+          where('__name__', 'in', batch)
+        )));
+      }
+      const catalogBatchResults = await Promise.all(catalogBatches);
+      const catalogsData = catalogBatchResults.flatMap(snap =>
+        snap.docs.map((d: any) => ({ id: d.id, ...d.data() }))
+      );
+      const orderedCatalogs = activeCatalogIds
+        .map(id => catalogsData.find((c: any) => c.id === id))
+        .filter(Boolean);
+      setActiveCatalogs(orderedCatalogs);
 
       // 2. Buscar produtos base dos catalogs ativos (batches de 10)
       const batchSize = 10;
@@ -415,8 +436,9 @@ export default function PublicStore() {
         {/* HOME VIEW */}
         {view === 'home' && (
           <>
+            {/* Banner da loja (configurado pelo revendedor) */}
             {reseller?.settings?.banner && !isSearching && (
-              <div className="w-full aspect-[21/9] sm:aspect-[21/6] overflow-hidden bg-gray-200">
+              <div className="w-full aspect-video overflow-hidden bg-gray-200">
                 <img src={reseller.settings.banner} alt="Banner" className="w-full h-full object-cover" />
               </div>
             )}
@@ -468,8 +490,8 @@ export default function PublicStore() {
                   </button>
                 </div>
               )}
-              {!isSearching && <h2 className="font-bold text-gray-900 mb-4 text-lg">Todos os Produtos</h2>}
-              
+              {!isSearching && products.length > 0 && <h2 className="font-bold text-gray-900 mb-4 text-lg">Todos os Produtos</h2>}
+
               {products.length === 0 && !loading && (
                 <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
                   {reseller?.settings?.logo && (
@@ -492,13 +514,13 @@ export default function PublicStore() {
                   )}
                 </div>
               )}
-              
+
               {products.length > 0 && filteredProducts.length === 0 && (
                 <div className="text-center py-16 px-4 bg-white rounded-3xl border border-gray-100 shadow-sm mt-4">
                   <Search className="w-12 h-12 text-gray-200 mx-auto mb-4" />
                   <h3 className="text-lg font-bold text-gray-900 mb-2">Nenhum produto encontrado</h3>
                   <p className="text-gray-500 mb-6">Tente usar outros termos ou palavras-chave.</p>
-                  <button 
+                  <button
                     onClick={() => setSearchQuery('')}
                     className="px-6 py-2.5 rounded-full text-white font-bold transition-all shadow-sm mx-auto"
                     style={{ backgroundColor: primaryColor }}
@@ -508,9 +530,52 @@ export default function PublicStore() {
                 </div>
               )}
 
-              {filteredProducts.length > 0 && (
+              {/* Produtos agrupados por catálogo, cada um precedido pelo banner 16:9 */}
+              {!isSearching && filteredProducts.length > 0 && activeCatalogs.length > 0 && (
+                <div className="space-y-10">
+                  {activeCatalogs.map((catalog: any) => {
+                    const catalogProducts = filteredProducts.filter(
+                      (p: any) => p.catalogId === catalog.id
+                    );
+                    if (catalogProducts.length === 0) return null;
+                    const customBanner = reseller?.settings?.customBanners?.[catalog.id];
+                    const bannerSrc = customBanner || catalog.bannerUrl || catalog.imageUrl;
+                    return (
+                      <div key={catalog.id}>
+                        {/* Banner 16:9 do catálogo */}
+                        {bannerSrc && (
+                          <div className="w-full aspect-video overflow-hidden rounded-2xl bg-gray-200 mb-5 shadow-sm">
+                            <img
+                              src={bannerSrc}
+                              alt={catalog.name}
+                              className="w-full h-full object-cover"
+                              referrerPolicy="no-referrer"
+                            />
+                          </div>
+                        )}
+                        <h2 className="font-bold text-gray-900 text-lg mb-4">{catalog.name}</h2>
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
+                          {catalogProducts.map((product: any) => (
+                            <ProductCard
+                              key={product.id}
+                              product={product}
+                              storeSlug={slug || ''}
+                              onAddToCart={(p) => handleAddToCart(p, p.variations?.[0])}
+                              onClick={openProduct}
+                              resellerPrimaryColor={primaryColor}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Fallback: busca ativa — exibe tudo em grid único sem separação por catálogo */}
+              {isSearching && filteredProducts.length > 0 && (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
-                  {filteredProducts.map(product => (
+                  {filteredProducts.map((product: any) => (
                     <ProductCard
                       key={product.id}
                       product={product}
