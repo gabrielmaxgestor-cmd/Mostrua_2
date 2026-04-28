@@ -203,3 +203,25 @@ export function subscribeToUnreadNotifications(
     callback(notifs);
   });
 }
+
+// Compatibilidade com código legado
+export const notificationService = {
+  notifyNicheUpdate: async (
+    nicheId: string,
+    title: string,
+    message: string,
+    _link?: string
+  ) => {
+    // Busca revendedores do nicho e envia notificação
+    const { getDocs, query, collection, where } = await import("firebase/firestore");
+    const snap = await getDocs(
+      query(collection(db, "resellers"), where("nicheId", "==", nicheId), where("status", "==", "active"))
+    );
+    const ids = snap.docs.map((d) => d.id);
+    if (ids.length === 0) return;
+    await broadcastNotification(
+      { type: "system", title, message, target: "all", createdBy: "system" },
+      ids
+    );
+  },
+};
