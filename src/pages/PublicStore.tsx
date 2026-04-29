@@ -11,7 +11,7 @@ import { SearchBar } from "../components/store/SearchBar";
 import { InstallBanner } from "../components/store/InstallBanner";
 import { ErrorState } from "../components/ErrorState";
 import { getCategories } from "../services/categoryService";
-import { Category } from "../types";
+import { Category, Catalog } from "../types";
 import { useProductSearch } from "../hooks/useProductSearch";
 import { incrementStoreView, incrementProductView, incrementAddToCart } from "../services/analyticsService";
 import { setMetaTags, resetMetaTags } from '../utils/setMetaTags';
@@ -22,8 +22,8 @@ export default function PublicStore() {
   const [reseller, setReseller] = useState<any>(null);
   const [products, setProducts] = useState<any[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  // Catálogos ativos com dados completos (para exibir banner 16:9 na loja)
-  const [activeCatalogs, setActiveCatalogs] = useState<any[]>([]);
+  // Catálogos ativos com seus banners — usados para exibir banner antes dos produtos
+  const [activeCatalogs, setActiveCatalogs] = useState<Catalog[]>([]);
   
   // Views: 'home', 'product', 'category'
   const [view, setView] = useState<'home' | 'product' | 'category'>('home');
@@ -111,104 +111,108 @@ export default function PublicStore() {
         });
 
         // 1. Buscar catalogs ativos do revendedor
-      const rcSnap = await getDocs(
-        query(collection(db, 'reseller_catalogs'),
+        const rcSnap = await getDocs(
+          query(collection(db, 'reseller_catalogs'),
+            where('resellerId', '==', resellerData.id),
+            where('active', '==', true))
+        );
+        const activeCatalogIds = rcSnap.docs.map(d => d.data().catalogId);
+
+        if (activeCatalogIds.length === 0) {
+          setProducts([]);
+          setLoading(false);
+          return; // loja sem catalogos ativos
+        }
+
+        // 2. Buscar objetos completos dos catálogos (para obter bannerUrl e ordem)
+        // Batches de 10 por limitação do Firestore 'in'
+        const catalogBatchSize = 10;
+        const catalogBatches = [];
+        for (let i = 0; i < activeCatalogIds.length; i += catalogBatchSize) {
+          const batch = activeCatalogIds.slice(i, i + catalogBatchSize);
+          catalogBatches.push(getDocs(query(
+            collection(db, 'catalogs'),
+            where('__name__', 'in', batch)
+          )));
+        }
+        const catalogBatchResults = await Promise.all(catalogBatches);
+        const catalogObjects = catalogBatchResults
+          .flatMap(snap => snap.docs.map(d => ({ id: d.id, ...d.data() } as Catalog)))
+          .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
+        // Banner customizado do revendedor sobrepõe o banner do admin
+        const customBanners: Record<string, string> = resellerData.settings?.customBanners || {};
+        const catalogsWithBanners = catalogObjects.map(c => ({
+          ...c,
+          bannerUrl: customBanners[c.id] || c.bannerUrl || c.imageUrl || "",
+        }));
+
+        setActiveCatalogs(catalogsWithBanners);
+
+        // 3. Buscar produtos base dos catalogs ativos (batches de 10)
+        const batchSize = 10;
+        const batches = [];
+        for (let i = 0; i < activeCatalogIds.length; i += batchSize) {
+          const batch = activeCatalogIds.slice(i, i + batchSize);
+          batches.push(getDocs(query(
+            collection(db, 'products'),
+            where('catalogId', 'in', batch),
+            where('active', '==', true)
+          )));
+        }
+        
+        const batchResults = await Promise.race([
+          Promise.all(batches),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 15000))
+        ]) as any[];
+        
+        const baseProducts = batchResults.flatMap(snap => snap.docs.map(d => ({ id: d.id, ...d.data() })));
+
+        // 4. Buscar reseller_products ativos
+        const rpSnap = await getDocs(query(
+          collection(db, 'reseller_products'),
           where('resellerId', '==', resellerData.id),
-          where('active', '==', true))
-      );
-      const activeCatalogIds = rcSnap.docs.map(d => d.data().catalogId);
-
-      if (activeCatalogIds.length === 0) {
-        setProducts([]);
-        setActiveCatalogs([]);
-        setLoading(false);
-        return; // loja sem catalogos ativos
-      }
-
-      // 1b. Buscar dados completos dos catálogos (para banner 16:9 na loja)
-      const catalogBatches: Promise<any>[] = [];
-      for (let i = 0; i < activeCatalogIds.length; i += 10) {
-        const batch = activeCatalogIds.slice(i, i + 10);
-        catalogBatches.push(getDocs(query(
-          collection(db, 'catalogs'),
-          where('__name__', 'in', batch)
-        )));
-      }
-      const catalogBatchResults = await Promise.all(catalogBatches);
-      const catalogsData = catalogBatchResults.flatMap(snap =>
-        snap.docs.map((d: any) => ({ id: d.id, ...d.data() }))
-      );
-      const orderedCatalogs = activeCatalogIds
-        .map(id => catalogsData.find((c: any) => c.id === id))
-        .filter(Boolean);
-      setActiveCatalogs(orderedCatalogs);
-
-      // 2. Buscar produtos base dos catalogs ativos (batches de 10)
-      const batchSize = 10;
-      const batches = [];
-      for (let i = 0; i < activeCatalogIds.length; i += batchSize) {
-        const batch = activeCatalogIds.slice(i, i + batchSize);
-        batches.push(getDocs(query(
-          collection(db, 'products'),
-          where('catalogId', 'in', batch),
           where('active', '==', true)
-        )));
+        ));
+        const rps = rpSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+        // Merge
+        const mergedProducts = rps.map((rp: any) => {
+          const base: any = baseProducts.find(p => p.id === rp.baseProductId);
+          if (!base) return null;
+          return {
+            ...base,
+            ...rp,
+            id: rp.baseProductId, // Use base product ID for consistency
+            rpId: rp.id,
+            name: rp.customName || base.name,
+            description: rp.customDescription || base.description,
+            price: rp.customPrice || base.priceBase,
+          };
+        }).filter(Boolean);
+
+        setProducts(mergedProducts);
+        
+        try {
+          const fetchedCategories = await getCategories(resellerData.nicheId);
+          setCategories(fetchedCategories);
+        } catch (err) {
+          console.error("Error fetching categories:", err);
+        }
+        
+        // Track store view
+        incrementStoreView(resellerData.id);
+        
+        setLoading(false);
+      } catch (err: any) {
+        console.error("Error loading store:", err);
+        setError(err.message === 'timeout' ? 'Conexão lenta. Tente novamente.' : 'Erro ao carregar loja.');
+        setLoading(false);
       }
-      
-      const batchResults = await Promise.race([
-        Promise.all(batches),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 15000))
-      ]) as any[];
-      
-      const baseProducts = batchResults.flatMap(snap => snap.docs.map(d => ({ id: d.id, ...d.data() })));
-
-      // 3. Buscar reseller_products ativos
-      const rpSnap = await getDocs(query(
-        collection(db, 'reseller_products'),
-        where('resellerId', '==', resellerData.id),
-        where('active', '==', true)
-      ));
-      const rps = rpSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-
-      // Merge
-      const mergedProducts = rps.map((rp: any) => {
-        const base: any = baseProducts.find(p => p.id === rp.baseProductId);
-        if (!base) return null;
-        return {
-          ...base,
-          ...rp,
-          id: rp.baseProductId, // Use base product ID for consistency
-          rpId: rp.id,
-          name: rp.customName || base.name,
-          description: rp.customDescription || base.description,
-          price: rp.customPrice || base.priceBase,
-        };
-      }).filter(Boolean);
-
-      setProducts(mergedProducts);
-      
-      try {
-        const fetchedCategories = await getCategories(resellerData.nicheId);
-        setCategories(fetchedCategories);
-      } catch (err) {
-        console.error("Error fetching categories:", err);
-      }
-      
-      // Track store view
-      incrementStoreView(resellerData.id);
-      
-      setLoading(false);
-    } catch (err: any) {
-      console.error("Error loading store:", err);
-      setError(err.message === 'timeout' ? 'Conexão lenta. Tente novamente.' : 'Erro ao carregar loja.');
-      setLoading(false);
-    } finally {
-      // setLoading(false); // already handled in try/catch for now
     }
-  }
-  loadStore();
-  return () => { resetMetaTags(); };
-}, [tenantReseller, tenantLoading, tenantError]);
+    loadStore();
+    return () => { resetMetaTags(); };
+  }, [tenantReseller, tenantLoading, tenantError]);
 
   const handleAddToCart = (product: any, variation?: string) => {
     addItem({
@@ -362,6 +366,12 @@ export default function PublicStore() {
     window.scrollTo(0, 0);
   };
 
+  // Agrupa produtos por catalogId para exibição em seções
+  const productsByCatalog = activeCatalogs.map(catalog => ({
+    catalog,
+    items: searchResults.filter(p => p.catalogId === catalog.id),
+  })).filter(group => group.items.length > 0);
+
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
       {/* Header */}
@@ -436,21 +446,20 @@ export default function PublicStore() {
         {/* HOME VIEW */}
         {view === 'home' && (
           <>
-            {/* Banner da loja (configurado pelo revendedor) */}
+            {/* Banner principal da loja (configurado pelo revendedor em StoreSettings) */}
             {reseller?.settings?.banner && !isSearching && (
-              <div className="w-full aspect-video overflow-hidden bg-gray-200">
+              <div className="w-full aspect-[21/9] sm:aspect-[21/6] overflow-hidden bg-gray-200">
                 <img src={reseller.settings.banner} alt="Banner" className="w-full h-full object-cover" />
               </div>
             )}
 
+            {/* Filtro de categorias */}
             {!isSearching && categories.length > 0 && (
               <div className="px-4 py-6">
                 <h2 className="font-bold text-gray-900 mb-4">Categorias</h2>
                 <div className="relative">
-                  {/* Fade-out gradiente na borda direita para indicar scroll */}
                   <div className="absolute right-0 top-0 bottom-2 w-8 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
                   <div className="flex overflow-x-auto hide-scrollbar gap-3 pb-2 -mx-4 px-4 pr-8">
-                    {/* botão "Todos" adicionado como primeiro item */}
                     <button
                       onClick={goHome}
                       className={`whitespace-nowrap px-5 py-2.5 rounded-full text-sm font-medium border transition-colors shadow-sm ${
@@ -476,116 +485,115 @@ export default function PublicStore() {
             )}
 
             <div className="px-4 py-4">
+              {/* Estado de busca ativa — exibe todos os resultados juntos, sem separação por catálogo */}
               {isSearching && (
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
-                  <h2 className="font-bold text-gray-900 text-lg">
-                    {filteredProducts.length} {filteredProducts.length === 1 ? 'resultado' : 'resultados'} para "{searchQuery}"
-                  </h2>
-                  <button 
-                    onClick={() => setSearchQuery('')}
-                    className="text-sm font-medium hover:text-gray-900 transition-colors px-3 py-1.5 bg-white border border-gray-200 rounded-full w-fit"
-                    style={{ color: primaryColor }}
-                  >
-                    Limpar busca
-                  </button>
-                </div>
-              )}
-              {!isSearching && products.length > 0 && <h2 className="font-bold text-gray-900 mb-4 text-lg">Todos os Produtos</h2>}
-
-              {products.length === 0 && !loading && (
-                <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
-                  {reseller?.settings?.logo && (
-                    <img src={reseller.settings.logo} className="w-20 h-20 rounded-full object-cover mb-4 shadow-sm" />
-                  )}
-                  <h2 className="text-xl font-bold text-gray-900 mb-2">Em breve novidades! 🎉</h2>
-                  <p className="text-gray-500 mb-6 max-w-xs mx-auto">
-                    {reseller?.storeName} está preparando seu catálogo. Fale com a gente no WhatsApp para saber mais.
-                  </p>
-                  {reseller?.settings?.whatsapp && (
-                    <a
-                      href={`https://wa.me/55${reseller.settings.whatsapp.replace(/\D/g,'')}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-2 w-full max-w-xs mx-auto px-6 py-3.5 rounded-full font-bold text-white shadow-lg active:scale-95 transition-all"
-                      style={{ backgroundColor: primaryColor }}
+                <>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+                    <h2 className="font-bold text-gray-900 text-lg">
+                      {searchResults.length} {searchResults.length === 1 ? 'resultado' : 'resultados'} para "{searchQuery}"
+                    </h2>
+                    <button 
+                      onClick={() => setSearchQuery('')}
+                      className="text-sm font-medium hover:text-gray-900 transition-colors px-3 py-1.5 bg-white border border-gray-200 rounded-full w-fit"
+                      style={{ color: primaryColor }}
                     >
-                      <MessageCircle className="w-5 h-5" /> Falar no WhatsApp
-                    </a>
+                      Limpar busca
+                    </button>
+                  </div>
+
+                  {searchResults.length === 0 ? (
+                    <div className="text-center py-16 px-4 bg-white rounded-3xl border border-gray-100 shadow-sm mt-4">
+                      <Search className="w-12 h-12 text-gray-200 mx-auto mb-4" />
+                      <h3 className="text-lg font-bold text-gray-900 mb-2">Nenhum produto encontrado</h3>
+                      <p className="text-gray-500 mb-6">Tente usar outros termos ou palavras-chave.</p>
+                      <button 
+                        onClick={() => setSearchQuery('')}
+                        className="px-6 py-2.5 rounded-full text-white font-bold transition-all shadow-sm mx-auto"
+                        style={{ backgroundColor: primaryColor }}
+                      >
+                        Ver todos os produtos
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
+                      {searchResults.map(product => (
+                        <ProductCard
+                          key={product.id}
+                          product={product}
+                          storeSlug={slug || ''}
+                          onAddToCart={(p) => handleAddToCart(p, p.variations?.[0])}
+                          onClick={openProduct}
+                          resellerPrimaryColor={primaryColor}
+                        />
+                      ))}
+                    </div>
                   )}
-                </div>
+                </>
               )}
 
-              {products.length > 0 && filteredProducts.length === 0 && (
-                <div className="text-center py-16 px-4 bg-white rounded-3xl border border-gray-100 shadow-sm mt-4">
-                  <Search className="w-12 h-12 text-gray-200 mx-auto mb-4" />
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">Nenhum produto encontrado</h3>
-                  <p className="text-gray-500 mb-6">Tente usar outros termos ou palavras-chave.</p>
-                  <button
-                    onClick={() => setSearchQuery('')}
-                    className="px-6 py-2.5 rounded-full text-white font-bold transition-all shadow-sm mx-auto"
-                    style={{ backgroundColor: primaryColor }}
-                  >
-                    Ver todos os produtos
-                  </button>
-                </div>
-              )}
+              {/* Estado sem busca — produtos agrupados por catálogo com banner 16:9 */}
+              {!isSearching && (
+                <>
+                  {products.length === 0 && !loading ? (
+                    <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
+                      {reseller?.settings?.logo && (
+                        <img src={reseller.settings.logo} className="w-20 h-20 rounded-full object-cover mb-4 shadow-sm" />
+                      )}
+                      <h2 className="text-xl font-bold text-gray-900 mb-2">Em breve novidades! 🎉</h2>
+                      <p className="text-gray-500 mb-6 max-w-xs mx-auto">
+                        {reseller?.storeName} está preparando seu catálogo. Fale com a gente no WhatsApp para saber mais.
+                      </p>
+                      {reseller?.settings?.whatsapp && (
+                        <a
+                          href={`https://wa.me/55${reseller.settings.whatsapp.replace(/\D/g,'')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-center gap-2 w-full max-w-xs mx-auto px-6 py-3.5 rounded-full font-bold text-white shadow-lg active:scale-95 transition-all"
+                          style={{ backgroundColor: primaryColor }}
+                        >
+                          <MessageCircle className="w-5 h-5" /> Falar no WhatsApp
+                        </a>
+                      )}
+                    </div>
+                  ) : (
+                    /* Seções por catálogo — cada catálogo exibe seu banner 16:9 seguido pelos produtos */
+                    <div className="space-y-10">
+                      {productsByCatalog.map(({ catalog, items }) => (
+                        <section key={catalog.id}>
+                          {/* Banner 16:9 do catálogo */}
+                          {catalog.bannerUrl && (
+                            <div className="w-full aspect-video overflow-hidden rounded-2xl mb-5 bg-gray-100 shadow-sm">
+                              <img
+                                src={catalog.bannerUrl}
+                                alt={catalog.name}
+                                className="w-full h-full object-cover"
+                                referrerPolicy="no-referrer"
+                              />
+                            </div>
+                          )}
 
-              {/* Produtos agrupados por catálogo, cada um precedido pelo banner 16:9 */}
-              {!isSearching && filteredProducts.length > 0 && activeCatalogs.length > 0 && (
-                <div className="space-y-10">
-                  {activeCatalogs.map((catalog: any) => {
-                    const catalogProducts = filteredProducts.filter(
-                      (p: any) => p.catalogId === catalog.id
-                    );
-                    if (catalogProducts.length === 0) return null;
-                    const customBanner = reseller?.settings?.customBanners?.[catalog.id];
-                    const bannerSrc = customBanner || catalog.bannerUrl || catalog.imageUrl;
-                    return (
-                      <div key={catalog.id}>
-                        {/* Banner 16:9 do catálogo */}
-                        {bannerSrc && (
-                          <div className="w-full aspect-video overflow-hidden rounded-2xl bg-gray-200 mb-5 shadow-sm">
-                            <img
-                              src={bannerSrc}
-                              alt={catalog.name}
-                              className="w-full h-full object-cover"
-                              referrerPolicy="no-referrer"
-                            />
+                          {/* Nome do catálogo (só exibe se houver mais de um catálogo ativo) */}
+                          {productsByCatalog.length > 1 && (
+                            <h2 className="font-bold text-gray-900 text-lg mb-4">{catalog.name}</h2>
+                          )}
+
+                          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
+                            {items.map(product => (
+                              <ProductCard
+                                key={product.id}
+                                product={product}
+                                storeSlug={slug || ''}
+                                onAddToCart={(p) => handleAddToCart(p, p.variations?.[0])}
+                                onClick={openProduct}
+                                resellerPrimaryColor={primaryColor}
+                              />
+                            ))}
                           </div>
-                        )}
-                        <h2 className="font-bold text-gray-900 text-lg mb-4">{catalog.name}</h2>
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
-                          {catalogProducts.map((product: any) => (
-                            <ProductCard
-                              key={product.id}
-                              product={product}
-                              storeSlug={slug || ''}
-                              onAddToCart={(p) => handleAddToCart(p, p.variations?.[0])}
-                              onClick={openProduct}
-                              resellerPrimaryColor={primaryColor}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* Fallback: busca ativa — exibe tudo em grid único sem separação por catálogo */}
-              {isSearching && filteredProducts.length > 0 && (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
-                  {filteredProducts.map((product: any) => (
-                    <ProductCard
-                      key={product.id}
-                      product={product}
-                      storeSlug={slug || ''}
-                      onAddToCart={(p) => handleAddToCart(p, p.variations?.[0])}
-                      onClick={openProduct}
-                      resellerPrimaryColor={primaryColor}
-                    />
-                  ))}
-                </div>
+                        </section>
+                      ))}
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </>
@@ -665,7 +673,7 @@ export default function PublicStore() {
               )}
             </div>
 
-            {/* Image Slider */}
+            {/* Image Slider com suporte a múltiplas fotos */}
             <div 
               className="relative aspect-square sm:aspect-[4/3] bg-gray-100"
               onTouchStart={handleTouchStart}
@@ -683,6 +691,7 @@ export default function PublicStore() {
                 <div className="w-full h-full flex items-center justify-center text-gray-300"><Store className="w-16 h-16" /></div>
               )}
               
+              {/* Dots de navegação entre fotos */}
               {selectedProduct.images?.length > 1 && (
                 <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
                   {selectedProduct.images.map((_: any, idx: number) => (
@@ -691,7 +700,44 @@ export default function PublicStore() {
                   ))}
                 </div>
               )}
+
+              {/* Setas de navegação lateral (desktop) */}
+              {selectedProduct.images?.length > 1 && (
+                <>
+                  <button
+                    onClick={() => setCurrentImageIndex(prev => Math.max(prev - 1, 0))}
+                    disabled={currentImageIndex === 0}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white rounded-full w-9 h-9 flex items-center justify-center transition-all disabled:opacity-0 backdrop-blur-sm hidden sm:flex"
+                  >
+                    <ArrowLeft className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={() => setCurrentImageIndex(prev => Math.min(prev + 1, selectedProduct.images.length - 1))}
+                    disabled={currentImageIndex === selectedProduct.images.length - 1}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white rounded-full w-9 h-9 flex items-center justify-center transition-all disabled:opacity-0 backdrop-blur-sm hidden sm:flex"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                </>
+              )}
             </div>
+
+            {/* Miniaturas das fotos (thumbnail strip) */}
+            {selectedProduct.images?.length > 1 && (
+              <div className="flex gap-2 overflow-x-auto hide-scrollbar px-5 py-3 border-b border-gray-100 bg-white">
+                {selectedProduct.images.map((img: string, idx: number) => (
+                  <button
+                    key={idx}
+                    onClick={() => setCurrentImageIndex(idx)}
+                    className={`shrink-0 w-14 h-14 rounded-xl overflow-hidden border-2 transition-all ${
+                      idx === currentImageIndex ? 'border-gray-900 opacity-100' : 'border-transparent opacity-60 hover:opacity-100'
+                    }`}
+                  >
+                    <img src={img} alt={`Foto ${idx + 1}`} className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
 
             <div className="p-5">
               <div className="mb-6">
