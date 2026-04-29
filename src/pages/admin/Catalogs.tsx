@@ -4,18 +4,7 @@ import { db } from "../../firebase";
 import { Catalog, Niche } from "../../types";
 import { catalogService } from "../../services/catalogService";
 import { cloudinaryService } from "../../services/cloudinaryService";
-import {
-  Plus,
-  Edit,
-  Trash2,
-  Image as ImageIcon,
-  Loader2,
-  Search,
-  AlertCircle,
-  Filter,
-  Layers,
-  X,
-} from "lucide-react";
+import { Plus, Edit, Trash2, Image as ImageIcon, Loader2, Search, AlertCircle, Filter, Layers } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
 export const Catalogs = () => {
@@ -25,55 +14,42 @@ export const Catalogs = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingCatalog, setEditingCatalog] = useState<Catalog | null>(null);
-
+  
   const [searchTerm, setSearchTerm] = useState("");
   const [filterNiche, setFilterNiche] = useState<string>("all");
-  const [toastMessage, setToastMessage] = useState<{
-    type: "success" | "error";
-    text: string;
-  } | null>(null);
-
+  const [toastMessage, setToastMessage] = useState<{ type: "success" | "error", text: string } | null>(null);
+  
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     bannerUrl: "",
     nicheId: "",
     active: true,
-    order: 0,
+    order: 0
   });
 
-  // Banner (único campo de imagem agora)
   const [bannerFile, setBannerFile] = useState<File | null>(null);
   const [bannerPreview, setBannerPreview] = useState<string>("");
-  const [isDragging, setIsDragging] = useState(false);
   const bannerInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const qCatalogs = query(
-      collection(db, "catalogs"),
-      orderBy("order", "asc")
-    );
+    const qCatalogs = query(collection(db, "catalogs"), orderBy("order", "asc"));
     const unsubCatalogs = onSnapshot(qCatalogs, (snap) => {
-      setCatalogs(
-        snap.docs.map((d) => ({ id: d.id, ...d.data() } as Catalog))
-      );
+      setCatalogs(snap.docs.map(d => ({ id: d.id, ...d.data() } as Catalog)));
       setLoading(false);
     });
 
     const qNiches = query(collection(db, "niches"), orderBy("name", "asc"));
     const unsubNiches = onSnapshot(qNiches, (snap) => {
-      setNiches(snap.docs.map((d) => ({ id: d.id, ...d.data() } as Niche)));
+      setNiches(snap.docs.map(d => ({ id: d.id, ...d.data() } as Niche)));
     });
 
-    return () => {
-      unsubCatalogs();
-      unsubNiches();
-    };
+    return () => { unsubCatalogs(); unsubNiches(); };
   }, []);
 
   const showToast = (type: "success" | "error", text: string) => {
     setToastMessage({ type, text });
-    setTimeout(() => setToastMessage(null), 3500);
+    setTimeout(() => setToastMessage(null), 3000);
   };
 
   const openModal = (catalog?: Catalog) => {
@@ -85,21 +61,18 @@ export const Catalogs = () => {
         bannerUrl: catalog.bannerUrl || "",
         nicheId: catalog.nicheId,
         active: catalog.active,
-        order: catalog.order,
+        order: catalog.order
       });
       setBannerPreview(catalog.bannerUrl || "");
     } else {
       setEditingCatalog(null);
-      setFormData({
-        name: "",
-        description: "",
+      setFormData({ 
+        name: "", 
+        description: "", 
         bannerUrl: "",
-        nicheId: filterNiche !== "all" ? filterNiche : "",
+        nicheId: filterNiche !== "all" ? filterNiche : "", 
         active: true,
-        order:
-          catalogs.length > 0
-            ? Math.max(...catalogs.map((c) => c.order)) + 1
-            : 0,
+        order: catalogs.length > 0 ? Math.max(...catalogs.map(c => c.order)) + 1 : 0
       });
       setBannerPreview("");
     }
@@ -122,37 +95,10 @@ export const Catalogs = () => {
     }
   };
 
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setIsDragging(false);
-  };
-
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-    const file = e.dataTransfer.files?.[0];
-    if (file && file.type.startsWith("image/")) {
-      setBannerFile(file);
-      setBannerPreview(URL.createObjectURL(file));
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.nicheId) {
       showToast("error", "Selecione um nicho para o catálogo.");
-      return;
-    }
-    // Banner é obrigatório na criação
-    if (!editingCatalog && !bannerFile && !formData.bannerUrl) {
-      showToast("error", "O banner do catálogo é obrigatório.");
       return;
     }
 
@@ -164,36 +110,33 @@ export const Catalogs = () => {
         finalBannerUrl = await cloudinaryService.uploadImage(bannerFile);
       }
 
-      const selectedNiche = niches.find((n) => n.id === formData.nicheId);
+      const selectedNiche = niches.find(n => n.id === formData.nicheId);
       const nicheName = selectedNiche ? selectedNiche.name : "";
 
       if (editingCatalog) {
-        await catalogService.updateCatalog(
-          editingCatalog.id,
-          editingCatalog.nicheId,
-          {
-            name: formData.name,
-            description: formData.description,
-            // imageUrl mantido para não quebrar dados antigos; passa o banner como capa também
-            imageUrl: finalBannerUrl,
-            bannerUrl: finalBannerUrl,
-            nicheId: formData.nicheId,
-            nicheName,
-            active: formData.active,
-            order: Number(formData.order),
-          }
-        );
+        await catalogService.updateCatalog(editingCatalog.id, editingCatalog.nicheId, {
+          name: formData.name,
+          description: formData.description,
+          // imageUrl mantido do valor original para não quebrar referencias existentes
+          imageUrl: editingCatalog.imageUrl || finalBannerUrl,
+          bannerUrl: finalBannerUrl,
+          nicheId: formData.nicheId,
+          nicheName: nicheName,
+          active: formData.active,
+          order: Number(formData.order)
+        });
         showToast("success", "Catálogo atualizado com sucesso!");
       } else {
         await catalogService.createCatalog({
           name: formData.name,
           description: formData.description,
-          imageUrl: finalBannerUrl, // usa banner como thumbnail também
+          // imageUrl usa o bannerUrl como fallback para compatibilidade
+          imageUrl: finalBannerUrl,
           bannerUrl: finalBannerUrl,
           nicheId: formData.nicheId,
-          nicheName,
+          nicheName: nicheName,
           active: formData.active,
-          order: Number(formData.order),
+          order: Number(formData.order)
         });
         showToast("success", "Catálogo criado com sucesso!");
       }
@@ -207,11 +150,7 @@ export const Catalogs = () => {
   };
 
   const handleDelete = async (catalog: Catalog) => {
-    if (
-      window.confirm(
-        `Tem certeza que deseja excluir o catálogo "${catalog.name}"?\n\nISTO TAMBÉM EXCLUIRÁ todos os produtos associados.`
-      )
-    ) {
+    if (window.confirm(`Tem certeza que deseja excluir o catálogo "${catalog.name}"?\n\nISTO TAMBÉM EXCLUIRÁ todos os produtos associados.`)) {
       try {
         await catalogService.deleteCatalog(catalog.id, catalog.nicheId);
         showToast("success", "Catálogo excluído com sucesso!");
@@ -224,41 +163,33 @@ export const Catalogs = () => {
   const toggleStatus = async (catalog: Catalog) => {
     try {
       await catalogService.toggleCatalogStatus(catalog.id, catalog.active);
-      showToast(
-        "success",
-        `Catálogo ${catalog.active ? "desativado" : "ativado"} com sucesso!`
-      );
-    } catch {
+      showToast("success", `Catálogo ${catalog.active ? 'desativado' : 'ativado'} com sucesso!`);
+    } catch (error: any) {
       showToast("error", "Erro ao alterar status do catálogo.");
     }
   };
 
-  const filteredCatalogs = catalogs.filter((catalog) => {
-    const matchesSearch =
-      catalog.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      catalog.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesNiche =
-      filterNiche === "all" || catalog.nicheId === filterNiche;
+  const filteredCatalogs = catalogs.filter(catalog => {
+    const matchesSearch = catalog.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          catalog.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesNiche = filterNiche === "all" || catalog.nicheId === filterNiche;
     return matchesSearch && matchesNiche;
   });
 
   return (
     <>
       <div className="space-y-8">
-        {/* Cabeçalho */}
         <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Catálogos</h1>
-            <p className="text-gray-500">
-              Agrupe produtos por coleções e nichos
-            </p>
+            <p className="text-gray-500">Agrupe produtos por coleções e nichos</p>
           </div>
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
             <div className="relative w-full sm:w-auto">
               <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Buscar catálogos..."
+              <input 
+                type="text" 
+                placeholder="Buscar catálogos..." 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -272,14 +203,12 @@ export const Catalogs = () => {
                 className="w-full pl-10 pr-8 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white font-medium text-gray-700"
               >
                 <option value="all">Todos os Nichos</option>
-                {niches.map((niche) => (
-                  <option key={niche.id} value={niche.id}>
-                    {niche.name}
-                  </option>
+                {niches.map(niche => (
+                  <option key={niche.id} value={niche.id}>{niche.name}</option>
                 ))}
               </select>
             </div>
-            <button
+            <button 
               onClick={() => openModal()}
               className="w-full sm:w-auto bg-blue-600 text-white px-6 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 whitespace-nowrap"
             >
@@ -288,33 +217,27 @@ export const Catalogs = () => {
           </div>
         </div>
 
-        {/* Conteúdo */}
         {loading ? (
           <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-            <div className="p-6 border-b border-gray-100">
-              <div className="h-6 bg-gray-200 rounded w-48 animate-pulse" />
+            <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+              <div className="h-6 bg-gray-200 rounded w-48 animate-pulse"></div>
             </div>
             <div className="p-6 space-y-4">
-              {[1, 2, 3, 4].map((i) => (
-                <div
-                  key={i}
-                  className="h-16 bg-gray-50 rounded-xl animate-pulse"
-                />
+              {[1, 2, 3, 4].map(i => (
+                <div key={i} className="h-16 bg-gray-50 rounded-xl animate-pulse"></div>
               ))}
             </div>
           </div>
         ) : filteredCatalogs.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-200">
             <Layers className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-bold text-gray-900">
-              Nenhum catálogo encontrado
-            </h3>
+            <h3 className="text-xl font-bold text-gray-900">Nenhum catálogo encontrado</h3>
             <p className="text-gray-500 mt-2">
-              {filterNiche !== "all"
-                ? "Não há catálogos para o nicho selecionado."
+              {filterNiche !== "all" 
+                ? "Não há catálogos para o nicho selecionado." 
                 : "Comece criando o primeiro catálogo da plataforma."}
             </p>
-            <button
+            <button 
               onClick={() => openModal()}
               className="mt-6 bg-blue-50 text-blue-600 px-6 py-2 rounded-xl font-bold hover:bg-blue-100 transition-colors"
             >
@@ -327,55 +250,30 @@ export const Catalogs = () => {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-gray-50/50 border-b border-gray-100">
-                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                      Catálogo
-                    </th>
-                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                      Nicho
-                    </th>
-                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                      Descrição
-                    </th>
-                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">
-                      Produtos
-                    </th>
-                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">
-                      Ordem
-                    </th>
-                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">
-                      Ações
-                    </th>
+                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Catálogo</th>
+                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Nicho</th>
+                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Descrição</th>
+                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Produtos</th>
+                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Ordem</th>
+                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
+                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Ações</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {filteredCatalogs.map((catalog) => (
-                    <tr
-                      key={catalog.id}
-                      className="hover:bg-gray-50/50 transition-colors"
-                    >
+                  {filteredCatalogs.map(catalog => (
+                    <tr key={catalog.id} className="hover:bg-gray-50/50 transition-colors">
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-4">
-                          {/* Thumb 16:9 do banner */}
-                          <div className="w-20 h-11 rounded-lg overflow-hidden bg-gray-100 shrink-0">
-                            {catalog.bannerUrl || catalog.imageUrl ? (
-                              <img
-                                src={catalog.bannerUrl || catalog.imageUrl}
-                                alt={catalog.name}
-                                className="w-full h-full object-cover"
-                                referrerPolicy="no-referrer"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center">
-                                <Layers className="w-5 h-5 text-gray-300" />
-                              </div>
-                            )}
+                          {/* Thumbnail do banner em 16:9 na tabela */}
+                          <div className="w-20 h-[45px] rounded-xl overflow-hidden bg-gray-100 shrink-0">
+                            <img 
+                              src={catalog.bannerUrl || catalog.imageUrl || "https://picsum.photos/seed/catalog/320/180"} 
+                              alt={catalog.name} 
+                              className="w-full h-full object-cover"
+                              referrerPolicy="no-referrer"
+                            />
                           </div>
-                          <span className="font-bold text-gray-900">
-                            {catalog.name}
-                          </span>
+                          <span className="font-bold text-gray-900">{catalog.name}</span>
                         </div>
                       </td>
                       <td className="py-4 px-6">
@@ -384,9 +282,7 @@ export const Catalogs = () => {
                         </span>
                       </td>
                       <td className="py-4 px-6">
-                        <p className="text-sm text-gray-500 line-clamp-2 max-w-xs">
-                          {catalog.description}
-                        </p>
+                        <p className="text-sm text-gray-500 line-clamp-2 max-w-xs">{catalog.description}</p>
                       </td>
                       <td className="py-4 px-6 text-center">
                         <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50 text-blue-600 font-bold text-sm">
@@ -394,33 +290,31 @@ export const Catalogs = () => {
                         </span>
                       </td>
                       <td className="py-4 px-6 text-center">
-                        <span className="text-sm font-bold text-gray-700">
-                          {catalog.order}
-                        </span>
+                        <span className="text-sm font-bold text-gray-700">{catalog.order}</span>
                       </td>
                       <td className="py-4 px-6">
-                        <button
+                        <button 
                           onClick={() => toggleStatus(catalog)}
                           className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${
-                            catalog.active
-                              ? "bg-green-100 text-green-700 hover:bg-green-200"
-                              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                            catalog.active 
+                              ? 'bg-green-100 text-green-700 hover:bg-green-200' 
+                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                           }`}
                         >
-                          {catalog.active ? "Ativo" : "Inativo"}
+                          {catalog.active ? 'Ativo' : 'Inativo'}
                         </button>
                       </td>
                       <td className="py-4 px-6 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <button
-                            onClick={() => openModal(catalog)}
+                          <button 
+                            onClick={() => openModal(catalog)} 
                             className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                             title="Editar"
                           >
                             <Edit className="w-4 h-4" />
                           </button>
-                          <button
-                            onClick={() => handleDelete(catalog)}
+                          <button 
+                            onClick={() => handleDelete(catalog)} 
                             className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                             title="Excluir"
                           >
@@ -437,247 +331,155 @@ export const Catalogs = () => {
         )}
       </div>
 
-      {/* ── Modal Criar / Editar ────────────────────────────────────────────── */}
+      {/* Modal Criar/Editar */}
       <AnimatePresence>
         {isModalOpen && (
-          <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 overflow-y-auto">
+          <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 overflow-y-auto">
             <div className="min-h-full flex items-center justify-center p-4 sm:p-6">
-              <motion.div
-                initial={{ scale: 0.95, opacity: 0, y: 20 }}
-                animate={{ scale: 1, opacity: 1, y: 0 }}
+              <motion.div 
+                initial={{ scale: 0.95, opacity: 0, y: 20 }} 
+                animate={{ scale: 1, opacity: 1, y: 0 }} 
                 exit={{ scale: 0.95, opacity: 0, y: 20 }}
                 className="bg-white rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl my-8"
               >
-                {/* Header */}
                 <div className="p-6 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white z-10">
                   <h2 className="text-2xl font-bold text-gray-900">
                     {editingCatalog ? "Editar Catálogo" : "Novo Catálogo"}
                   </h2>
-                  <button
-                    onClick={closeModal}
-                    className="text-gray-400 hover:text-gray-600 bg-gray-50 hover:bg-gray-100 p-2 rounded-full transition-colors"
-                  >
-                    <X className="w-5 h-5" />
+                  <button onClick={closeModal} className="text-gray-400 hover:text-gray-600 bg-gray-50 hover:bg-gray-100 p-2 rounded-full transition-colors">
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
                   </button>
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-6">
-                  {/* ── Banner 16:9 ── */}
+                  {/* Banner 16:9 — ocupa a largura total do modal */}
                   <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <label className="text-sm font-semibold text-gray-700">
-                        Banner do Catálogo{" "}
-                        <span className="text-red-500">*</span>
-                      </label>
-                      <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
-                        Proporção 16:9
-                      </span>
-                    </div>
-
-                    <div
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Banner do Catálogo
+                      <span className="ml-2 text-xs font-normal text-gray-400">(proporção 16:9 — ex: 1280×720)</span>
+                    </label>
+                    <div 
                       onClick={() => bannerInputRef.current?.click()}
-                      onDragOver={handleDragOver}
-                      onDragLeave={handleDragLeave}
-                      onDrop={handleDrop}
-                      className={`relative w-full aspect-video rounded-2xl overflow-hidden border-2 cursor-pointer transition-all ${
-                        bannerPreview
-                          ? "border-gray-200"
-                          : isDragging
-                          ? "border-blue-500 bg-blue-50 scale-[1.01]"
-                          : "border-dashed border-gray-300 hover:border-blue-400 bg-gray-50 hover:bg-blue-50/40"
+                      className={`border-2 border-dashed rounded-2xl overflow-hidden cursor-pointer transition-all ${
+                        bannerPreview ? 'border-gray-200' : 'border-gray-300 hover:border-blue-500 bg-gray-50 hover:bg-blue-50/50'
                       }`}
                     >
                       {bannerPreview ? (
-                        <>
-                          <img
-                            src={bannerPreview}
-                            alt="Preview do banner"
-                            className="w-full h-full object-cover"
-                          />
-                          <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
-                            <ImageIcon className="w-8 h-8 text-white" />
-                            <span className="text-white font-semibold text-sm">
-                              Clique para trocar o banner
+                        <div className="relative aspect-video">
+                          <img src={bannerPreview} alt="Banner Preview" className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                            <span className="text-white font-medium flex items-center gap-2 bg-black/50 px-4 py-2 rounded-full backdrop-blur-sm">
+                              <ImageIcon className="w-4 h-4" /> Trocar Banner
                             </span>
                           </div>
-                          {/* Botão remover */}
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setBannerFile(null);
-                              setBannerPreview("");
-                              setFormData({ ...formData, bannerUrl: "" });
-                            }}
-                            className="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-full hover:bg-red-600 transition-colors shadow-lg"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </>
+                        </div>
                       ) : (
-                        <div className="flex flex-col items-center justify-center h-full gap-3 p-6 text-center">
-                          <div className="w-14 h-14 bg-white rounded-full shadow-sm flex items-center justify-center">
-                            <ImageIcon className="w-7 h-7 text-gray-400" />
+                        <div className="aspect-video flex flex-col items-center justify-center text-gray-500 p-6 text-center">
+                          <div className="w-12 h-12 bg-white rounded-full shadow-sm flex items-center justify-center mb-3">
+                            <ImageIcon className="w-6 h-6 text-gray-400" />
                           </div>
-                          <div>
-                            <p className="text-sm font-semibold text-gray-700">
-                              {isDragging
-                                ? "Solte a imagem aqui"
-                                : "Clique ou arraste o banner"}
-                            </p>
-                            <p className="text-xs text-gray-400 mt-1">
-                              PNG, JPG até 5 MB · Tamanho ideal: 1920 × 1080 px
-                            </p>
-                          </div>
+                          <span className="text-sm font-medium text-gray-700">Clique para fazer upload do Banner</span>
+                          <span className="text-xs text-gray-400 mt-1">PNG, JPG até 5MB — Proporção 16:9</span>
                         </div>
                       )}
                     </div>
-
-                    <input
-                      type="file"
-                      ref={bannerInputRef}
-                      onChange={handleBannerChange}
-                      accept="image/*"
-                      className="hidden"
+                    <input 
+                      type="file" 
+                      ref={bannerInputRef} 
+                      onChange={handleBannerChange} 
+                      accept="image/*" 
+                      className="hidden" 
                     />
-
-                    <p className="text-xs text-gray-400 mt-2 flex items-center gap-1">
-                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-400" />
-                      Este banner será exibido na loja pública antes dos
-                      produtos do catálogo.
-                    </p>
                   </div>
 
-                  {/* Dados de texto */}
+                  {/* Dados do catálogo em grid */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Nicho de Mercado{" "}
-                        <span className="text-red-500">*</span>
-                      </label>
-                      <select
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Nicho de Mercado</label>
+                      <select 
                         required
-                        value={formData.nicheId}
-                        onChange={(e) =>
-                          setFormData({ ...formData, nicheId: e.target.value })
-                        }
+                        value={formData.nicheId} 
+                        onChange={e => setFormData({...formData, nicheId: e.target.value})}
                         className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none bg-white transition-all appearance-none"
                       >
-                        <option value="" disabled>
-                          Selecione um nicho...
-                        </option>
-                        {niches.map((n) => (
-                          <option key={n.id} value={n.id}>
-                            {n.name}
-                          </option>
+                        <option value="" disabled>Selecione um nicho...</option>
+                        {niches.map(n => (
+                          <option key={n.id} value={n.id}>{n.name}</option>
                         ))}
                       </select>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Ordem de Exibição
-                      </label>
-                      <input
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Ordem de Exibição</label>
+                      <input 
                         required
                         type="number"
                         min="0"
-                        value={formData.order}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            order: parseInt(e.target.value) || 0,
-                          })
-                        }
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                        value={formData.order} 
+                        onChange={e => setFormData({...formData, order: parseInt(e.target.value) || 0})} 
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all" 
                         placeholder="0"
                       />
-                      <p className="text-xs text-gray-500 mt-1">
-                        Números menores aparecem primeiro.
-                      </p>
+                      <p className="text-xs text-gray-500 mt-1">Números menores aparecem primeiro.</p>
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Nome do Catálogo <span className="text-red-500">*</span>
-                    </label>
-                    <input
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Nome do Catálogo</label>
+                    <input 
                       required
                       type="text"
-                      value={formData.name}
-                      onChange={(e) =>
-                        setFormData({ ...formData, name: e.target.value })
-                      }
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                      value={formData.name} 
+                      onChange={e => setFormData({...formData, name: e.target.value})} 
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all" 
                       placeholder="Ex: Coleção Verão 2026"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Descrição <span className="text-red-500">*</span>
-                    </label>
-                    <textarea
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
+                    <textarea 
                       required
                       rows={3}
-                      value={formData.description}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          description: e.target.value,
-                        })
-                      }
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all resize-none"
+                      value={formData.description} 
+                      onChange={e => setFormData({...formData, description: e.target.value})} 
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all resize-none" 
                       placeholder="Descreva o foco deste catálogo..."
                     />
                   </div>
 
-                  {/* Toggle Ativo */}
                   <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
                     <div>
-                      <p className="font-medium text-gray-900">
-                        Catálogo Ativo
-                      </p>
-                      <p className="text-xs text-gray-500 mt-0.5">
-                        Visível para revendedores
-                      </p>
+                      <p className="font-medium text-gray-900">Catálogo Ativo</p>
+                      <p className="text-xs text-gray-500 mt-0.5">Visível para revendedores</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        className="sr-only peer"
+                      <input 
+                        type="checkbox" 
+                        className="sr-only peer" 
                         checked={formData.active}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            active: e.target.checked,
-                          })
-                        }
+                        onChange={e => setFormData({...formData, active: e.target.checked})}
                       />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600" />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                     </label>
                   </div>
 
-                  {/* Botões */}
                   <div className="flex gap-3 pt-2 border-t border-gray-100">
-                    <button
+                    <button 
                       type="button"
-                      onClick={closeModal}
+                      onClick={closeModal} 
                       className="flex-1 py-3.5 rounded-xl font-bold bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
                     >
                       Cancelar
                     </button>
-                    <button
+                    <button 
                       type="submit"
                       disabled={isSubmitting}
                       className="flex-1 py-3.5 rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-blue-100"
                     >
-                      {isSubmitting ? (
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                      ) : (
-                        "Salvar Catálogo"
-                      )}
+                      {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Salvar Catálogo"}
                     </button>
                   </div>
                 </form>
@@ -687,33 +489,21 @@ export const Catalogs = () => {
         )}
       </AnimatePresence>
 
-      {/* Toast */}
+      {/* Toast Notification */}
       <AnimatePresence>
         {toastMessage && (
-          <motion.div
+          <motion.div 
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 50 }}
             className={`fixed bottom-6 right-6 px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 z-50 ${
-              toastMessage.type === "success"
-                ? "bg-gray-900 text-white"
-                : "bg-red-600 text-white"
+              toastMessage.type === 'success' ? 'bg-gray-900 text-white' : 'bg-red-600 text-white'
             }`}
           >
-            {toastMessage.type === "success" ? (
+            {toastMessage.type === 'success' ? (
               <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center shrink-0">
-                <svg
-                  className="w-4 h-4 text-white"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={3}
-                    d="M5 13l4 4L19 7"
-                  />
+                <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
             ) : (
