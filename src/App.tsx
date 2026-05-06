@@ -18,6 +18,9 @@ import { Niches } from "./pages/admin/Niches";
 import { Catalogs as AdminCatalogs } from "./pages/admin/Catalogs";
 import { Products as AdminProducts } from "./pages/admin/Products";
 import { Resellers } from "./pages/admin/Resellers";
+import { AdminSupport } from "./pages/admin/support/AdminSupport";
+import { AdminTicketDetail } from "./pages/admin/support/AdminTicketDetail";
+import { AdminNotifications } from "./pages/admin/support/AdminNotifications";
 
 import { ResellerLayout } from "./pages/reseller/ResellerLayout";
 import { Dashboard as ResellerDashboard } from "./pages/reseller/Dashboard";
@@ -30,6 +33,9 @@ import { StorePreview } from "./pages/reseller/StorePreview";
 import ResellerWelcome from "./pages/reseller/ResellerWelcome";
 import Analytics from "./pages/reseller/Analytics";
 import { ResellerCustomers } from "./pages/ResellerCustomers";
+import { SupportPage } from "./pages/reseller/support/SupportPage";
+import { TicketDetail } from "./pages/reseller/support/TicketDetail";
+
 import OrderConfirmedPage from "./pages/store/OrderConfirmedPage";
 import CategoryPage from "./pages/store/CategoryPage";
 
@@ -103,14 +109,19 @@ export default function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
+        {/* ── Admin ── */}
         <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminLayout /></ProtectedRoute>}>
           <Route index element={<AdminDashboard />} />
           <Route path="niches" element={<Niches />} />
           <Route path="catalogs" element={<AdminCatalogs />} />
           <Route path="products" element={<AdminProducts />} />
           <Route path="resellers" element={<Resellers />} />
+          <Route path="support" element={<AdminSupport />} />
+          <Route path="support/:ticketId" element={<AdminTicketDetail />} />
+          <Route path="notifications" element={<AdminNotifications />} />
         </Route>
 
+        {/* ── Reseller ── */}
         <Route path="/reseller/welcome" element={<ProtectedRoute requiredRole="reseller"><ResellerWelcome /></ProtectedRoute>} />
 
         <Route path="/dashboard" element={<ProtectedRoute requiredRole="reseller"><ResellerLayout /></ProtectedRoute>}>
@@ -123,8 +134,11 @@ export default function App() {
           <Route path="catalogs" element={<ResellerCatalogs />} />
           <Route path="products" element={<ResellerProducts />} />
           <Route path="orders" element={<ResellerOrders />} />
+          <Route path="support" element={<SupportPage />} />
+          <Route path="support/:ticketId" element={<TicketDetail />} />
         </Route>
 
+        {/* ── Public store ── */}
         <Route path="/store/:slug/product/:productId" element={<TenantProviderWrapper><ProductPage /></TenantProviderWrapper>} />
         <Route path="/store/:slug/categoria/:categoryId" element={<TenantProviderWrapper><CategoryPage /></TenantProviderWrapper>} />
         <Route path="/store/:slug/order-confirmed/:orderId" element={<TenantProviderWrapper><OrderConfirmedPage /></TenantProviderWrapper>} />
