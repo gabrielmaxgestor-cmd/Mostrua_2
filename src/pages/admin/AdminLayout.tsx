@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate, Outlet, useLocation } from "react-router-dom";
 import {
-  LogOut, LayoutDashboard, Package, Users, Layers, Search, Bell, ChevronDown, FolderOpen
+  LogOut, LayoutDashboard, Package, Users, Layers, Search, Bell, ChevronDown, FolderOpen, Headphones,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 
@@ -58,13 +58,10 @@ export const AdminLayout: React.FC = () => {
                 Cadastros
               </div>
               <ChevronDown
-                className={`w-4 h-4 transition-transform duration-200 ${
-                  cadastrosOpen ? "rotate-180" : ""
-                }`}
+                className={`w-4 h-4 transition-transform duration-200 ${cadastrosOpen ? "rotate-180" : ""}`}
               />
             </button>
 
-            {/* Submenu */}
             {cadastrosOpen && (
               <div className="mt-1 ml-4 space-y-1 border-l border-gray-700 pl-3">
                 <Link
@@ -105,6 +102,16 @@ export const AdminLayout: React.FC = () => {
           <Link to="/admin/resellers" className={getLinkClass("/admin/resellers")}>
             <Users className="w-5 h-5" /> Revendedores
           </Link>
+
+          {/* Suporte */}
+          <Link to="/admin/support" className={getLinkClass("/admin/support")}>
+            <Headphones className="w-5 h-5" /> Suporte
+          </Link>
+
+          {/* Notificações */}
+          <Link to="/admin/notifications" className={getLinkClass("/admin/notifications")}>
+            <Bell className="w-5 h-5" /> Notificações
+          </Link>
         </nav>
 
         <div className="pt-6 border-t border-gray-800 mt-4">
@@ -133,10 +140,9 @@ export const AdminLayout: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-6">
-            <button className="relative text-gray-500 hover:text-gray-700 transition-colors">
+            <Link to="/admin/notifications" className="relative text-gray-500 hover:text-gray-700 transition-colors">
               <Bell className="w-6 h-6" />
-              <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
-            </button>
+            </Link>
 
             <div className="flex items-center gap-3 pl-2 cursor-pointer">
               <div className="text-right hidden md:block">
