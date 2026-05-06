@@ -14,7 +14,8 @@ import {
   Check,
   BarChart3,
   Users,
-  Eye
+  Eye,
+  HeadphonesIcon,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useReseller } from "../../hooks/useReseller";
@@ -66,7 +67,6 @@ export const ResellerLayout: React.FC = () => {
 
   useEffect(() => {
     if (subscription && subscription.status !== 'active' && subscription.status !== 'trial') {
-      // Allow them to access plans page even if expired
       if (location.pathname !== '/dashboard/plans') {
         navigate('/dashboard/plans', { state: { message: "Seu periodo de teste encerrou. Escolha um plano para continuar." } });
       }
@@ -99,6 +99,7 @@ export const ResellerLayout: React.FC = () => {
     },
     { path: "/dashboard/customers", icon: <Users className="w-5 h-5" />, label: "Clientes" },
     { path: "/dashboard/domain", icon: <Globe className="w-5 h-5" />, label: "Domínio" },
+    { path: "/dashboard/support", icon: <HeadphonesIcon className="w-5 h-5" />, label: "Suporte" },
   ];
 
   const primaryColor = reseller?.settings?.primaryColor || "#2563eb";
@@ -120,14 +121,12 @@ export const ResellerLayout: React.FC = () => {
         </div>
       )}
       <div className="flex flex-1">
-      {/* Mobile Sidebar Overlay */}
       {isMobileMenuOpen && (
         <div 
           className="fixed inset-0 bg-gray-900/50 z-40 lg:hidden"
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
-...
 
       {/* Sidebar */}
       <aside 
@@ -202,7 +201,6 @@ export const ResellerLayout: React.FC = () => {
           </button>
           <div className="flex-1" />
           <div className="flex items-center gap-4">
-            
             {/* Notifications */}
             <div className="relative" ref={notificationsRef}>
               <button
