@@ -12,18 +12,18 @@ export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({ src, alt, 
 
   if (!src || error) {
     return (
-      <div className={`bg-gray-100 flex flex-col items-center justify-center aspect-square ${className}`}>
-        <Package className="w-8 h-8 text-gray-300 mb-2" />
-        <span className="text-xs font-medium text-gray-400">Sem imagem</span>
+      <div className={`bg-[#13131C] flex flex-col items-center justify-center aspect-square ${className}`}>
+        <Package className="w-8 h-8 text-white/30 mb-2" />
+        <span className="text-xs font-medium text-white/40">Sem imagem</span>
       </div>
     );
   }
 
   return (
-    <div className={`relative aspect-square overflow-hidden bg-gray-100 ${className}`}>
+    <div className={`relative aspect-square overflow-hidden bg-[#13131C] ${className}`}>
       {/* Skeleton Loader */}
       {!isLoaded && !error && (
-        <div className="absolute inset-0 animate-pulse bg-gray-200" />
+        <div className="absolute inset-0 animate-pulse bg-[#1A1A2E]" />
       )}
       
       {/* Actual Image */}

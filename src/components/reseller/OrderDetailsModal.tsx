@@ -75,22 +75,22 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 overflow-y-auto">
+    <div className="fixed inset-0 bg-[#0A0A0F]/50 backdrop-blur-sm z-50 overflow-y-auto">
       <div className="min-h-full flex items-center justify-center p-4 sm:p-6">
         <motion.div 
           initial={{ scale: 0.95, opacity: 0 }} 
           animate={{ scale: 1, opacity: 1 }} 
           exit={{ scale: 0.95, opacity: 0 }}
-          className="bg-white rounded-3xl w-full max-w-2xl shadow-2xl flex flex-col max-h-full"
+          className="bg-[#13131C] rounded-3xl w-full max-w-2xl shadow-2xl flex flex-col max-h-full"
         >
-        <div className="p-6 border-b border-gray-100 flex justify-between items-center shrink-0 bg-gray-50/50">
+        <div className="p-6 border-b border-white/5 flex justify-between items-center shrink-0 bg-[#0A0A0F]/50">
           <div>
-            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+            <h2 className="text-xl font-bold text-white flex items-center gap-2">
               Pedido #{order.id.slice(-6).toUpperCase()}
             </h2>
-            <p className="text-sm text-gray-500 mt-1">{formatDate(order.createdAt)}</p>
+            <p className="text-sm text-white/50 mt-1">{formatDate(order.createdAt)}</p>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-2 bg-white rounded-full shadow-sm">
+          <button onClick={onClose} className="text-white/40 hover:text-white/60 p-2 bg-[#13131C] rounded-full shadow-sm">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -100,20 +100,20 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
           {/* Status Update & Actions */}
           <div className="flex flex-col gap-4">
             <div className="flex flex-col sm:flex-row sm:items-end gap-4">
-              <div className="flex-1 bg-gray-50 p-5 rounded-2xl border border-gray-100">
-                <label className="block text-sm font-bold text-gray-700 mb-2">Status do Pedido</label>
+              <div className="flex-1 bg-[#0A0A0F] p-5 rounded-2xl border border-white/5">
+                <label className="block text-sm font-bold text-white/70 mb-2">Status do Pedido</label>
                 <div className="flex items-center gap-3">
                   <select
                     value={localStatus}
                     onChange={(e) => handleUpdateStatusAndTracking(e.target.value as OrderStatus, trackingLink)}
                     disabled={isUpdating}
-                    className="flex-1 px-4 py-3 rounded-xl border border-gray-200 bg-white focus:ring-2 focus:ring-gray-900 outline-none font-medium text-gray-900 disabled:opacity-50"
+                    className="flex-1 px-4 py-3 rounded-xl border border-white/10 bg-[#13131C] focus:ring-2 focus:ring-white/20 outline-none font-medium text-white disabled:opacity-50"
                   >
                     {(Object.keys(statusConfig) as OrderStatus[]).map(status => (
                       <option key={status} value={status}>{statusConfig[status].label}</option>
                     ))}
                   </select>
-                  {isUpdating && <Loader2 className="w-5 h-5 animate-spin text-gray-600" />}
+                  {isUpdating && <Loader2 className="w-5 h-5 animate-spin text-white/60" />}
                 </div>
               </div>
               
@@ -128,8 +128,8 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
 
             {/* Tracking Link (Conditional if Shipped/Delivered or if already filled) */}
             {(localStatus === 'shipped' || localStatus === 'delivered' || trackingLink) && (
-              <div className="bg-blue-50/50 p-5 rounded-2xl border border-blue-100 flex flex-col gap-2">
-                <label className="block text-sm font-bold text-blue-900">Link de Rastreio (Opcional)</label>
+              <div className="bg-orange-500/10/50 p-5 rounded-2xl border border-orange-500 flex flex-col gap-2">
+                <label className="block text-sm font-bold text-orange-500">Link de Rastreio (Opcional)</label>
                 <div className="flex items-center gap-3">
                   <input
                     type="url"
@@ -142,31 +142,31 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                       }
                     }}
                     disabled={isUpdating}
-                    className="flex-1 px-4 py-3 rounded-xl border border-blue-200 bg-white focus:ring-2 focus:ring-blue-500 outline-none font-medium text-gray-900 disabled:opacity-50"
+                    className="flex-1 px-4 py-3 rounded-xl border border-orange-500 bg-[#13131C] focus:ring-2 focus:ring-orange-500 outline-none font-medium text-white disabled:opacity-50"
                   />
-                  {isUpdating && <Loader2 className="w-5 h-5 animate-spin text-blue-600 shrink-0" />}
+                  {isUpdating && <Loader2 className="w-5 h-5 animate-spin text-orange-500 shrink-0" />}
                 </div>
-                <p className="text-xs text-blue-600 font-medium">Será enviado automaticamente no WhatsApp se preenchido.</p>
+                <p className="text-xs text-orange-500 font-medium">Será enviado automaticamente no WhatsApp se preenchido.</p>
               </div>
             )}
           </div>
 
           {/* Cliente */}
           <div>
-            <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Dados do Cliente</h3>
-            <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <h3 className="text-sm font-bold text-white/40 uppercase tracking-wider mb-3">Dados do Cliente</h3>
+            <div className="bg-[#0A0A0F] p-4 rounded-2xl border border-white/5 grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <p className="text-xs text-gray-500 mb-1">Nome</p>
-                <p className="font-bold text-gray-900">{order.customerName}</p>
+                <p className="text-xs text-white/50 mb-1">Nome</p>
+                <p className="font-bold text-white">{order.customerName}</p>
               </div>
               <div>
-                <p className="text-xs text-gray-500 mb-1">Telefone (WhatsApp)</p>
-                <p className="font-bold text-gray-900">{order.customerPhone}</p>
+                <p className="text-xs text-white/50 mb-1">Telefone (WhatsApp)</p>
+                <p className="font-bold text-white">{order.customerPhone}</p>
               </div>
               {order.customerAddress && (
                 <div className="md:col-span-2">
-                  <p className="text-xs text-gray-500 mb-1">Endereço de Entrega</p>
-                  <p className="font-medium text-gray-900">{order.customerAddress}</p>
+                  <p className="text-xs text-white/50 mb-1">Endereço de Entrega</p>
+                  <p className="font-medium text-white">{order.customerAddress}</p>
                 </div>
               )}
             </div>
@@ -174,38 +174,38 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
 
           {/* Itens */}
           <div>
-            <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Itens do Pedido</h3>
-            <div className="border border-gray-100 rounded-2xl overflow-hidden">
+            <h3 className="text-sm font-bold text-white/40 uppercase tracking-wider mb-3">Itens do Pedido</h3>
+            <div className="border border-white/5 rounded-2xl overflow-hidden">
               <table className="w-full text-left">
-                <thead className="bg-gray-50 border-b border-gray-100">
+                <thead className="bg-[#0A0A0F] border-b border-white/5">
                   <tr>
-                    <th className="py-3 px-4 text-xs font-bold text-gray-500">Item</th>
-                    <th className="py-3 px-4 text-xs font-bold text-gray-500 text-center">Qtd</th>
-                    <th className="py-3 px-4 text-xs font-bold text-gray-500 text-right">Preço</th>
-                    <th className="py-3 px-4 text-xs font-bold text-gray-500 text-right">Subtotal</th>
+                    <th className="py-3 px-4 text-xs font-bold text-white/50">Item</th>
+                    <th className="py-3 px-4 text-xs font-bold text-white/50 text-center">Qtd</th>
+                    <th className="py-3 px-4 text-xs font-bold text-white/50 text-right">Preço</th>
+                    <th className="py-3 px-4 text-xs font-bold text-white/50 text-right">Subtotal</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-white/5">
                   {order.items.map((item, idx) => (
                     <tr key={idx}>
                       <td className="py-3 px-4">
-                        <p className="font-bold text-gray-900">{item.name}</p>
-                        {item.variation && <p className="text-xs text-gray-500">{item.variation}</p>}
+                        <p className="font-bold text-white">{item.name}</p>
+                        {item.variation && <p className="text-xs text-white/50">{item.variation}</p>}
                       </td>
-                      <td className="py-3 px-4 text-center font-medium text-gray-600">{item.quantity}</td>
-                      <td className="py-3 px-4 text-right text-gray-600">
+                      <td className="py-3 px-4 text-center font-medium text-white/60">{item.quantity}</td>
+                      <td className="py-3 px-4 text-right text-white/60">
                         {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.price)}
                       </td>
-                      <td className="py-3 px-4 text-right font-bold text-gray-900">
+                      <td className="py-3 px-4 text-right font-bold text-white">
                         {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.price * item.quantity)}
                       </td>
                     </tr>
                   ))}
                 </tbody>
-                <tfoot className="bg-gray-50 border-t border-gray-100">
+                <tfoot className="bg-[#0A0A0F] border-t border-white/5">
                   <tr>
-                    <td colSpan={3} className="py-4 px-4 text-right font-bold text-gray-600">Total do Pedido</td>
-                    <td className="py-4 px-4 text-right font-black text-blue-600 text-lg">
+                    <td colSpan={3} className="py-4 px-4 text-right font-bold text-white/60">Total do Pedido</td>
+                    <td className="py-4 px-4 text-right font-black text-orange-500 text-lg">
                       {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(order.total)}
                     </td>
                   </tr>
@@ -217,8 +217,8 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
           {/* Observações */}
           {order.observations && (
             <div>
-              <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Observações do Cliente</h3>
-              <div className="bg-yellow-50 p-4 rounded-2xl border border-yellow-100 text-yellow-800 text-sm whitespace-pre-wrap">
+              <h3 className="text-sm font-bold text-white/40 uppercase tracking-wider mb-3">Observações do Cliente</h3>
+              <div className="bg-yellow-500/10 p-4 rounded-2xl border border-yellow-100 text-yellow-800 text-sm whitespace-pre-wrap">
                 {order.observations}
               </div>
             </div>

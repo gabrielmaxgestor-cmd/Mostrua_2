@@ -56,28 +56,28 @@ export const ResellerCustomers = () => {
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Clientes ({customers.length})</h1>
+        <h1 className="text-2xl font-bold text-white">Clientes ({customers.length})</h1>
         <div className="relative">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
           <input value={search} onChange={e => setSearch(e.target.value)}
             placeholder="Buscar por nome ou telefone"
             className="pl-9 pr-4 py-2 border rounded-xl text-sm w-64" />
         </div>
       </div>
       {filtered.length === 0 ? (
-        <p className="text-gray-500 text-center py-12">Nenhum cliente encontrado.</p>
+        <p className="text-white/50 text-center py-12">Nenhum cliente encontrado.</p>
       ) : (
-        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+        <div className="bg-[#13131C] rounded-2xl border border-white/10 overflow-hidden">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50"><tr className="text-gray-500 text-left">
+            <thead className="bg-[#0A0A0F]"><tr className="text-white/50 text-left">
               <th className="p-4">Cliente</th><th className="p-4">Telefone</th>
               <th className="p-4 text-center">Pedidos</th><th className="p-4 text-right">Total</th>
               <th className="p-4 text-center">Acao</th>
             </tr></thead>
             <tbody>{filtered.map((c, i) => (
-              <tr key={i} className="border-t hover:bg-gray-50">
-                <td className="p-4 font-medium text-gray-900">{c.name}</td>
-                <td className="p-4 text-gray-500">{c.phone}</td>
+              <tr key={i} className="border-t hover:bg-[#0A0A0F]">
+                <td className="p-4 font-medium text-white">{c.name}</td>
+                <td className="p-4 text-white/50">{c.phone}</td>
                 <td className="p-4 text-center">{c.totalOrders}</td>
                 <td className="p-4 text-right font-bold">R$ {c.totalSpent.toFixed(2)}</td>
                 <td className="p-4 text-center">

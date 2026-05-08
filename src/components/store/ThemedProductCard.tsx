@@ -12,10 +12,10 @@ export const ThemedProductCard = ({ product }: { product: Product }) => {
   const { activeTeam } = useTeamTheme();
 
   return (
-    <div className="w-full max-w-sm rounded-2xl overflow-hidden shadow-lg bg-white border border-gray-100 hover:-translate-y-1 hover:shadow-2xl transition-transform duration-300">
+    <div className="w-full max-w-sm rounded-2xl overflow-hidden shadow-lg bg-[#13131C] border border-white/5 hover:-translate-y-1 hover:shadow-2xl transition-transform duration-300">
       
       {/* Imagem + Efeito Dinâmico via CSS Var */}
-      <div className="h-64 w-full bg-gray-100 relative group overflow-hidden">
+      <div className="h-64 w-full bg-[#13131C] relative group overflow-hidden">
         {/* Camada sutil do gradiente do time sobrepondo a imagem ao passar o mouse */}
         <div 
           className="absolute inset-0 opacity-0 group-hover:opacity-40 transition-opacity z-10"
@@ -37,7 +37,7 @@ export const ThemedProductCard = ({ product }: { product: Product }) => {
       </div>
 
       <div className="p-6">
-        <h3 className="text-xl font-bold mb-1 text-gray-900 line-clamp-1">
+        <h3 className="text-xl font-bold mb-1 text-white line-clamp-1">
           {product.name}
         </h3>
         <p className="text-2xl font-black mb-4" style={{ color: 'var(--theme-primary)' }}>

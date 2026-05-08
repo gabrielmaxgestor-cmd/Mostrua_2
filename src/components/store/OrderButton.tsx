@@ -56,13 +56,13 @@ export const OrderButton: React.FC<OrderButtonProps> = ({
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
 
   return (
-    <div className="w-full bg-white rounded-3xl p-5 border border-gray-100 shadow-xl shadow-gray-200/50">
+    <div className="w-full bg-[#13131C] rounded-3xl p-5 border border-white/5 shadow-xl shadow-gray-200/50">
       
       {/* Seletor de Tamanhos Compacto */}
       <div className="mb-6">
         <div className="flex justify-between items-center mb-3">
-          <label className="text-sm font-bold text-gray-900">Selecione o Tamanho:</label>
-          <span className="text-xs font-medium text-gray-500">
+          <label className="text-sm font-bold text-white">Selecione o Tamanho:</label>
+          <span className="text-xs font-medium text-white/50">
             {selectedSize ? `Tamanho ${selectedSize} selecionado` : 'Obrigatório'}
           </span>
         </div>
@@ -76,22 +76,22 @@ export const OrderButton: React.FC<OrderButtonProps> = ({
               className={`
                 relative h-12 flex-1 min-w-[48px] rounded-xl font-bold transition-all border-2 flex items-center justify-center
                 ${!s.inStock 
-                  ? 'border-gray-100 bg-gray-50 text-gray-300 cursor-not-allowed' 
+                  ? 'border-white/5 bg-[#0A0A0F] text-white/30 cursor-not-allowed' 
                   : selectedSize === s.size
-                     ? 'border-green-600 bg-green-50 text-green-700 shadow-sm transform scale-105 z-10'
-                     : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50'
+                     ? 'border-green-600 bg-green-500/10 text-green-400 shadow-sm transform scale-105 z-10'
+                     : 'border-white/10 bg-[#13131C] text-white/70 hover:border-white/20 hover:bg-[#0A0A0F]'
                 }
               `}
             >
               {s.size}
-              {!s.inStock && <div className="absolute w-[120%] h-0.5 bg-gray-200 -rotate-45" />}
+              {!s.inStock && <div className="absolute w-[120%] h-0.5 bg-[#1A1A2E] -rotate-45" />}
             </button>
           ))}
         </div>
       </div>
 
       {/* Opção de Personalização */}
-      <div className="mb-6 bg-gray-50 p-4 rounded-2xl border border-gray-100 transition-all">
+      <div className="mb-6 bg-[#0A0A0F] p-4 rounded-2xl border border-white/5 transition-all">
         <label className="flex items-center gap-3 cursor-pointer select-none">
           <div className="relative flex items-center justify-center w-6 h-6">
             <input 
@@ -100,30 +100,30 @@ export const OrderButton: React.FC<OrderButtonProps> = ({
               checked={customizationEnabled}
               onChange={(e) => setCustomizationEnabled(e.target.checked)}
             />
-            <div className="w-5 h-5 bg-white border-2 border-gray-300 rounded shadow-sm peer-checked:bg-blue-600 peer-checked:border-blue-600 transition-colors flex items-center justify-center">
+            <div className="w-5 h-5 bg-[#13131C] border-2 border-white/20 rounded shadow-sm peer-checked:bg-orange-500 peer-checked:border-orange-500 transition-colors flex items-center justify-center">
               {customizationEnabled && <Sparkles className="w-3 h-3 text-white" />}
             </div>
           </div>
-          <p className="text-sm font-bold text-gray-800">
-            Deseja personalizar a camisa? <span className="text-blue-600 font-medium">(Nome e Número)</span>
+          <p className="text-sm font-bold text-white/90">
+            Deseja personalizar a camisa? <span className="text-orange-500 font-medium">(Nome e Número)</span>
           </p>
         </label>
 
         {customizationEnabled && (
           <div className="mt-4 grid grid-cols-2 gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
             <div>
-              <label className="block text-xs font-bold text-gray-500 mb-1">Nome na Camisa</label>
+              <label className="block text-xs font-bold text-white/50 mb-1">Nome na Camisa</label>
               <input 
                 type="text" 
                 placeholder="Ex: GABRIEL"
                 maxLength={12}
                 value={customName}
                 onChange={(e) => setCustomName(e.target.value.toUpperCase())}
-                className="w-full h-11 bg-white border border-gray-200 rounded-xl px-3 outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium text-sm placeholder:text-gray-300 placeholder:font-normal"
+                className="w-full h-11 bg-[#13131C] border border-white/10 rounded-xl px-3 outline-none focus:ring-2 focus:ring-orange-500 transition-all font-medium text-sm placeholder:text-white/30 placeholder:font-normal"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-gray-500 mb-1">Número</label>
+              <label className="block text-xs font-bold text-white/50 mb-1">Número</label>
               <input 
                 type="text" 
                 placeholder="Ex: 10"
@@ -133,7 +133,7 @@ export const OrderButton: React.FC<OrderButtonProps> = ({
                    const val = e.target.value.replace(/\D/g, ''); // só números
                    setCustomNumber(val);
                 }}
-                className="w-full h-11 bg-white border border-gray-200 rounded-xl px-3 outline-none focus:ring-2 focus:ring-blue-500 transition-all font-bold text-sm placeholder:text-gray-300 placeholder:font-normal"
+                className="w-full h-11 bg-[#13131C] border border-white/10 rounded-xl px-3 outline-none focus:ring-2 focus:ring-orange-500 transition-all font-bold text-sm placeholder:text-white/30 placeholder:font-normal"
               />
             </div>
           </div>
@@ -144,26 +144,26 @@ export const OrderButton: React.FC<OrderButtonProps> = ({
       <div className="flex flex-col sm:flex-row items-center gap-4">
         
         {/* Controle numérico de qtd */}
-        <div className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-2xl p-1 shrink-0 w-full sm:w-auto h-14">
+        <div className="flex items-center justify-between bg-[#0A0A0F] border border-white/10 rounded-2xl p-1 shrink-0 w-full sm:w-auto h-14">
           <button 
             onClick={handleMinus} 
             disabled={quantity <= 1}
-            className="w-10 h-10 flex items-center justify-center rounded-xl bg-white text-gray-700 shadow-sm border border-gray-100 hover:bg-gray-100 disabled:opacity-50 disabled:shadow-none"
+            className="w-10 h-10 flex items-center justify-center rounded-xl bg-[#13131C] text-white/70 shadow-sm border border-white/5 hover:bg-[#13131C] disabled:opacity-50 disabled:shadow-none"
           >
             <Minus className="w-4 h-4" />
           </button>
           
-          <span className="font-black text-gray-900 w-12 text-center text-lg hidden sm:block">
+          <span className="font-black text-white w-12 text-center text-lg hidden sm:block">
             {quantity}
           </span>
-          <span className="font-black text-gray-900 text-center text-lg sm:hidden flex-1">
+          <span className="font-black text-white text-center text-lg sm:hidden flex-1">
             {quantity} peça{quantity > 1 ? 's' : ''}
           </span>
 
           <button 
             onClick={handlePlus} 
             disabled={quantity >= 10}
-            className="w-10 h-10 flex items-center justify-center rounded-xl bg-white text-gray-700 shadow-sm border border-gray-100 hover:bg-gray-100 disabled:opacity-50 disabled:shadow-none"
+            className="w-10 h-10 flex items-center justify-center rounded-xl bg-[#13131C] text-white/70 shadow-sm border border-white/5 hover:bg-[#13131C] disabled:opacity-50 disabled:shadow-none"
           >
             <Plus className="w-4 h-4" />
           </button>
@@ -177,7 +177,7 @@ export const OrderButton: React.FC<OrderButtonProps> = ({
             relative flex-1 w-full h-14 rounded-2xl font-bold text-white shadow-xl flex justify-center items-center gap-2 transition-all overflow-hidden
             ${selectedSize 
                ? 'bg-green-600 hover:bg-green-700 hover:shadow-green-500/30 hover:-translate-y-0.5 active:translate-y-0' 
-               : 'bg-gray-300 cursor-not-allowed'}
+               : 'bg-white/10 cursor-not-allowed'}
           `}
         >
           {loading ? (

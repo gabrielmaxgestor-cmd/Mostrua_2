@@ -94,7 +94,7 @@ export const LaunchCountdown: React.FC<LaunchCountdownProps> = ({
 
   // UI para cada bloco numérico
   const TimeBlock = ({ value, label }: { value: number, label: string }) => (
-    <div className="flex flex-col items-center bg-white/10 backdrop-blur-md rounded-xl p-3 w-[72px] sm:w-20 border border-white/20 shadow-xl">
+    <div className="flex flex-col items-center bg-[#13131C]/10 backdrop-blur-md rounded-xl p-3 w-[72px] sm:w-20 border border-white/20 shadow-xl">
       <span className="text-2xl sm:text-3xl font-black text-white lining-nums font-mono drop-shadow-md">
         {value.toString().padStart(2, '0')}
       </span>
@@ -104,7 +104,7 @@ export const LaunchCountdown: React.FC<LaunchCountdownProps> = ({
 
   return (
     <>
-      <div className="w-full relative rounded-3xl overflow-hidden bg-gray-900 shadow-2xl flex flex-col md:flex-row group">
+      <div className="w-full relative rounded-3xl overflow-hidden bg-[#0A0A0F] shadow-2xl flex flex-col md:flex-row group">
         
         {/* Background Image Area (Mobile Top, Desktop Left) */}
         <div className="w-full md:w-1/2 aspect-[4/3] md:aspect-auto md:h-auto relative overflow-hidden">
@@ -129,11 +129,11 @@ export const LaunchCountdown: React.FC<LaunchCountdownProps> = ({
         </div>
 
         {/* Content Area */}
-        <div className="w-full md:w-1/2 p-6 md:p-10 flex flex-col justify-center relative z-20 bg-gray-900">
+        <div className="w-full md:w-1/2 p-6 md:p-10 flex flex-col justify-center relative z-20 bg-[#0A0A0F]">
           <h3 className="text-2xl md:text-3xl font-black text-white mb-2 leading-tight">
             {productName}
           </h3>
-          <p className="text-gray-400 text-sm mb-8 flex items-center gap-2">
+          <p className="text-white/40 text-sm mb-8 flex items-center gap-2">
             <Calendar className="w-4 h-4" />
             Lançamento: {releaseDate.toLocaleDateString('pt-BR')} às {releaseDate.getHours().toString().padStart(2, '0')}:{releaseDate.getMinutes().toString().padStart(2, '0')}
           </p>
@@ -173,7 +173,7 @@ export const LaunchCountdown: React.FC<LaunchCountdownProps> = ({
           {!isLaunched ? (
             <button 
               onClick={() => setShowModal(true)}
-              className="w-full py-4 bg-white text-gray-900 rounded-2xl font-black uppercase tracking-wider hover:bg-gray-100 transition-colors shadow-[0_0_20px_rgba(255,255,255,0.2)]"
+              className="w-full py-4 bg-[#13131C] text-white rounded-2xl font-black uppercase tracking-wider hover:bg-[#13131C] transition-colors shadow-[0_0_20px_rgba(255,255,255,0.2)]"
             >
               Reservar Meu Exemplar
             </button>
@@ -190,7 +190,7 @@ export const LaunchCountdown: React.FC<LaunchCountdownProps> = ({
           )}
           
           {!isLaunched && (
-             <p className="text-gray-500 text-xs text-center mt-4 flex items-center justify-center gap-1">
+             <p className="text-white/50 text-xs text-center mt-4 flex items-center justify-center gap-1">
                <Info className="w-3 h-3" /> Estoque de lançamento será limitadíssimo.
              </p>
           )}
@@ -206,37 +206,37 @@ export const LaunchCountdown: React.FC<LaunchCountdownProps> = ({
                initial={{ opacity: 0, scale: 0.95, y: 20 }}
                animate={{ opacity: 1, scale: 1, y: 0 }}
                exit={{ opacity: 0, scale: 0.95, y: 20 }}
-               className="relative bg-white w-full max-w-md rounded-3xl overflow-hidden shadow-2xl"
+               className="relative bg-[#13131C] w-full max-w-md rounded-3xl overflow-hidden shadow-2xl"
              >
                 <div className="p-6 bg-gradient-to-r from-gray-900 to-gray-800 text-white flex justify-between items-center">
                   <div>
                      <h3 className="font-black text-xl">Confirmar Reserva</h3>
-                     <p className="text-sm text-gray-300 mt-1">{productName}</p>
+                     <p className="text-sm text-white/30 mt-1">{productName}</p>
                   </div>
-                  <button onClick={() => setShowModal(false)} className="p-2 bg-white/10 rounded-full hover:bg-white/20">
+                  <button onClick={() => setShowModal(false)} className="p-2 bg-[#13131C]/10 rounded-full hover:bg-[#13131C]/20">
                     <X className="w-5 h-5" />
                   </button>
                 </div>
                 
                 <form onSubmit={handleReservation} className="p-6 space-y-5">
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Seu Nome Completo</label>
+                    <label className="block text-sm font-bold text-white/70 mb-2">Seu Nome Completo</label>
                     <input 
                       type="text" 
                       required
                       placeholder="Como podemos te chamar?"
                       value={formData.name}
                       onChange={e => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
+                      className="w-full px-4 py-3 bg-[#0A0A0F] border border-white/10 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Tamanho Desejado</label>
+                    <label className="block text-sm font-bold text-white/70 mb-2">Tamanho Desejado</label>
                     <select 
                       value={formData.size}
                       onChange={e => setFormData({ ...formData, size: e.target.value })}
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-medium"
+                      className="w-full px-4 py-3 bg-[#0A0A0F] border border-white/10 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none font-medium"
                     >
                       {['PP', 'P', 'M', 'G', 'GG', 'XGG'].map(s => (
                         <option key={s} value={s}>{s}</option>
@@ -244,8 +244,8 @@ export const LaunchCountdown: React.FC<LaunchCountdownProps> = ({
                     </select>
                   </div>
 
-                  <p className="text-xs text-gray-500 bg-blue-50 p-3 rounded-lg border border-blue-100 flex gap-2 leading-relaxed">
-                    <Info className="w-4 h-4 text-blue-500 shrink-0" />
+                  <p className="text-xs text-white/50 bg-orange-50 p-3 rounded-lg border border-orange-500 flex gap-2 leading-relaxed">
+                    <Info className="w-4 h-4 text-orange-500 shrink-0" />
                     Ao confirmar, enviaremos os dados da sua reserva por WhatsApp para o lojista, garantindo sua prioridade no lançamento.
                   </p>
 

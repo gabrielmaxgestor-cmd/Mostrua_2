@@ -63,7 +63,7 @@ export const CollectionTimeline: React.FC<CollectionTimelineProps> = ({ team, co
 
   return (
     <div 
-      className="w-full py-12 bg-white flex flex-col"
+      className="w-full py-12 bg-[#13131C] flex flex-col"
       style={{
         '--team-primary': team.primaryColor,
         '--team-secondary': team.secondaryColor,
@@ -71,11 +71,11 @@ export const CollectionTimeline: React.FC<CollectionTimelineProps> = ({ team, co
     >
       {/* Header */}
       <div className="px-4 md:px-8 mb-10 flex items-center justify-between">
-        <h2 className="text-2xl font-black text-gray-900 flex items-center gap-2">
+        <h2 className="text-2xl font-black text-white flex items-center gap-2">
           <div className="w-4 h-8 rounded-sm" style={{ backgroundColor: 'var(--team-primary)' }} />
           Histórico de Mantos
         </h2>
-        <span className="text-sm font-bold text-gray-400 opacity-70 uppercase tracking-wider hidden sm:block">
+        <span className="text-sm font-bold text-white/40 opacity-70 uppercase tracking-wider hidden sm:block">
           Linha do Tempo
         </span>
       </div>
@@ -92,7 +92,7 @@ export const CollectionTimeline: React.FC<CollectionTimelineProps> = ({ team, co
             viewport={{ once: true, amount: 0.5 }}
           >
             {/* The horizontal connecting line */}
-            <div className="absolute top-[85px] left-0 right-0 h-1 bg-gray-100 z-0 rounded-full" />
+            <div className="absolute top-[85px] left-0 right-0 h-1 bg-[#13131C] z-0 rounded-full" />
 
             {sortedCollections.map((col, index) => {
               const isSelected = activeSeason === col.season;
@@ -115,14 +115,14 @@ export const CollectionTimeline: React.FC<CollectionTimelineProps> = ({ team, co
 
                   {/* Thumbnail Image Wrapper */}
                   <div className={`
-                    relative w-[72px] h-[88px] rounded-xl p-[3px] bg-white shadow-md transition-all duration-300 z-10
+                    relative w-[72px] h-[88px] rounded-xl p-[3px] bg-[#13131C] shadow-md transition-all duration-300 z-10
                     ${isSelected ? 'ring-2 font-bold ring-offset-2 ring-[var(--team-primary)] scale-110 shadow-lg' : 'ring-1 ring-gray-200 group-hover:scale-105 group-hover:shadow-[var(--team-primary)]/20'}
                     ${col.isRetro ? 'sepia-[.4] contrast-125 saturate-50' : ''}
                   `}>
                     <img 
                       src={col.products[0]?.image || 'https://via.placeholder.com/150'} 
                       alt={col.season}
-                      className="w-full h-full object-cover rounded-lg bg-gray-50"
+                      className="w-full h-full object-cover rounded-lg bg-[#0A0A0F]"
                     />
                     
                     {col.isRetro && (
@@ -133,11 +133,11 @@ export const CollectionTimeline: React.FC<CollectionTimelineProps> = ({ team, co
                   {/* Node Dot on Line */}
                   <div className={`
                     w-[14px] h-[14px] rounded-full mt-4 mb-2 z-10 border-2 transition-all duration-300
-                    ${isSelected ? 'bg-[var(--team-primary)] border-white scale-[1.3] shadow-[0_0_10px_var(--team-primary)]/50' : 'bg-gray-200 border-white group-hover:bg-gray-400 group-hover:scale-110'}
+                    ${isSelected ? 'bg-[var(--team-primary)] border-white scale-[1.3] shadow-[0_0_10px_var(--team-primary)]/50' : 'bg-[#1A1A2E] border-white group-hover:bg-white/50 group-hover:scale-110'}
                   `} />
 
                   {/* Season Label Text */}
-                  <span className={`text-xs font-black transition-colors ${isSelected ? 'text-[var(--team-primary)]' : 'text-gray-400'}`}>
+                  <span className={`text-xs font-black transition-colors ${isSelected ? 'text-[var(--team-primary)]' : 'text-white/40'}`}>
                     {col.season}
                   </span>
                 </motion.button>
@@ -151,17 +151,17 @@ export const CollectionTimeline: React.FC<CollectionTimelineProps> = ({ team, co
       </div>
 
       {/* Expanded Products Area */}
-      <div className="mt-8 px-4 md:px-8 bg-gray-50/50 py-8 min-h-[300px]">
+      <div className="mt-8 px-4 md:px-8 bg-[#0A0A0F]/50 py-8 min-h-[300px]">
         {activeCollection && (
           <div className="w-full max-w-5xl mx-auto">
             {/* Context Header */}
             <div className="mb-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-3">
                <div>
-                  <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                     {activeCollection.isRetro && <span className="text-xs bg-gray-800 text-white px-2 py-0.5 rounded font-bold uppercase">Retro</span>}
+                  <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                     {activeCollection.isRetro && <span className="text-xs bg-[#13131C] text-white px-2 py-0.5 rounded font-bold uppercase">Retro</span>}
                      Temporada {activeCollection.season}
                   </h3>
-                  <p className="text-sm text-gray-500 mt-1 flex items-center gap-1.5">
+                  <p className="text-sm text-white/50 mt-1 flex items-center gap-1.5">
                      <Grid className="w-4 h-4" /> {activeCollection.products.length} Manto{activeCollection.products.length > 1 ? 's' : ''} nesta coleção
                   </p>
                </div>
@@ -185,9 +185,9 @@ export const CollectionTimeline: React.FC<CollectionTimelineProps> = ({ team, co
                 {activeCollection.products.map((product) => (
                   <div 
                     key={product.id} 
-                    className="bg-white rounded-2xl p-3 border border-gray-100 shadow-sm hover:shadow-xl hover:border-gray-200 hover:-translate-y-1 transition-all duration-300 group cursor-pointer"
+                    className="bg-[#13131C] rounded-2xl p-3 border border-white/5 shadow-sm hover:shadow-xl hover:border-white/10 hover:-translate-y-1 transition-all duration-300 group cursor-pointer"
                   >
-                    <div className="aspect-[4/5] rounded-xl bg-gray-100 overflow-hidden relative mb-4">
+                    <div className="aspect-[4/5] rounded-xl bg-[#13131C] overflow-hidden relative mb-4">
                        {/* Subtle retro overlay for products inside a retro collection */}
                        {activeCollection.isRetro && (
                          <div className="absolute inset-0 bg-yellow-900/10 mix-blend-multiply z-10 pointer-events-none" />
@@ -198,13 +198,13 @@ export const CollectionTimeline: React.FC<CollectionTimelineProps> = ({ team, co
                           className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 ${activeCollection.isRetro ? 'sepia-[.2]' : ''}`} 
                        />
                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-20 flex items-end p-4">
-                         <span className="text-white text-xs font-bold flex items-center gap-1 backdrop-blur-sm bg-white/20 px-2 py-1 rounded">
+                         <span className="text-white text-xs font-bold flex items-center gap-1 backdrop-blur-sm bg-[#13131C]/20 px-2 py-1 rounded">
                            Ver Detalhes <ChevronRight className="w-3 h-3" />
                          </span>
                        </div>
                     </div>
                     
-                    <h4 className="font-bold text-gray-900 text-sm leading-tight line-clamp-2 min-h-[2.5rem]">
+                    <h4 className="font-bold text-white text-sm leading-tight line-clamp-2 min-h-[2.5rem]">
                       {product.name}
                     </h4>
                     <p className="font-black text-lg mt-2" style={{ color: 'var(--team-primary)' }}>

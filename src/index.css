@@ -1,17 +1,29 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&display=swap');
 
+/* ─── Brand Tokens ─────────────────────────────────────── */
+:root {
+  --brand-orange:     #FF5C00;
+  --brand-orange-mid: #FF8040;
+  --brand-orange-dim: #CC4A00;
+  --brand-bg:         #0A0A0F;
+  --brand-surface:    #13131C;
+  --brand-white:      #E8F0FF;
+  --brand-muted:      #3A3A50;
+  --brand-text-dim:   #6B6B8A;
+  --brand-text-med:   #A0A0C0;
+}
+
+/* ─── Custom Scrollbar ─────────────────────────────────── */
 @layer utilities {
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 4px;
-  }
-  .custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #374151;
-    border-radius: 4px;
-  }
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #4b5563;
-  }
+  .custom-scrollbar::-webkit-scrollbar        { width: 4px; }
+  .custom-scrollbar::-webkit-scrollbar-track  { background: transparent; }
+  .custom-scrollbar::-webkit-scrollbar-thumb  { background: #3A3A50; border-radius: 4px; }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #FF5C00; }
+}
+
+/* ─── Global focus ring → orange ─────────────────────── */
+*:focus-visible {
+  outline: 2px solid #FF5C00;
+  outline-offset: 2px;
 }

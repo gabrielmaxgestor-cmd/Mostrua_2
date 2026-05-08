@@ -259,29 +259,29 @@ export const Products = () => {
       <div className="space-y-8">
         <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Produtos Base</h1>
-            <p className="text-gray-500">Gerencie os produtos mestres da plataforma</p>
+            <h1 className="text-3xl font-bold text-white">Produtos Base</h1>
+            <p className="text-white/50">Gerencie os produtos mestres da plataforma</p>
           </div>
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full lg:w-auto flex-wrap">
             <div className="relative w-full sm:w-auto">
-              <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
               <input
                 type="text"
                 placeholder="Buscar produtos ou SKU..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-10 pr-4 py-2.5 bg-[#0A0A0F] border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500"
               />
             </div>
             <div className="relative w-full sm:w-auto">
-              <Filter className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <Filter className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
               <select
                 value={filterNiche}
                 onChange={(e) => {
                   setFilterNiche(e.target.value);
                   setFilterCatalog("all");
                 }}
-                className="w-full pl-10 pr-8 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white font-medium text-gray-700"
+                className="w-full pl-10 pr-8 py-2.5 bg-[#0A0A0F] border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 appearance-none bg-[#13131C] font-medium text-white/70"
               >
                 <option value="all">Todos os Nichos</option>
                 {niches.map(niche => (
@@ -290,11 +290,11 @@ export const Products = () => {
               </select>
             </div>
             <div className="relative w-full sm:w-auto">
-              <Filter className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <Filter className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
               <select
                 value={filterCatalog}
                 onChange={(e) => setFilterCatalog(e.target.value)}
-                className="w-full pl-10 pr-8 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white font-medium text-gray-700"
+                className="w-full pl-10 pr-8 py-2.5 bg-[#0A0A0F] border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 appearance-none bg-[#13131C] font-medium text-white/70"
               >
                 <option value="all">Todos os Catálogos</option>
                 {availableCatalogs.map(catalog => (
@@ -304,7 +304,7 @@ export const Products = () => {
             </div>
             <button
               onClick={() => openModal()}
-              className="w-full sm:w-auto bg-blue-600 text-white px-6 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 whitespace-nowrap"
+              className="w-full sm:w-auto bg-orange-500 text-white px-6 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-orange-600 transition-all shadow-lg shadow-orange-500 whitespace-nowrap"
             >
               <Plus className="w-5 h-5" /> Novo Produto
             </button>
@@ -312,53 +312,53 @@ export const Products = () => {
         </div>
 
         {loading ? (
-          <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-            <div className="p-6 border-b border-gray-100 flex justify-between items-center">
-              <div className="h-6 bg-gray-200 rounded w-48 animate-pulse"></div>
+          <div className="bg-[#13131C] rounded-3xl border border-white/5 shadow-sm overflow-hidden">
+            <div className="p-6 border-b border-white/5 flex justify-between items-center">
+              <div className="h-6 bg-[#1A1A2E] rounded w-48 animate-pulse"></div>
             </div>
             <div className="p-6 space-y-4">
               {[1, 2, 3, 4, 5].map(i => (
-                <div key={i} className="h-16 bg-gray-50 rounded-xl animate-pulse"></div>
+                <div key={i} className="h-16 bg-[#0A0A0F] rounded-xl animate-pulse"></div>
               ))}
             </div>
           </div>
         ) : filteredProducts.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-200">
-            <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-bold text-gray-900">Nenhum produto encontrado</h3>
-            <p className="text-gray-500 mt-2">
+          <div className="text-center py-20 bg-[#13131C] rounded-3xl border border-dashed border-white/10">
+            <Package className="w-16 h-16 text-white/30 mx-auto mb-4" />
+            <h3 className="text-xl font-bold text-white">Nenhum produto encontrado</h3>
+            <p className="text-white/50 mt-2">
               Não há produtos que correspondam aos filtros selecionados.
             </p>
             <button
               onClick={() => openModal()}
-              className="mt-6 bg-blue-50 text-blue-600 px-6 py-2 rounded-xl font-bold hover:bg-blue-100 transition-colors"
+              className="mt-6 bg-orange-500/10 text-orange-500 px-6 py-2 rounded-xl font-bold hover:bg-orange-100 transition-colors"
             >
               Criar Produto
             </button>
           </div>
         ) : (
-          <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="bg-[#13131C] rounded-3xl border border-white/5 shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-gray-50/50 border-b border-gray-100">
-                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Produto</th>
-                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">SKU</th>
-                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Catálogo</th>
-                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Preço Base</th>
-                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Lojas</th>
-                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
-                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Ações</th>
+                  <tr className="bg-[#0A0A0F]/50 border-b border-white/5">
+                    <th className="py-4 px-6 text-xs font-bold text-white/50 uppercase tracking-wider">Produto</th>
+                    <th className="py-4 px-6 text-xs font-bold text-white/50 uppercase tracking-wider">SKU</th>
+                    <th className="py-4 px-6 text-xs font-bold text-white/50 uppercase tracking-wider">Catálogo</th>
+                    <th className="py-4 px-6 text-xs font-bold text-white/50 uppercase tracking-wider">Preço Base</th>
+                    <th className="py-4 px-6 text-xs font-bold text-white/50 uppercase tracking-wider text-center">Lojas</th>
+                    <th className="py-4 px-6 text-xs font-bold text-white/50 uppercase tracking-wider">Status</th>
+                    <th className="py-4 px-6 text-xs font-bold text-white/50 uppercase tracking-wider text-right">Ações</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-white/5">
                   {filteredProducts.map(product => {
                     const catalog = catalogs.find(c => c.id === product.catalogId);
                     return (
-                      <tr key={product.id} className="hover:bg-gray-50/50 transition-colors">
+                      <tr key={product.id} className="hover:bg-[#0A0A0F]/50 transition-colors">
                         <td className="py-4 px-6">
                           <div className="flex items-center gap-4">
-                            <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-gray-100 shrink-0">
+                            <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-[#13131C] shrink-0">
                               <img
                                 src={product.images?.[0] || "https://picsum.photos/seed/product/100/100"}
                                 alt={product.name}
@@ -372,28 +372,28 @@ export const Products = () => {
                               )}
                             </div>
                             <div>
-                              <span className="font-bold text-gray-900 block line-clamp-1">{product.name}</span>
-                              <span className="text-xs text-gray-400">{product.images?.length || 0} foto{(product.images?.length || 0) !== 1 ? 's' : ''}</span>
+                              <span className="font-bold text-white block line-clamp-1">{product.name}</span>
+                              <span className="text-xs text-white/40">{product.images?.length || 0} foto{(product.images?.length || 0) !== 1 ? 's' : ''}</span>
                             </div>
                           </div>
                         </td>
                         <td className="py-4 px-6">
-                          <span className="text-xs text-gray-500 font-mono bg-gray-100 px-2 py-1 rounded-md">
+                          <span className="text-xs text-white/50 font-mono bg-[#13131C] px-2 py-1 rounded-md">
                             {product.sku}
                           </span>
                         </td>
                         <td className="py-4 px-6">
-                          <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 text-xs font-bold">
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-orange-500/10 text-orange-500 text-xs font-bold">
                             {catalog?.name || "Sem Catálogo"}
                           </span>
                         </td>
                         <td className="py-4 px-6">
-                          <span className="font-bold text-gray-900">
+                          <span className="font-bold text-white">
                             {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.priceBase)}
                           </span>
                         </td>
                         <td className="py-4 px-6 text-center">
-                          <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 text-gray-700 font-bold text-sm">
+                          <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-[#13131C] text-white/70 font-bold text-sm">
                             {product.resellersCount || 0}
                           </span>
                         </td>
@@ -402,8 +402,8 @@ export const Products = () => {
                             onClick={() => toggleStatus(product)}
                             className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${
                               product.active
-                                ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                ? 'bg-green-100 text-green-400 hover:bg-green-200'
+                                : 'bg-[#13131C] text-white/60 hover:bg-[#1A1A2E]'
                             }`}
                           >
                             {product.active ? 'Ativo' : 'Inativo'}
@@ -413,14 +413,14 @@ export const Products = () => {
                           <div className="flex items-center justify-end gap-2">
                             <button
                               onClick={() => openModal(product)}
-                              className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                              className="p-2 text-white/40 hover:text-orange-500 hover:bg-orange-500/10 rounded-lg transition-colors"
                               title="Editar"
                             >
                               <Edit className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => handleDelete(product)}
-                              className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                              className="p-2 text-white/40 hover:text-red-600 hover:bg-red-500/10 rounded-lg transition-colors"
                               title="Excluir"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -440,19 +440,19 @@ export const Products = () => {
       {/* Modal Criar/Editar */}
       <AnimatePresence>
         {isModalOpen && (
-          <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 overflow-y-auto">
+          <div className="fixed inset-0 bg-[#0A0A0F]/50 backdrop-blur-sm z-50 overflow-y-auto">
             <div className="min-h-full flex items-center justify-center p-4 sm:p-6">
               <motion.div
                 initial={{ scale: 0.95, opacity: 0, y: 20 }}
                 animate={{ scale: 1, opacity: 1, y: 0 }}
                 exit={{ scale: 0.95, opacity: 0, y: 20 }}
-                className="bg-white rounded-3xl w-full max-w-4xl overflow-hidden shadow-2xl my-8"
+                className="bg-[#13131C] rounded-3xl w-full max-w-4xl overflow-hidden shadow-2xl my-8"
               >
-                <div className="p-6 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white z-10">
-                  <h2 className="text-2xl font-bold text-gray-900">
+                <div className="p-6 border-b border-white/5 flex justify-between items-center sticky top-0 bg-[#13131C] z-10">
+                  <h2 className="text-2xl font-bold text-white">
                     {editingProduct ? "Editar Produto" : "Novo Produto"}
                   </h2>
-                  <button onClick={closeModal} className="text-gray-400 hover:text-gray-600 bg-gray-50 hover:bg-gray-100 p-2 rounded-full transition-colors">
+                  <button onClick={closeModal} className="text-white/40 hover:text-white/60 bg-[#0A0A0F] hover:bg-[#13131C] p-2 rounded-full transition-colors">
                     <X className="w-5 h-5" />
                   </button>
                 </div>
@@ -462,18 +462,18 @@ export const Products = () => {
                     {/* Coluna Esquerda: Imagens */}
                     <div className="lg:col-span-1 space-y-6">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Imagens do Produto</label>
+                        <label className="block text-sm font-medium text-white/70 mb-2">Imagens do Produto</label>
                         <div
                           onClick={() => fileInputRef.current?.click()}
                           onDragOver={handleDragOver}
                           onDrop={handleDrop}
-                          className="border-2 border-dashed border-gray-300 hover:border-blue-500 bg-gray-50 hover:bg-blue-50/50 rounded-2xl p-6 text-center cursor-pointer transition-all mb-4"
+                          className="border-2 border-dashed border-white/20 hover:border-orange-500 bg-[#0A0A0F] hover:bg-orange-500/10/50 rounded-2xl p-6 text-center cursor-pointer transition-all mb-4"
                         >
-                          <div className="w-12 h-12 bg-white rounded-full shadow-sm flex items-center justify-center mx-auto mb-3">
-                            <ImageIcon className="w-6 h-6 text-gray-400" />
+                          <div className="w-12 h-12 bg-[#13131C] rounded-full shadow-sm flex items-center justify-center mx-auto mb-3">
+                            <ImageIcon className="w-6 h-6 text-white/40" />
                           </div>
-                          <span className="text-sm font-medium text-gray-700 block">Clique ou arraste imagens aqui</span>
-                          <span className="text-xs text-gray-400 mt-1 block">PNG, JPG até 5MB (Múltiplas permitidas)</span>
+                          <span className="text-sm font-medium text-white/70 block">Clique ou arraste imagens aqui</span>
+                          <span className="text-xs text-white/40 mt-1 block">PNG, JPG até 5MB (Múltiplas permitidas)</span>
                         </div>
                         <input
                           type="file"
@@ -488,10 +488,10 @@ export const Products = () => {
                         {(imageUrls.length > 0 || imageFiles.length > 0) && (
                           <div className="grid grid-cols-2 gap-3">
                             {imageUrls.map((url, index) => (
-                              <div key={`url-${index}`} className={`relative aspect-square rounded-xl overflow-hidden group border-2 ${index === 0 ? 'border-blue-500' : 'border-gray-200'}`}>
+                              <div key={`url-${index}`} className={`relative aspect-square rounded-xl overflow-hidden group border-2 ${index === 0 ? 'border-orange-500' : 'border-white/10'}`}>
                                 <img src={url} alt={`Preview ${index}`} className="w-full h-full object-cover" />
                                 {index === 0 && (
-                                  <div className="absolute top-1 left-1 bg-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                                  <div className="absolute top-1 left-1 bg-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
                                     Principal
                                   </div>
                                 )}
@@ -500,7 +500,7 @@ export const Products = () => {
                                     <button
                                       type="button"
                                       onClick={() => makePrimaryUrl(index)}
-                                      className="bg-white text-gray-900 text-xs font-bold px-2 py-1 rounded-lg hover:bg-gray-100 transition-colors"
+                                      className="bg-[#13131C] text-white text-xs font-bold px-2 py-1 rounded-lg hover:bg-[#13131C] transition-colors"
                                     >
                                       Tornar Principal
                                     </button>
@@ -518,10 +518,10 @@ export const Products = () => {
                             {imageFiles.map((file, index) => {
                               const isPrimary = imageUrls.length === 0 && index === 0;
                               return (
-                                <div key={`file-${index}`} className={`relative aspect-square rounded-xl overflow-hidden group border-2 ${isPrimary ? 'border-blue-500' : 'border-gray-200'}`}>
+                                <div key={`file-${index}`} className={`relative aspect-square rounded-xl overflow-hidden group border-2 ${isPrimary ? 'border-orange-500' : 'border-white/10'}`}>
                                   <img src={URL.createObjectURL(file)} alt={`New Preview ${index}`} className="w-full h-full object-cover" />
                                   {isPrimary && (
-                                    <div className="absolute top-1 left-1 bg-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                                    <div className="absolute top-1 left-1 bg-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
                                       Principal
                                     </div>
                                   )}
@@ -530,7 +530,7 @@ export const Products = () => {
                                       <button
                                         type="button"
                                         onClick={() => makePrimaryFile(index)}
-                                        className="bg-white text-gray-900 text-xs font-bold px-2 py-1 rounded-lg hover:bg-gray-100 transition-colors"
+                                        className="bg-[#13131C] text-white text-xs font-bold px-2 py-1 rounded-lg hover:bg-[#13131C] transition-colors"
                                       >
                                         Tornar Principal
                                       </button>
@@ -550,10 +550,10 @@ export const Products = () => {
                         )}
                       </div>
 
-                      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                      <div className="flex items-center justify-between p-4 bg-[#0A0A0F] rounded-2xl border border-white/5">
                         <div>
-                          <p className="font-medium text-gray-900">Produto Ativo</p>
-                          <p className="text-xs text-gray-500 mt-0.5">Visível nos catálogos</p>
+                          <p className="font-medium text-white">Produto Ativo</p>
+                          <p className="text-xs text-white/50 mt-0.5">Visível nos catálogos</p>
                         </div>
                         <label className="relative inline-flex items-center cursor-pointer">
                           <input
@@ -562,7 +562,7 @@ export const Products = () => {
                             checked={formData.active}
                             onChange={e => setFormData({...formData, active: e.target.checked})}
                           />
-                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                          <div className="w-11 h-6 bg-[#1A1A2E] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[#13131C] after:border-white/20 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
                         </label>
                       </div>
                     </div>
@@ -571,14 +571,14 @@ export const Products = () => {
                     <div className="lg:col-span-2 space-y-5">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Nicho</label>
+                          <label className="block text-sm font-medium text-white/70 mb-1">Nicho</label>
                           <select
                             required
                             value={formData.nicheId}
                             onChange={e => {
                               setFormData({...formData, nicheId: e.target.value, catalogId: ""});
                             }}
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none bg-white transition-all appearance-none"
+                            className="w-full px-4 py-3 rounded-xl bg-[#0A0A0F] border border-white/10 focus:ring-2 focus:ring-orange-500 outline-none bg-[#13131C] transition-all appearance-none"
                           >
                             <option value="" disabled>Selecione um nicho...</option>
                             {niches.map(n => (
@@ -587,13 +587,13 @@ export const Products = () => {
                           </select>
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Catálogo</label>
+                          <label className="block text-sm font-medium text-white/70 mb-1">Catálogo</label>
                           <select
                             required
                             value={formData.catalogId}
                             onChange={e => setFormData({...formData, catalogId: e.target.value})}
                             disabled={!formData.nicheId}
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none bg-white transition-all appearance-none disabled:bg-gray-100 disabled:text-gray-400"
+                            className="w-full px-4 py-3 rounded-xl bg-[#0A0A0F] border border-white/10 focus:ring-2 focus:ring-orange-500 outline-none bg-[#13131C] transition-all appearance-none disabled:bg-[#13131C] disabled:text-white/40"
                           >
                             <option value="" disabled>Selecione um catálogo...</option>
                             {catalogs.filter(c => c.nicheId === formData.nicheId).map(c => (
@@ -604,32 +604,32 @@ export const Products = () => {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Nome do Produto</label>
+                        <label className="block text-sm font-medium text-white/70 mb-1">Nome do Produto</label>
                         <input
                           required
                           type="text"
                           value={formData.name}
                           onChange={e => setFormData({...formData, name: e.target.value})}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                          className="w-full px-4 py-3 rounded-xl bg-[#0A0A0F] border border-white/10 focus:ring-2 focus:ring-orange-500 outline-none transition-all"
                           placeholder="Ex: Camiseta Básica Algodão"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
+                        <label className="block text-sm font-medium text-white/70 mb-1">Descrição</label>
                         <textarea
                           required
                           rows={4}
                           value={formData.description}
                           onChange={e => setFormData({...formData, description: e.target.value})}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all resize-none"
+                          className="w-full px-4 py-3 rounded-xl bg-[#0A0A0F] border border-white/10 focus:ring-2 focus:ring-orange-500 outline-none transition-all resize-none"
                           placeholder="Detalhes do produto, material, etc..."
                         />
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Preço Base (R$)</label>
+                          <label className="block text-sm font-medium text-white/70 mb-1">Preço Base (R$)</label>
                           <input
                             required
                             type="number"
@@ -637,83 +637,83 @@ export const Products = () => {
                             min="0"
                             value={formData.priceBase}
                             onChange={e => setFormData({...formData, priceBase: parseFloat(e.target.value) || 0})}
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                            className="w-full px-4 py-3 rounded-xl bg-[#0A0A0F] border border-white/10 focus:ring-2 focus:ring-orange-500 outline-none transition-all"
                             placeholder="0.00"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Preço Sugerido (R$)</label>
+                          <label className="block text-sm font-medium text-white/70 mb-1">Preço Sugerido (R$)</label>
                           <input
                             type="number"
                             step="0.01"
                             min="0"
                             value={(formData as any).suggestedPrice || ""}
                             onChange={e => setFormData({...formData, suggestedPrice: parseFloat(e.target.value) || 0} as any)}
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                            className="w-full px-4 py-3 rounded-xl bg-[#0A0A0F] border border-white/10 focus:ring-2 focus:ring-orange-500 outline-none transition-all"
                             placeholder="0.00"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">SKU</label>
+                          <label className="block text-sm font-medium text-white/70 mb-1">SKU</label>
                           <input
                             required
                             type="text"
                             value={formData.sku}
                             onChange={e => setFormData({...formData, sku: e.target.value})}
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all uppercase"
+                            className="w-full px-4 py-3 rounded-xl bg-[#0A0A0F] border border-white/10 focus:ring-2 focus:ring-orange-500 outline-none transition-all uppercase"
                             placeholder="EX: CAM-BAS-001"
                           />
                         </div>
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Variações (Tamanhos, Cores, etc)</label>
+                        <label className="block text-sm font-medium text-white/70 mb-1">Variações (Tamanhos, Cores, etc)</label>
                         <div className="flex gap-2 mb-3">
                           <input
                             type="text"
                             value={newVariation}
                             onChange={e => setNewVariation(e.target.value)}
                             onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addVariation())}
-                            className="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                            className="flex-1 px-4 py-3 rounded-xl bg-[#0A0A0F] border border-white/10 focus:ring-2 focus:ring-orange-500 outline-none transition-all"
                             placeholder="Ex: P, M, G, Azul, Vermelho..."
                           />
                           <button
                             type="button"
                             onClick={addVariation}
-                            className="bg-gray-900 text-white px-6 py-3 rounded-xl font-bold hover:bg-gray-800 transition-colors"
+                            className="bg-[#0A0A0F] text-white px-6 py-3 rounded-xl font-bold hover:bg-[#13131C] transition-colors"
                           >
                             Adicionar
                           </button>
                         </div>
                         <div className="flex flex-wrap gap-2">
                           {variations.map(variation => (
-                            <span key={variation} className="bg-gray-100 text-gray-800 px-3 py-1.5 rounded-lg text-sm font-medium flex items-center gap-2 border border-gray-200">
+                            <span key={variation} className="bg-[#13131C] text-white/90 px-3 py-1.5 rounded-lg text-sm font-medium flex items-center gap-2 border border-white/10">
                               {variation}
-                              <button type="button" onClick={() => removeVariation(variation)} className="text-gray-400 hover:text-red-500">
+                              <button type="button" onClick={() => removeVariation(variation)} className="text-white/40 hover:text-red-500">
                                 <X className="w-3 h-3" />
                               </button>
                             </span>
                           ))}
                           {variations.length === 0 && (
-                            <span className="text-sm text-gray-400 italic">Nenhuma variação adicionada.</span>
+                            <span className="text-sm text-white/40 italic">Nenhuma variação adicionada.</span>
                           )}
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex gap-3 pt-6 border-t border-gray-100 mt-8">
+                  <div className="flex gap-3 pt-6 border-t border-white/5 mt-8">
                     <button
                       type="button"
                       onClick={closeModal}
-                      className="flex-1 py-3.5 rounded-xl font-bold bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+                      className="flex-1 py-3.5 rounded-xl font-bold bg-[#13131C] text-white/70 hover:bg-[#1A1A2E] transition-colors"
                     >
                       Cancelar
                     </button>
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="flex-1 py-3.5 rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-blue-100"
+                      className="flex-1 py-3.5 rounded-xl font-bold bg-orange-500 text-white hover:bg-orange-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-orange-500"
                     >
                       {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Salvar Produto"}
                     </button>
@@ -733,7 +733,7 @@ export const Products = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 50 }}
             className={`fixed bottom-6 right-6 px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 z-50 ${
-              toastMessage.type === 'success' ? 'bg-gray-900 text-white' : 'bg-red-600 text-white'
+              toastMessage.type === 'success' ? 'bg-[#0A0A0F] text-white' : 'bg-red-600 text-white'
             }`}
           >
             {toastMessage.type === 'success' ? (

@@ -119,13 +119,13 @@ export function Checkout({ isOpen, onClose, cart, reseller, onSuccess, total, it
         onClick={loading ? undefined : onClose} 
       />
       
-      <div className="relative w-full max-w-md bg-white h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
-        <div className="flex items-center justify-between p-5 border-b border-gray-100 shrink-0">
-          <h2 className="font-bold text-xl text-gray-900">Finalizar Pedido</h2>
+      <div className="relative w-full max-w-md bg-[#13131C] h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
+        <div className="flex items-center justify-between p-5 border-b border-white/5 shrink-0">
+          <h2 className="font-bold text-xl text-white">Finalizar Pedido</h2>
           <button 
             onClick={loading ? undefined : onClose} 
             disabled={loading}
-            className="p-2 bg-gray-50 rounded-full hover:bg-gray-100 text-gray-500 transition-colors disabled:opacity-50"
+            className="p-2 bg-[#0A0A0F] rounded-full hover:bg-[#13131C] text-white/50 transition-colors disabled:opacity-50"
           >
             <X className="w-5 h-5" />
           </button>
@@ -136,30 +136,30 @@ export function Checkout({ isOpen, onClose, cart, reseller, onSuccess, total, it
             <button
               type="button"
               onClick={() => setShowItems(!showItems)}
-              className="w-full flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:bg-gray-100 transition-colors"
+              className="w-full flex items-center justify-between p-4 bg-[#0A0A0F] rounded-2xl border border-white/5 hover:bg-[#13131C] transition-colors"
             >
               <div className="flex items-center gap-3">
-                <span className="text-sm font-medium text-gray-600">
+                <span className="text-sm font-medium text-white/60">
                   {itemCount} {itemCount === 1 ? 'item' : 'itens'}
                 </span>
                 <span className="text-base font-black" style={{ color: primaryColor }}>
                   R$ {total.toFixed(2)}
                 </span>
               </div>
-              <div className="flex items-center gap-2 text-gray-400">
+              <div className="flex items-center gap-2 text-white/40">
                 <span className="text-xs">{showItems ? 'Ocultar' : 'Ver resumo'}</span>
                 <ChevronDown className={`w-4 h-4 transition-transform ${showItems ? 'rotate-180' : ''}`} />
               </div>
             </button>
 
             {showItems && (
-              <div className="mt-2 p-4 bg-gray-50 rounded-2xl border border-gray-100 space-y-2">
+              <div className="mt-2 p-4 bg-[#0A0A0F] rounded-2xl border border-white/5 space-y-2">
                 {cart.map(item => (
                   <div key={`${item.productId}-${item.variation}`} className="flex justify-between text-sm">
-                    <span className="text-gray-600 truncate pr-4">
+                    <span className="text-white/60 truncate pr-4">
                       {item.quantity}x {item.name} {item.variation ? `(${item.variation})` : ''}
                     </span>
-                    <span className="font-medium text-gray-900 shrink-0">
+                    <span className="font-medium text-white shrink-0">
                       R$ {(item.price * item.quantity).toFixed(2)}
                     </span>
                   </div>
@@ -170,14 +170,14 @@ export function Checkout({ isOpen, onClose, cart, reseller, onSuccess, total, it
 
           <form id="checkout-form" onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <div className="p-3 bg-red-50 text-red-600 rounded-xl text-sm flex items-start gap-2">
+              <div className="p-3 bg-red-500/10 text-red-600 rounded-xl text-sm flex items-start gap-2">
                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                 <p>{error}</p>
               </div>
             )}
 
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1.5">Nome Completo *</label>
+              <label className="block text-sm font-bold text-white/70 mb-1.5">Nome Completo *</label>
               <input 
                 type="text"
                 required
@@ -185,13 +185,13 @@ export function Checkout({ isOpen, onClose, cart, reseller, onSuccess, total, it
                 value={name} 
                 onChange={e => setName(e.target.value)} 
                 placeholder="Ex: João da Silva"
-                className="w-full border-2 border-gray-100 bg-gray-50 rounded-xl px-4 py-3 focus:outline-none focus:border-transparent focus:ring-2 focus:bg-white transition-all"
+                className="w-full border-2 border-white/5 bg-[#0A0A0F] rounded-xl px-4 py-3 focus:outline-none focus:border-transparent focus:ring-2 focus:bg-[#13131C] transition-all"
                 style={{ '--tw-ring-color': primaryColor } as any}
               />
             </div>
             
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1.5">WhatsApp *</label>
+              <label className="block text-sm font-bold text-white/70 mb-1.5">WhatsApp *</label>
               <input 
                 type="tel"
                 required
@@ -201,13 +201,13 @@ export function Checkout({ isOpen, onClose, cart, reseller, onSuccess, total, it
                 onChange={handlePhoneChange} 
                 placeholder="(00) 00000-0000" 
                 maxLength={15}
-                className="w-full border-2 border-gray-100 bg-gray-50 rounded-xl px-4 py-3 focus:outline-none focus:border-transparent focus:ring-2 focus:bg-white transition-all"
+                className="w-full border-2 border-white/5 bg-[#0A0A0F] rounded-xl px-4 py-3 focus:outline-none focus:border-transparent focus:ring-2 focus:bg-[#13131C] transition-all"
                 style={{ '--tw-ring-color': primaryColor } as any}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1.5">Email (opcional)</label>
+              <label className="block text-sm font-bold text-white/70 mb-1.5">Email (opcional)</label>
               <input 
                 type="email"
                 autoComplete="email"
@@ -215,40 +215,40 @@ export function Checkout({ isOpen, onClose, cart, reseller, onSuccess, total, it
                 value={email} 
                 onChange={e => setEmail(e.target.value)} 
                 placeholder="Ex: joao@email.com"
-                className="w-full border-2 border-gray-100 bg-gray-50 rounded-xl px-4 py-3 focus:outline-none focus:border-transparent focus:ring-2 focus:bg-white transition-all"
+                className="w-full border-2 border-white/5 bg-[#0A0A0F] rounded-xl px-4 py-3 focus:outline-none focus:border-transparent focus:ring-2 focus:bg-[#13131C] transition-all"
                 style={{ '--tw-ring-color': primaryColor } as any}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1.5">Cidade (opcional)</label>
+              <label className="block text-sm font-bold text-white/70 mb-1.5">Cidade (opcional)</label>
               <input 
                 type="text"
                 autoComplete="address-level2"
                 value={city} 
                 onChange={e => setCity(e.target.value)} 
                 placeholder="Ex: São Paulo"
-                className="w-full border-2 border-gray-100 bg-gray-50 rounded-xl px-4 py-3 focus:outline-none focus:border-transparent focus:ring-2 focus:bg-white transition-all"
+                className="w-full border-2 border-white/5 bg-[#0A0A0F] rounded-xl px-4 py-3 focus:outline-none focus:border-transparent focus:ring-2 focus:bg-[#13131C] transition-all"
                 style={{ '--tw-ring-color': primaryColor } as any}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1.5">Observações (opcional)</label>
+              <label className="block text-sm font-bold text-white/70 mb-1.5">Observações (opcional)</label>
               <textarea 
                 autoComplete="off"
                 value={notes} 
                 onChange={e => setNotes(e.target.value)} 
                 placeholder="Alguma instrução especial?"
                 rows={3}
-                className="w-full border-2 border-gray-100 bg-gray-50 rounded-xl px-4 py-3 focus:outline-none focus:border-transparent focus:ring-2 focus:bg-white transition-all resize-none"
+                className="w-full border-2 border-white/5 bg-[#0A0A0F] rounded-xl px-4 py-3 focus:outline-none focus:border-transparent focus:ring-2 focus:bg-[#13131C] transition-all resize-none"
                 style={{ '--tw-ring-color': primaryColor } as any}
               />
             </div>
           </form>
         </div>
         
-        <div className="p-5 bg-white border-t border-gray-100 shrink-0">
+        <div className="p-5 bg-[#13131C] border-t border-white/5 shrink-0">
           <button 
             type="submit"
             form="checkout-form"
@@ -267,7 +267,7 @@ export function Checkout({ isOpen, onClose, cart, reseller, onSuccess, total, it
               </>
             )}
           </button>
-          <p className="text-xs text-gray-400 text-center mt-2">
+          <p className="text-xs text-white/40 text-center mt-2">
             O WhatsApp será aberto com seu pedido já formatado para envio.
           </p>
         </div>

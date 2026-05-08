@@ -105,7 +105,7 @@ export const ResellerLayout: React.FC = () => {
   const primaryColor = reseller?.settings?.primaryColor || "#2563eb";
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-[#0A0A0F] flex flex-col">
       {isExpired && (
         <div className="bg-red-50 border-b border-red-200 px-4 py-3 text-center">
           <span className="text-red-700 text-sm font-medium">
@@ -123,18 +123,18 @@ export const ResellerLayout: React.FC = () => {
       <div className="flex flex-1">
       {isMobileMenuOpen && (
         <div 
-          className="fixed inset-0 bg-gray-900/50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/70 z-40 lg:hidden"
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
 
       {/* Sidebar */}
       <aside 
-        className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out lg:transform-none flex flex-col ${
+        className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-[#0A0A0F] border-r border-white/5 transform transition-transform duration-300 ease-in-out lg:transform-none flex flex-col ${
           isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="h-16 flex items-center justify-between px-6 border-b border-gray-100 shrink-0">
+        <div className="h-16 flex items-center justify-between px-6 border-b border-white/5 shrink-0">
           <div className="flex items-center gap-3 truncate">
             {reseller?.settings?.logo ? (
               <img src={reseller.settings.logo} alt="Logo" className="w-8 h-8 rounded-lg object-contain p-0.5" />
@@ -143,9 +143,9 @@ export const ResellerLayout: React.FC = () => {
                 {reseller?.storeName?.charAt(0).toUpperCase() || "L"}
               </div>
             )}
-            <span className="font-bold text-gray-900 truncate">{reseller?.storeName || "Minha Loja"}</span>
+            <span className="font-bold text-white truncate">{reseller?.storeName || "Minha Loja"}</span>
           </div>
-          <button onClick={() => setIsMobileMenuOpen(false)} className="lg:hidden text-gray-500">
+          <button onClick={() => setIsMobileMenuOpen(false)} className="lg:hidden text-white/50">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -161,7 +161,7 @@ export const ResellerLayout: React.FC = () => {
                 className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
                   isActive 
                     ? "text-white" 
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                    : "text-white/50 hover:bg-white/5 hover:text-white"
                 }`}
                 style={isActive ? { backgroundColor: primaryColor } : {}}
               >
@@ -179,7 +179,7 @@ export const ResellerLayout: React.FC = () => {
           })}
         </nav>
 
-        <div className="p-4 border-t border-gray-100 shrink-0">
+        <div className="p-4 border-t border-white/5 shrink-0">
           <button
             onClick={handleLogout}
             className="flex items-center gap-3 px-3 py-2.5 w-full text-sm font-medium text-red-600 hover:bg-red-50 rounded-xl transition-colors"
@@ -192,10 +192,10 @@ export const ResellerLayout: React.FC = () => {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <header className="h-16 bg-white border-b border-gray-200 flex items-center px-4 lg:px-8 shrink-0">
+        <header className="h-16 bg-[#0A0A0F] border-b border-white/5 flex items-center px-4 lg:px-8 shrink-0">
           <button 
             onClick={() => setIsMobileMenuOpen(true)}
-            className="lg:hidden p-2 -ml-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+            className="lg:hidden p-2 -ml-2 text-white/50 hover:bg-white/10 rounded-lg"
           >
             <Menu className="w-6 h-6" />
           </button>
@@ -205,7 +205,7 @@ export const ResellerLayout: React.FC = () => {
             <div className="relative" ref={notificationsRef}>
               <button
                 onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
-                className="relative p-2 text-gray-500 hover:text-gray-700 transition-colors rounded-full hover:bg-gray-100"
+                className="relative p-2 text-white/50 hover:text-white transition-colors rounded-full hover:bg-white/10"
               >
                 <Bell className="w-6 h-6" />
                 {unreadCount > 0 && (
@@ -219,16 +219,16 @@ export const ResellerLayout: React.FC = () => {
                     initial={{ opacity: 0, y: 10, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 overflow-hidden"
+                    className="absolute right-0 mt-2 w-80 bg-[#13131C] rounded-2xl shadow-xl border border-white/10 z-50 overflow-hidden"
                   >
-                    <div className="p-4 border-b border-gray-50 flex items-center justify-between">
-                      <h3 className="font-bold text-gray-900">Notificações</h3>
+                    <div className="p-4 border-b border-white/5 flex items-center justify-between">
+                      <h3 className="font-bold text-white">Notificações</h3>
                       {unreadCount > 0 && (
                         <button 
                           onClick={() => {
                             if (user?.uid) notificationService.markAllAsRead(user.uid);
                           }}
-                          className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+                          className="text-xs text-orange-500 hover:text-orange-500 font-medium flex items-center gap-1"
                         >
                           <Check className="w-3 h-3" />
                           Ler todas
@@ -238,8 +238,8 @@ export const ResellerLayout: React.FC = () => {
                     
                     <div className="max-h-80 overflow-y-auto custom-scrollbar">
                       {notifications.length === 0 ? (
-                        <div className="p-6 text-center text-gray-500 flex flex-col items-center gap-2">
-                          <Bell className="w-8 h-8 text-gray-300" />
+                        <div className="p-6 text-center text-white/50 flex flex-col items-center gap-2">
+                          <Bell className="w-8 h-8 text-white/20" />
                           <p className="text-sm">Nenhuma notificação</p>
                         </div>
                       ) : (
@@ -247,7 +247,7 @@ export const ResellerLayout: React.FC = () => {
                           {notifications.map(notif => (
                             <div 
                               key={notif.id} 
-                              className={`p-4 transition-colors hover:bg-gray-50 cursor-pointer ${!notif.read ? 'bg-blue-50/30' : ''}`}
+                              className={`p-4 transition-colors hover:bg-white/5 cursor-pointer ${!notif.read ? 'bg-orange-500/10' : ''}`}
                               onClick={() => {
                                 if (!notif.read) notificationService.markAsRead(notif.id);
                                 if (notif.link) {
@@ -257,16 +257,16 @@ export const ResellerLayout: React.FC = () => {
                               }}
                             >
                               <div className="flex gap-3">
-                                <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${!notif.read ? 'bg-blue-600' : 'bg-transparent'}`} />
+                                <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${!notif.read ? 'bg-orange-500' : 'bg-transparent'}`} />
                                 <div>
-                                  <p className={`text-sm ${!notif.read ? 'font-bold text-gray-900' : 'font-medium text-gray-700'}`}>
+                                  <p className={`text-sm ${!notif.read ? 'font-bold text-white' : 'font-medium text-white/60'}`}>
                                     {notif.title}
                                   </p>
-                                  <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">
+                                  <p className="text-xs text-white/40 mt-0.5 line-clamp-2">
                                     {notif.message}
                                   </p>
                                   {notif.createdAt && (
-                                    <p className="text-[10px] text-gray-400 mt-2">
+                                    <p className="text-[10px] text-white/30 mt-2">
                                       {notif.createdAt.toDate().toLocaleDateString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                                     </p>
                                   )}
@@ -282,7 +282,7 @@ export const ResellerLayout: React.FC = () => {
               </AnimatePresence>
             </div>
 
-            <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 font-bold text-sm">
+            <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center text-white/80 font-bold text-sm">
               {user?.email?.charAt(0).toUpperCase()}
             </div>
           </div>

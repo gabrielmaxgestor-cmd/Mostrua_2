@@ -177,17 +177,17 @@ export const CatalogExporter: React.FC<CatalogExporterProps> = ({
 
   return (
     <>
-      <div className="bg-white p-6 rounded-3xl border border-gray-200 flex flex-col items-center text-center h-full">
-        <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center mb-4">
-          <FileText className="w-6 h-6 text-blue-600" />
+      <div className="bg-[#13131C] p-6 rounded-3xl border border-white/10 flex flex-col items-center text-center h-full">
+        <div className="w-12 h-12 rounded-full bg-orange-500/10 flex items-center justify-center mb-4">
+          <FileText className="w-6 h-6 text-orange-500" />
         </div>
-        <h3 className="text-lg font-bold text-gray-900 mb-1">Catálogo em PDF</h3>
-        <p className="text-sm text-gray-500 mb-6 flex-1">Gere um PDF com todos os seus produtos para enviar no WhatsApp ou imprimir.</p>
+        <h3 className="text-lg font-bold text-white mb-1">Catálogo em PDF</h3>
+        <p className="text-sm text-white/50 mb-6 flex-1">Gere um PDF com todos os seus produtos para enviar no WhatsApp ou imprimir.</p>
         
         <button 
           onClick={exportPDF}
           disabled={isExporting}
-          className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition-colors disabled:opacity-50"
+          className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold transition-colors disabled:opacity-50"
         >
           {isExporting ? (
             <>

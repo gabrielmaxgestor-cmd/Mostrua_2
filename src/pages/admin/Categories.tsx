@@ -224,12 +224,12 @@ export const Categories = () => {
     <div className="p-6 max-w-6xl mx-auto">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Categorias</h1>
-          <p className="text-gray-500 mt-1">Gerencie as categorias dos catálogos</p>
+          <h1 className="text-2xl font-bold text-white">Categorias</h1>
+          <p className="text-white/50 mt-1">Gerencie as categorias dos catálogos</p>
         </div>
         <button 
           onClick={() => openModal()}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-medium flex items-center gap-2 transition-colors"
+          className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-xl font-medium flex items-center gap-2 transition-colors"
         >
           <Plus className="w-5 h-5" />
           Nova Categoria
@@ -237,13 +237,13 @@ export const Categories = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 mb-6 flex flex-col md:flex-row gap-4">
+      <div className="bg-[#13131C] p-4 rounded-2xl shadow-sm border border-white/5 mb-6 flex flex-col md:flex-row gap-4">
         <div className="flex-1">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Filtrar por Nicho</label>
+          <label className="block text-sm font-medium text-white/70 mb-1">Filtrar por Nicho</label>
           <select 
             value={selectedNicheId}
             onChange={(e) => setSelectedNicheId(e.target.value)}
-            className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-600 outline-none"
+            className="w-full px-4 py-2 rounded-xl bg-[#0A0A0F] border border-white/10 focus:ring-2 focus:ring-orange-500 outline-none"
           >
             <option value="">Selecione um nicho...</option>
             {niches.map(n => (
@@ -252,12 +252,12 @@ export const Categories = () => {
           </select>
         </div>
         <div className="flex-1">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Filtrar por Catálogo</label>
+          <label className="block text-sm font-medium text-white/70 mb-1">Filtrar por Catálogo</label>
           <select 
             value={selectedCatalogId}
             onChange={(e) => setSelectedCatalogId(e.target.value)}
             disabled={!selectedNicheId}
-            className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-600 outline-none disabled:bg-gray-50 disabled:text-gray-400"
+            className="w-full px-4 py-2 rounded-xl bg-[#0A0A0F] border border-white/10 focus:ring-2 focus:ring-orange-500 outline-none disabled:bg-[#0A0A0F] disabled:text-white/40"
           >
             <option value="">Selecione um catálogo...</option>
             {catalogs.map(c => (
@@ -268,47 +268,47 @@ export const Categories = () => {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-[#13131C] rounded-2xl shadow-sm border border-white/5 overflow-hidden">
         {loading ? (
           <div className="p-12 flex justify-center">
-            <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+            <Loader2 className="w-8 h-8 text-orange-500 animate-spin" />
           </div>
         ) : !selectedCatalogId ? (
-          <div className="p-12 text-center text-gray-500">
+          <div className="p-12 text-center text-white/50">
             Selecione um nicho e um catálogo para ver as categorias.
           </div>
         ) : categories.length === 0 ? (
-          <div className="p-12 text-center text-gray-500">
+          <div className="p-12 text-center text-white/50">
             Nenhuma categoria encontrada neste catálogo.
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-100">
-                  <th className="p-4 text-sm font-semibold text-gray-600">Ordem</th>
-                  <th className="p-4 text-sm font-semibold text-gray-600">Nome</th>
-                  <th className="p-4 text-sm font-semibold text-gray-600">Status</th>
-                  <th className="p-4 text-sm font-semibold text-gray-600 text-right">Ações</th>
+                <tr className="bg-[#0A0A0F] border-b border-white/5">
+                  <th className="p-4 text-sm font-semibold text-white/60">Ordem</th>
+                  <th className="p-4 text-sm font-semibold text-white/60">Nome</th>
+                  <th className="p-4 text-sm font-semibold text-white/60">Status</th>
+                  <th className="p-4 text-sm font-semibold text-white/60 text-right">Ações</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-white/5">
                 {categories.map((category) => (
-                  <tr key={category.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="p-4 text-gray-500 font-medium">{category.order}</td>
-                    <td className="p-4 font-medium text-gray-900">{category.name}</td>
+                  <tr key={category.id} className="hover:bg-[#0A0A0F] transition-colors">
+                    <td className="p-4 text-white/50 font-medium">{category.order}</td>
+                    <td className="p-4 font-medium text-white">{category.name}</td>
                     <td className="p-4">
                       <button 
                         onClick={() => toggleStatus(category)}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${category.status ? 'bg-blue-600' : 'bg-gray-200'}`}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${category.status ? 'bg-orange-500' : 'bg-[#1A1A2E]'}`}
                       >
-                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${category.status ? 'translate-x-6' : 'translate-x-1'}`} />
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-[#13131C] transition-transform ${category.status ? 'translate-x-6' : 'translate-x-1'}`} />
                       </button>
                     </td>
                     <td className="p-4 text-right">
                       <button 
                         onClick={() => openModal(category)}
-                        className="p-2 text-gray-400 hover:text-blue-600 transition-colors"
+                        className="p-2 text-white/40 hover:text-orange-500 transition-colors"
                       >
                         <Edit2 className="w-5 h-5" />
                       </button>
@@ -323,20 +323,20 @@ export const Categories = () => {
 
       {/* Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 overflow-y-auto">
+        <div className="fixed inset-0 bg-[#0A0A0F]/50 backdrop-blur-sm z-50 overflow-y-auto">
           <div className="min-h-full flex items-center justify-center p-4 sm:p-6">
-            <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl flex flex-col max-h-full">
-              <div className="p-6 border-b border-gray-100 flex justify-between items-center shrink-0">
-                <h3 className="font-bold text-lg text-gray-900">
+            <div className="bg-[#13131C] rounded-3xl w-full max-w-md shadow-2xl flex flex-col max-h-full">
+              <div className="p-6 border-b border-white/5 flex justify-between items-center shrink-0">
+                <h3 className="font-bold text-lg text-white">
                   {editingId ? "Editar Categoria" : "Nova Categoria"}
                 </h3>
-                <button onClick={closeModal} className="text-gray-400 hover:text-gray-600">
+                <button onClick={closeModal} className="text-white/40 hover:text-white/60">
                   <X className="w-5 h-5" />
                 </button>
               </div>
               <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto flex-1">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nicho</label>
+                <label className="block text-sm font-medium text-white/70 mb-1">Nicho</label>
                 <select 
                   required
                   value={formData.nicheId}
@@ -344,7 +344,7 @@ export const Categories = () => {
                     setFormData({ ...formData, nicheId: e.target.value, catalogId: "" });
                     fetchCatalogs(e.target.value);
                   }}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-600 outline-none"
+                  className="w-full px-4 py-3 rounded-xl bg-[#0A0A0F] border border-white/10 focus:ring-2 focus:ring-orange-500 outline-none"
                 >
                   <option value="">Selecione...</option>
                   {niches.map(n => (
@@ -354,13 +354,13 @@ export const Categories = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Catálogo</label>
+                <label className="block text-sm font-medium text-white/70 mb-1">Catálogo</label>
                 <select 
                   required
                   value={formData.catalogId}
                   onChange={(e) => setFormData({ ...formData, catalogId: e.target.value })}
                   disabled={!formData.nicheId}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-600 outline-none disabled:bg-gray-50"
+                  className="w-full px-4 py-3 rounded-xl bg-[#0A0A0F] border border-white/10 focus:ring-2 focus:ring-orange-500 outline-none disabled:bg-[#0A0A0F]"
                 >
                   <option value="">Selecione...</option>
                   {catalogs.map(c => (
@@ -370,24 +370,24 @@ export const Categories = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nome da Categoria</label>
+                <label className="block text-sm font-medium text-white/70 mb-1">Nome da Categoria</label>
                 <input 
                   type="text" 
                   required
                   value={formData.name}
                   onChange={e => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-600 outline-none"
+                  className="w-full px-4 py-3 rounded-xl bg-[#0A0A0F] border border-white/10 focus:ring-2 focus:ring-orange-500 outline-none"
                   placeholder="Ex: Seleções Mundiais"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Logo/Ícone</label>
+                  <label className="block text-sm font-medium text-white/70 mb-2">Logo/Ícone</label>
                   <div 
                     onClick={() => fileInputRef.current?.click()}
                     className={`border-2 border-dashed rounded-2xl overflow-hidden cursor-pointer transition-all ${
-                      imagePreview ? 'border-gray-200' : 'border-gray-300 hover:border-blue-500 bg-gray-50 hover:bg-blue-50/50'
+                      imagePreview ? 'border-white/10' : 'border-white/20 hover:border-orange-500 bg-[#0A0A0F] hover:bg-orange-500/10/50'
                     }`}
                   >
                     {imagePreview ? (
@@ -400,8 +400,8 @@ export const Categories = () => {
                         </div>
                       </div>
                     ) : (
-                      <div className="aspect-square flex flex-col items-center justify-center text-gray-500 p-2 text-center">
-                        <ImageIcon className="w-5 h-5 text-gray-400 mb-1" />
+                      <div className="aspect-square flex flex-col items-center justify-center text-white/50 p-2 text-center">
+                        <ImageIcon className="w-5 h-5 text-white/40 mb-1" />
                         <span className="text-xs font-medium">Logo</span>
                       </div>
                     )}
@@ -410,11 +410,11 @@ export const Categories = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Banner de Fundo</label>
+                  <label className="block text-sm font-medium text-white/70 mb-2">Banner de Fundo</label>
                   <div 
                     onClick={() => bannerInputRef.current?.click()}
                     className={`border-2 border-dashed rounded-2xl overflow-hidden cursor-pointer transition-all h-full ${
-                      bannerPreview ? 'border-gray-200' : 'border-gray-300 hover:border-blue-500 bg-gray-50 hover:bg-blue-50/50'
+                      bannerPreview ? 'border-white/10' : 'border-white/20 hover:border-orange-500 bg-[#0A0A0F] hover:bg-orange-500/10/50'
                     }`}
                   >
                     {bannerPreview ? (
@@ -427,8 +427,8 @@ export const Categories = () => {
                         </div>
                       </div>
                     ) : (
-                      <div className="h-full min-h-[100px] flex flex-col items-center justify-center text-gray-500 p-2 text-center">
-                        <ImageIcon className="w-5 h-5 text-gray-400 mb-1" />
+                      <div className="h-full min-h-[100px] flex flex-col items-center justify-center text-white/50 p-2 text-center">
+                        <ImageIcon className="w-5 h-5 text-white/40 mb-1" />
                         <span className="text-xs font-medium">Banner (Opcional)</span>
                       </div>
                     )}
@@ -439,33 +439,33 @@ export const Categories = () => {
 
               <div className="flex gap-4">
                 <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Ordem</label>
+                  <label className="block text-sm font-medium text-white/70 mb-1">Ordem</label>
                   <input 
                     type="number" 
                     required
                     min="0"
                     value={formData.order}
                     onChange={e => setFormData({ ...formData, order: Number(e.target.value) })}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-600 outline-none"
+                    className="w-full px-4 py-3 rounded-xl bg-[#0A0A0F] border border-white/10 focus:ring-2 focus:ring-orange-500 outline-none"
                   />
                 </div>
                 <div className="flex-1 flex flex-col justify-center">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                  <label className="block text-sm font-medium text-white/70 mb-2">Status</label>
                   <button 
                     type="button"
                     onClick={() => setFormData({ ...formData, status: !formData.status })}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${formData.status ? 'bg-blue-600' : 'bg-gray-200'}`}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${formData.status ? 'bg-orange-500' : 'bg-[#1A1A2E]'}`}
                   >
-                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formData.status ? 'translate-x-6' : 'translate-x-1'}`} />
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-[#13131C] transition-transform ${formData.status ? 'translate-x-6' : 'translate-x-1'}`} />
                   </button>
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-gray-100 shrink-0 mt-2">
+              <div className="pt-4 border-t border-white/5 shrink-0 mt-2">
                 <button 
                   type="submit"
                   disabled={saving}
-                  className="w-full py-4 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="w-full py-4 rounded-xl font-bold text-white bg-orange-500 hover:bg-orange-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : "Salvar Categoria"}
                 </button>

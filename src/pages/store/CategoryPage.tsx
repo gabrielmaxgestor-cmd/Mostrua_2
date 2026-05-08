@@ -135,18 +135,18 @@ export default function CategoryPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <Loader2 className="w-10 h-10 animate-spin text-gray-400" style={{ color: primaryColor }} />
+      <div className="flex items-center justify-center min-h-screen bg-[#0A0A0F]">
+        <Loader2 className="w-10 h-10 animate-spin text-white/40" style={{ color: primaryColor }} />
       </div>
     );
   }
 
   if (notFound) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 text-center px-4">
-        <Store className="w-16 h-16 text-gray-300 mb-4" />
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Categoria não encontrada</h1>
-        <p className="text-gray-500 mb-6">Esta aba não existe ou está inativa.</p>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[#0A0A0F] text-center px-4">
+        <Store className="w-16 h-16 text-white/30 mb-4" />
+        <h1 className="text-2xl font-bold text-white mb-2">Categoria não encontrada</h1>
+        <p className="text-white/50 mb-6">Esta aba não existe ou está inativa.</p>
         <Link 
           to={storeUrl}
           className="px-6 py-3 rounded-xl text-white font-bold transition-all shadow-sm"
@@ -164,20 +164,20 @@ export default function CategoryPage() {
   const logoUrl = category?.imageUrl;
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24">
+    <div className="min-h-screen bg-[#0A0A0F] pb-24">
       {/* Header Minimalista */}
-      <header className="bg-white sticky top-0 z-40 shadow-sm border-b border-gray-100">
+      <header className="bg-[#13131C] sticky top-0 z-40 shadow-sm border-b border-white/5">
         <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
-          <Link to={storeUrl} className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors">
+          <Link to={storeUrl} className="flex items-center gap-2 text-white/60 hover:text-white transition-colors">
             <ArrowLeft className="w-5 h-5" />
             <span className="font-semibold">{reseller?.storeName}</span>
           </Link>
           
           <button 
             onClick={() => setShowCart(true)} 
-            className="relative p-2 rounded-full hover:bg-gray-50 transition-colors"
+            className="relative p-2 rounded-full hover:bg-[#0A0A0F] transition-colors"
           >
-            <ShoppingCart className="w-6 h-6 text-gray-700" />
+            <ShoppingCart className="w-6 h-6 text-white/70" />
             {totalItems > 0 && (
               <span 
                 className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-white text-[10px] font-bold flex items-center justify-center border-2 border-white" 
@@ -201,7 +201,7 @@ export default function CategoryPage() {
         <div className="max-w-5xl mx-auto px-4 pt-10 relative z-10">
           <div className="flex items-center gap-4 mb-4">
             {logoUrl && (
-              <div className="w-16 h-16 rounded-full bg-white shadow-lg overflow-hidden border-2 border-zinc-800 flex-shrink-0">
+              <div className="w-16 h-16 rounded-full bg-[#13131C] shadow-lg overflow-hidden border-2 border-zinc-800 flex-shrink-0">
                 <img src={logoUrl} alt={category?.name} className="w-full h-full object-cover" />
               </div>
             )}
@@ -226,19 +226,19 @@ export default function CategoryPage() {
           <button className="px-5 py-2.5 rounded-full bg-zinc-900 text-white text-sm font-bold whitespace-nowrap transition-transform active:scale-95 shadow-sm">
             Todos
           </button>
-          <button className="px-5 py-2.5 rounded-full bg-white border border-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-50 whitespace-nowrap transition-transform active:scale-95">
+          <button className="px-5 py-2.5 rounded-full bg-[#13131C] border border-white/10 text-white/70 text-sm font-medium hover:bg-[#0A0A0F] whitespace-nowrap transition-transform active:scale-95">
             Destaques
           </button>
-          <button className="px-5 py-2.5 rounded-full bg-white border border-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-50 whitespace-nowrap transition-transform active:scale-95">
+          <button className="px-5 py-2.5 rounded-full bg-[#13131C] border border-white/10 text-white/70 text-sm font-medium hover:bg-[#0A0A0F] whitespace-nowrap transition-transform active:scale-95">
             Lançamentos
           </button>
         </div>
 
         {products.length === 0 ? (
-           <div className="bg-white rounded-3xl p-8 text-center border border-gray-100 shadow-sm">
-             <Store className="w-16 h-16 text-gray-200 mx-auto mb-4" />
-             <h2 className="text-xl font-bold text-gray-900 mb-2">Nenhum produto encontrado nesta categoria</h2>
-             <p className="text-gray-500 mb-6">Em breve teremos mais novidades nesta seção.</p>
+           <div className="bg-[#13131C] rounded-3xl p-8 text-center border border-white/5 shadow-sm">
+             <Store className="w-16 h-16 text-white/20 mx-auto mb-4" />
+             <h2 className="text-xl font-bold text-white mb-2">Nenhum produto encontrado nesta categoria</h2>
+             <p className="text-white/50 mb-6">Em breve teremos mais novidades nesta seção.</p>
              <Link 
                to={storeUrl}
                className="inline-flex px-8 py-3 rounded-xl text-white font-bold transition-all shadow-sm"

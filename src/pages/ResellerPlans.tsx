@@ -49,7 +49,7 @@ export const ResellerPlans: React.FC = () => {
     return (
       <ResellerLayout>
         <div className="flex justify-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
         </div>
       </ResellerLayout>
     );
@@ -59,8 +59,8 @@ export const ResellerPlans: React.FC = () => {
     <ResellerLayout>
       <div className="max-w-6xl mx-auto space-y-8">
         <div className="text-center max-w-2xl mx-auto mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Escolha o plano ideal para sua loja</h1>
-          <p className="text-xl text-gray-500">
+          <h1 className="text-4xl font-bold text-white mb-4">Escolha o plano ideal para sua loja</h1>
+          <p className="text-xl text-white/50">
             Escale suas vendas com recursos profissionais e limites maiores.
           </p>
         </div>
@@ -73,23 +73,23 @@ export const ResellerPlans: React.FC = () => {
             return (
               <div 
                 key={plan.id} 
-                className={`relative bg-white rounded-3xl border transition-all duration-300 flex flex-col ${
+                className={`relative bg-[#13131C] rounded-3xl border transition-all duration-300 flex flex-col ${
                   isPopular 
-                    ? 'border-blue-500 shadow-xl shadow-blue-100 md:-translate-y-4' 
-                    : 'border-gray-200 shadow-sm hover:shadow-md'
+                    ? 'border-orange-500 shadow-xl shadow-orange-500 md:-translate-y-4' 
+                    : 'border-white/10 shadow-sm hover:shadow-md'
                 }`}
               >
                 {isPopular && (
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-blue-600 text-white px-4 py-1 rounded-full text-sm font-bold flex items-center gap-1 shadow-sm">
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-orange-500 text-white px-4 py-1 rounded-full text-sm font-bold flex items-center gap-1 shadow-sm">
                     <Star className="w-4 h-4 fill-current" /> Mais Popular
                   </div>
                 )}
                 
-                <div className="p-8 border-b border-gray-100">
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">{plan.name}</h3>
+                <div className="p-8 border-b border-white/5">
+                  <h3 className="text-2xl font-bold text-white mb-2">{plan.name}</h3>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-extrabold text-gray-900">R$ {plan.price.toFixed(2).replace('.', ',')}</span>
-                    <span className="text-gray-500 font-medium">/mês</span>
+                    <span className="text-4xl font-extrabold text-white">R$ {plan.price.toFixed(2).replace('.', ',')}</span>
+                    <span className="text-white/50 font-medium">/mês</span>
                   </div>
                 </div>
 
@@ -100,7 +100,7 @@ export const ResellerPlans: React.FC = () => {
                         <div className="mt-1 bg-green-100 rounded-full p-0.5">
                           <Check className="w-4 h-4 text-green-600" />
                         </div>
-                        <span className="text-gray-600">{feature}</span>
+                        <span className="text-white/60">{feature}</span>
                       </li>
                     ))}
                   </ul>
@@ -110,10 +110,10 @@ export const ResellerPlans: React.FC = () => {
                     disabled={isCurrentPlan || submitting}
                     className={`w-full py-4 rounded-xl font-bold transition-all ${
                       isCurrentPlan
-                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        ? 'bg-[#13131C] text-white/40 cursor-not-allowed'
                         : isPopular
-                          ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-200'
-                          : 'bg-gray-900 text-white hover:bg-gray-800'
+                          ? 'bg-orange-500 text-white hover:bg-orange-600 shadow-lg shadow-orange-500'
+                          : 'bg-[#0A0A0F] text-white hover:bg-[#13131C]'
                     }`}
                   >
                     {isCurrentPlan ? 'Seu Plano Atual' : submitting ? 'Processando...' : 'Assinar Agora'}

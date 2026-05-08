@@ -198,34 +198,34 @@ export const Products = () => {
     }
   };
 
-  if (loading || rpLoading) return <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-blue-600" /></div>;
+  if (loading || rpLoading) return <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-orange-500" /></div>;
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Produtos</h1>
-          <p className="text-gray-500">Gerencie os preços e detalhes dos produtos na sua loja.</p>
+          <h1 className="text-2xl font-bold text-white">Produtos</h1>
+          <p className="text-white/50">Gerencie os preços e detalhes dos produtos na sua loja.</p>
         </div>
         
         <div className="flex items-center gap-3">
           <div className="relative">
-            <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
             <input 
               type="text" 
               placeholder="Buscar produtos..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none w-full md:w-64"
+              className="pl-10 pr-4 py-2 bg-[#0A0A0F] border border-white/10 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none w-full md:w-64"
             />
           </div>
           
           <div className="relative">
-            <Filter className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <Filter className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
             <select
               value={filterCatalog}
               onChange={(e) => setFilterCatalog(e.target.value)}
-              className="pl-10 pr-8 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none appearance-none bg-white"
+              className="pl-10 pr-8 py-2 bg-[#0A0A0F] border border-white/10 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none appearance-none bg-[#13131C]"
             >
               <option value="all">Todos os Catálogos</option>
               {catalogs.map(c => (
@@ -236,51 +236,51 @@ export const Products = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-3xl border border-gray-200 overflow-hidden shadow-sm">
+      <div className="bg-[#13131C] rounded-3xl border border-white/10 overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-gray-50/50 border-b border-gray-100">
-                <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Produto</th>
-                <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Catálogo</th>
-                <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Preço Base</th>
-                <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Meu Preço</th>
-                <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Status</th>
-                <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Ações</th>
+              <tr className="bg-[#0A0A0F]/50 border-b border-white/5">
+                <th className="py-4 px-6 text-xs font-bold text-white/50 uppercase tracking-wider">Produto</th>
+                <th className="py-4 px-6 text-xs font-bold text-white/50 uppercase tracking-wider">Catálogo</th>
+                <th className="py-4 px-6 text-xs font-bold text-white/50 uppercase tracking-wider text-right">Preço Base</th>
+                <th className="py-4 px-6 text-xs font-bold text-white/50 uppercase tracking-wider text-right">Meu Preço</th>
+                <th className="py-4 px-6 text-xs font-bold text-white/50 uppercase tracking-wider text-center">Status</th>
+                <th className="py-4 px-6 text-xs font-bold text-white/50 uppercase tracking-wider text-right">Ações</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-white/5">
               {filteredProducts.map(({ bp, rp }) => {
                 const catalog = catalogs.find(c => c.id === bp.catalogId);
                 const isEditingPrice = editingPriceId === rp.id;
                 
                 return (
-                  <tr key={bp.id} className="hover:bg-gray-50/50 transition-colors">
+                  <tr key={bp.id} className="hover:bg-[#0A0A0F]/50 transition-colors">
                     <td className="py-4 px-6">
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl overflow-hidden bg-gray-100 shrink-0 border border-gray-200">
+                        <div className="w-12 h-12 rounded-xl overflow-hidden bg-[#13131C] shrink-0 border border-white/10">
                           {bp.images && bp.images.length > 0 ? (
                             <img src={bp.images[0]} alt={rp.customName} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                           ) : (
-                            <Package className="w-6 h-6 text-gray-400 m-auto mt-3" />
+                            <Package className="w-6 h-6 text-white/40 m-auto mt-3" />
                           )}
                         </div>
                         <div>
-                          <p className="font-bold text-gray-900 line-clamp-1">{rp.customName}</p>
-                          <p className="text-xs text-gray-500">SKU: {bp.sku}</p>
+                          <p className="font-bold text-white line-clamp-1">{rp.customName}</p>
+                          <p className="text-xs text-white/50">SKU: {bp.sku}</p>
                         </div>
                       </div>
                     </td>
                     <td className="py-4 px-6">
-                      <span className="text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded-lg">{catalog?.name || 'N/A'}</span>
+                      <span className="text-sm text-white/60 bg-[#13131C] px-2 py-1 rounded-lg">{catalog?.name || 'N/A'}</span>
                     </td>
                     <td className="py-4 px-6 text-right">
-                      <span className="text-sm text-gray-500">R$ {bp.priceBase.toFixed(2)}</span>
+                      <span className="text-sm text-white/50">R$ {bp.priceBase.toFixed(2)}</span>
                     </td>
                     <td className="py-4 px-6 text-right">
                       {isEditingPrice ? (
                         <div className="flex items-center justify-end gap-2">
-                          <span className="text-gray-500">R$</span>
+                          <span className="text-white/50">R$</span>
                           <input
                             type="number"
                             step="0.01"
@@ -289,7 +289,7 @@ export const Products = () => {
                             onBlur={() => handlePriceEditSave(rp, bp)}
                             onKeyDown={(e) => e.key === 'Enter' && handlePriceEditSave(rp, bp)}
                             autoFocus
-                            className="w-24 px-2 py-1 border border-blue-500 rounded-lg outline-none text-right font-bold text-blue-600"
+                            className="w-24 px-2 py-1 border border-orange-500 rounded-lg outline-none text-right font-bold text-orange-500"
                           />
                         </div>
                       ) : (
@@ -298,15 +298,15 @@ export const Products = () => {
                           onClick={() => handlePriceEditStart(rp)}
                         >
                           <div className="flex items-center gap-2">
-                            <span className={`font-bold ${rp.promotionalPrice ? 'text-gray-400 line-through text-xs' : 'text-gray-900'}`}>
+                            <span className={`font-bold ${rp.promotionalPrice ? 'text-white/40 line-through text-xs' : 'text-white'}`}>
                               R$ {rp.customPrice.toFixed(2)}
                             </span>
-                            {!rp.promotionalPrice && <Edit2 className="w-3 h-3 text-gray-300 group-hover:text-blue-500 transition-colors" />}
+                            {!rp.promotionalPrice && <Edit2 className="w-3 h-3 text-white/30 group-hover:text-orange-500 transition-colors" />}
                           </div>
                           {rp.promotionalPrice && (
                             <div className="flex items-center gap-2">
                               <span className="font-bold text-green-600">R$ {rp.promotionalPrice.toFixed(2)}</span>
-                              <Edit2 className="w-3 h-3 text-gray-300 group-hover:text-green-500 transition-colors" />
+                              <Edit2 className="w-3 h-3 text-white/30 group-hover:text-green-500 transition-colors" />
                             </div>
                           )}
                         </div>
@@ -316,11 +316,11 @@ export const Products = () => {
                       <button
                         onClick={() => toggleStatus(rp, bp)}
                         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
-                          rp.active ? 'bg-green-500' : 'bg-gray-200'
+                          rp.active ? 'bg-green-500' : 'bg-[#1A1A2E]'
                         }`}
                       >
                         <span
-                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          className={`inline-block h-4 w-4 transform rounded-full bg-[#13131C] transition-transform ${
                             rp.active ? 'translate-x-6' : 'translate-x-1'
                           }`}
                         />
@@ -329,7 +329,7 @@ export const Products = () => {
                     <td className="py-4 px-6 text-right">
                       <button 
                         onClick={() => openModal(rp, bp)}
-                        className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        className="p-2 text-white/40 hover:text-orange-500 hover:bg-orange-500/10 rounded-lg transition-colors"
                         title="Editar Detalhes"
                       >
                         <Edit2 className="w-4 h-4" />
@@ -340,7 +340,7 @@ export const Products = () => {
               })}
               {filteredProducts.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-gray-500">
+                  <td colSpan={6} className="py-12 text-center text-white/50">
                     Nenhum produto encontrado.
                   </td>
                 </tr>
@@ -353,52 +353,52 @@ export const Products = () => {
       {/* Modal de Edição */}
       <AnimatePresence>
         {isModalOpen && editingProduct && (
-          <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 overflow-y-auto">
+          <div className="fixed inset-0 bg-[#0A0A0F]/50 backdrop-blur-sm z-50 overflow-y-auto">
             <div className="min-h-full flex items-center justify-center p-4 sm:p-6">
               <motion.div 
                 initial={{ scale: 0.95, opacity: 0 }} 
                 animate={{ scale: 1, opacity: 1 }} 
                 exit={{ scale: 0.95, opacity: 0 }}
-                className="bg-white rounded-3xl w-full max-w-lg shadow-2xl flex flex-col max-h-full"
+                className="bg-[#13131C] rounded-3xl w-full max-w-lg shadow-2xl flex flex-col max-h-full"
               >
-              <div className="p-6 border-b border-gray-100 flex justify-between items-center shrink-0">
-                <h2 className="text-xl font-bold text-gray-900">Editar Produto</h2>
-                <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+              <div className="p-6 border-b border-white/5 flex justify-between items-center shrink-0">
+                <h2 className="text-xl font-bold text-white">Editar Produto</h2>
+                <button onClick={() => setIsModalOpen(false)} className="text-white/40 hover:text-white/60">
                   <X className="w-6 h-6" />
                 </button>
               </div>
 
               <div className="p-6 overflow-y-auto flex-1">
-                <div className="flex items-center gap-4 mb-6 p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                  <div className="w-16 h-16 rounded-xl overflow-hidden bg-white border border-gray-200 shrink-0">
+                <div className="flex items-center gap-4 mb-6 p-4 bg-[#0A0A0F] rounded-2xl border border-white/5">
+                  <div className="w-16 h-16 rounded-xl overflow-hidden bg-[#13131C] border border-white/10 shrink-0">
                     {editingProduct.bp.images?.[0] ? (
                       <img src={editingProduct.bp.images[0]} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                     ) : (
-                      <Package className="w-8 h-8 text-gray-300 m-auto mt-4" />
+                      <Package className="w-8 h-8 text-white/30 m-auto mt-4" />
                     )}
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500 mb-1">Produto Original</p>
-                    <p className="font-bold text-gray-900 line-clamp-1">{editingProduct.bp.name}</p>
-                    <p className="text-sm text-gray-600">Preço Base: R$ {editingProduct.bp.priceBase.toFixed(2)}</p>
+                    <p className="text-xs text-white/50 mb-1">Produto Original</p>
+                    <p className="font-bold text-white line-clamp-1">{editingProduct.bp.name}</p>
+                    <p className="text-sm text-white/60">Preço Base: R$ {editingProduct.bp.priceBase.toFixed(2)}</p>
                   </div>
                 </div>
 
                 <form id="editProductForm" onSubmit={handleModalSave} className="space-y-5">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Nome na sua loja</label>
+                    <label className="block text-sm font-medium text-white/70 mb-1">Nome na sua loja</label>
                     <input 
                       required
                       type="text"
                       value={formData.customName} 
                       onChange={e => setFormData({...formData, customName: e.target.value})} 
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all" 
+                      className="w-full px-4 py-3 rounded-xl bg-[#0A0A0F] border border-white/10 focus:ring-2 focus:ring-orange-500 outline-none transition-all" 
                     />
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Preço Normal (R$)</label>
+                      <label className="block text-sm font-medium text-white/70 mb-1">Preço Normal (R$)</label>
                       <input 
                         required
                         type="number"
@@ -406,20 +406,20 @@ export const Products = () => {
                         min={editingProduct.bp.priceBase} // Não pode vender mais barato que o base
                         value={formData.customPrice} 
                         onChange={e => setFormData({...formData, customPrice: parseFloat(e.target.value)})} 
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all" 
+                        className="w-full px-4 py-3 rounded-xl bg-[#0A0A0F] border border-white/10 focus:ring-2 focus:ring-orange-500 outline-none transition-all" 
                       />
-                      <p className="text-xs text-gray-500 mt-1">Mínimo: R$ {editingProduct.bp.priceBase.toFixed(2)}</p>
+                      <p className="text-xs text-white/50 mt-1">Mínimo: R$ {editingProduct.bp.priceBase.toFixed(2)}</p>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Preço Promocional (R$)</label>
+                      <label className="block text-sm font-medium text-white/70 mb-1">Preço Promocional (R$)</label>
                       <input 
                         type="number"
                         step="0.01"
                         min={editingProduct.bp.priceBase} // Não pode vender mais barato que o base na promo também
                         value={formData.promotionalPrice} 
                         onChange={e => setFormData({...formData, promotionalPrice: e.target.value})} 
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 outline-none transition-all placeholder:text-gray-300 text-green-600 font-bold" 
+                        className="w-full px-4 py-3 rounded-xl bg-[#0A0A0F] border border-white/10 focus:ring-2 focus:ring-green-500 outline-none transition-all placeholder:text-white/30 text-green-600 font-bold" 
                         placeholder="Opcional"
                       />
                       <p className="text-xs text-green-600 mt-1">Deixe em branco para remover a oferta.</p>
@@ -427,20 +427,20 @@ export const Products = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Descrição customizada</label>
+                    <label className="block text-sm font-medium text-white/70 mb-1">Descrição customizada</label>
                     <textarea 
                       required
                       rows={4}
                       value={formData.customDescription} 
                       onChange={e => setFormData({...formData, customDescription: e.target.value})} 
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all resize-none" 
+                      className="w-full px-4 py-3 rounded-xl bg-[#0A0A0F] border border-white/10 focus:ring-2 focus:ring-orange-500 outline-none transition-all resize-none" 
                     />
                   </div>
 
-                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
+                  <div className="flex items-center justify-between p-4 bg-[#0A0A0F] rounded-xl border border-white/5">
                     <div>
-                      <p className="font-medium text-gray-900">Produto Ativo</p>
-                      <p className="text-sm text-gray-500">Mostrar na sua loja pública</p>
+                      <p className="font-medium text-white">Produto Ativo</p>
+                      <p className="text-sm text-white/50">Mostrar na sua loja pública</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input 
@@ -449,17 +449,17 @@ export const Products = () => {
                         checked={formData.active}
                         onChange={e => setFormData({...formData, active: e.target.checked})}
                       />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                      <div className="w-11 h-6 bg-[#1A1A2E] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[#13131C] after:border-white/20 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
                     </label>
                   </div>
                 </form>
               </div>
 
-              <div className="p-6 border-t border-gray-100 flex gap-3 shrink-0">
+              <div className="p-6 border-t border-white/5 flex gap-3 shrink-0">
                 <button 
                   type="button"
                   onClick={() => setIsModalOpen(false)} 
-                  className="flex-1 py-3 rounded-xl font-bold bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+                  className="flex-1 py-3 rounded-xl font-bold bg-[#13131C] text-white/70 hover:bg-[#1A1A2E] transition-colors"
                 >
                   Cancelar
                 </button>
@@ -467,7 +467,7 @@ export const Products = () => {
                   type="submit"
                   form="editProductForm"
                   disabled={isSubmitting}
-                  className="flex-1 py-3 rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex-1 py-3 rounded-xl font-bold bg-orange-500 text-white hover:bg-orange-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Salvar"}
                 </button>

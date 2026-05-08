@@ -9,15 +9,15 @@ import { ErrorState } from "../../components/ErrorState";
 
 const MetricCard = ({ title, value, icon: Icon, color, link, badge, hoverBorder }: any) => {
   return (
-    <Link to={link} className={`bg-white p-5 rounded-2xl border border-gray-200 transition-all hover:shadow-md block relative overflow-hidden group ${hoverBorder}`}>
+    <Link to={link} className={`bg-[#13131C] p-5 rounded-2xl border border-white/10 transition-all hover:shadow-md block relative overflow-hidden group ${hoverBorder}`}>
        <div className="flex items-center gap-3 mb-4">
          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${color}`}>
             <Icon className="w-5 h-5" />
          </div>
          {badge && badge}
        </div>
-       <p className="text-3xl md:text-4xl font-black text-gray-900 mb-1 truncate">{value}</p>
-       <p className="text-sm font-medium text-gray-500">{title}</p>
+       <p className="text-3xl md:text-4xl font-black text-white mb-1 truncate">{value}</p>
+       <p className="text-sm font-medium text-white/50">{title}</p>
     </Link>
   )
 };
@@ -33,13 +33,13 @@ export const Dashboard = () => {
   if (resellerLoading || ordersLoading || productsLoading) {
     return (
       <div className="space-y-6">
-        <div className="w-64 h-10 bg-gray-200 animate-pulse rounded-lg mb-2"></div>
-        <div className="w-full h-24 bg-gray-200 animate-pulse rounded-2xl"></div>
+        <div className="w-64 h-10 bg-[#1A1A2E] animate-pulse rounded-lg mb-2"></div>
+        <div className="w-full h-24 bg-[#1A1A2E] animate-pulse rounded-2xl"></div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-          <div className="h-40 bg-gray-100 animate-pulse rounded-2xl"></div>
-          <div className="h-40 bg-gray-100 animate-pulse rounded-2xl"></div>
-          <div className="h-40 bg-gray-100 animate-pulse rounded-2xl"></div>
-          <div className="h-40 bg-gray-100 animate-pulse rounded-2xl"></div>
+          <div className="h-40 bg-[#13131C] animate-pulse rounded-2xl"></div>
+          <div className="h-40 bg-[#13131C] animate-pulse rounded-2xl"></div>
+          <div className="h-40 bg-[#13131C] animate-pulse rounded-2xl"></div>
+          <div className="h-40 bg-[#13131C] animate-pulse rounded-2xl"></div>
         </div>
       </div>
     );
@@ -144,7 +144,7 @@ export const Dashboard = () => {
     if (activeProductsCount === 0) return {
       icon: Package,
       color: "blue", 
-      colorClass: "text-blue-600 bg-blue-100",
+      colorClass: "text-orange-500 bg-orange-100",
       title: "Ative seus primeiros produtos",
       desc: "Sem produtos ativos, sua loja não vende",
       link: "/dashboard/catalogs",
@@ -175,8 +175,8 @@ export const Dashboard = () => {
       )}
 
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">{getGreeting()}, {storeName}</h1>
-        <p className={`font-medium mt-1 ${pendingOrdersCount > 0 ? 'text-orange-600' : 'text-gray-500'}`}>
+        <h1 className="text-2xl font-bold text-white">{getGreeting()}, {storeName}</h1>
+        <p className={`font-medium mt-1 ${pendingOrdersCount > 0 ? 'text-orange-600' : 'text-white/50'}`}>
           {pendingOrdersCount > 0 
             ? `Você tem ${pendingOrdersCount} pedido(s) aguardando atenção 🔴` 
             : (orders.length === 0 && activeProductsCount === 0) 
@@ -186,24 +186,24 @@ export const Dashboard = () => {
       </div>
 
       {reseller && (
-        <div className="bg-white p-5 rounded-2xl border border-gray-200 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm">
+        <div className="bg-[#13131C] p-5 rounded-2xl border border-white/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm">
           <div className="flex-1 w-full">
             <div className="flex items-center gap-2 mb-2">
-              <p className="text-sm font-bold text-gray-700">Link da sua loja</p>
+              <p className="text-sm font-bold text-white/70">Link da sua loja</p>
               {((reseller as any).views !== undefined || (reseller as any).analytics?.views !== undefined) && (
-                <span className="text-xs text-gray-500 bg-gray-100 px-2.5 py-0.5 rounded-full font-bold">
+                <span className="text-xs text-white/50 bg-[#13131C] px-2.5 py-0.5 rounded-full font-bold">
                    👀 {(reseller as any).views ?? (reseller as any).analytics?.views} visitas
                 </span>
               )}
             </div>
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full">
-              <div className="flex-1 flex items-center bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 overflow-hidden">
-                <span className="text-gray-900 font-medium truncate whitespace-nowrap">{storeUrl}</span>
+              <div className="flex-1 flex items-center bg-[#0A0A0F] bg-[#0A0A0F] border border-white/10 rounded-xl bg-[#0A0A0F] px-4 py-3 overflow-hidden">
+                <span className="text-white font-medium truncate whitespace-nowrap">{storeUrl}</span>
               </div>
               <div className="flex shrink-0 gap-2">
                 <button 
                   onClick={handleCopy}
-                  className="flex flex-1 justify-center items-center gap-2 px-5 py-3 bg-blue-50 text-blue-700 font-bold rounded-xl hover:bg-blue-100 transition-colors"
+                  className="flex flex-1 justify-center items-center gap-2 px-5 py-3 bg-orange-500/10 text-orange-500 font-bold rounded-xl hover:bg-orange-100 transition-colors"
                 >
                   <Copy className="w-4 h-4" /> Copiar
                 </button>
@@ -223,18 +223,18 @@ export const Dashboard = () => {
       )}
 
       {isOnboarding && (
-        <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+        <div className="bg-[#13131C] rounded-2xl border border-white/10 p-6 shadow-sm">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-black text-gray-900">Configure sua loja</h2>
-            <span className="text-sm font-bold text-gray-500 bg-gray-100 py-1.5 px-3 rounded-full">{completedSteps} de {setupSteps.length} concluídos</span>
+            <h2 className="text-lg font-black text-white">Configure sua loja</h2>
+            <span className="text-sm font-bold text-white/50 bg-[#13131C] py-1.5 px-3 rounded-full">{completedSteps} de {setupSteps.length} concluídos</span>
           </div>
-          <div className="w-full bg-gray-100 rounded-full h-2 mb-3">
+          <div className="w-full bg-[#13131C] rounded-full h-2 mb-3">
             <div
-              className="h-2 rounded-full bg-blue-600 transition-all duration-500"
+              className="h-2 rounded-full bg-orange-500 transition-all duration-500"
               style={{ width: `${(completedSteps / setupSteps.length) * 100}%` }}
             />
           </div>
-          <p className="text-sm font-medium text-blue-700 bg-blue-50 py-2 px-4 rounded-lg mb-6 inline-block">
+          <p className="text-sm font-medium text-orange-500 bg-orange-500/10 py-2 px-4 rounded-lg mb-6 inline-block">
             {["Vamos começar? Sua primeira venda está a alguns passos 🚀",
               "Ótimo começo! Continue configurando sua loja",
               "Você está na metade! Quase lá 💪",
@@ -246,33 +246,33 @@ export const Dashboard = () => {
             {setupSteps.map((step, i) => (
               <div key={i} className={`relative flex items-start sm:items-center flex-col sm:flex-row gap-4 p-5 rounded-2xl border transition-all ${
                 step.done
-                  ? 'bg-gray-50 border-gray-100 opacity-60'
+                  ? 'bg-[#0A0A0F] border-white/5 opacity-60'
                   : step.urgent
-                    ? 'bg-red-50 border-y-red-100 border-r-red-100 border-l-4 border-l-red-500 shadow-sm'
-                    : 'bg-white border-gray-200 hover:border-blue-200 hover:shadow-sm'
+                    ? 'bg-red-500/10 border-y-red-100 border-r-red-100 border-l-4 border-l-red-500 shadow-sm'
+                    : 'bg-[#13131C] border-white/10 hover:border-orange-500 hover:shadow-sm'
               }`}>
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
-                  step.done ? 'bg-green-100 text-green-600' : 'bg-white border-2 border-gray-300'
+                  step.done ? 'bg-green-100 text-green-600' : 'bg-[#13131C] border-2 border-white/20'
                 }`}>
                   {step.done
                     ? <Check className="w-5 h-5" />
-                    : <span className="text-sm font-black text-gray-500">{i + 1}</span>
+                    : <span className="text-sm font-black text-white/50">{i + 1}</span>
                   }
                 </div>
                 
                 <div className="flex-1 w-full">
                   <div className="flex items-center gap-2">
-                    <p className={`text-base font-bold ${step.done ? 'text-gray-500 line-through' : 'text-gray-900'}`}>
+                    <p className={`text-base font-bold ${step.done ? 'text-white/50 line-through' : 'text-white'}`}>
                       {step.label}
                     </p>
                     {!step.done && step.urgent && (
-                       <span className="flex items-center gap-1 bg-red-100 text-red-700 text-[10px] uppercase font-black px-2.5 py-0.5 rounded-full shrink-0">
+                       <span className="flex items-center gap-1 bg-red-100 text-red-400 text-[10px] uppercase font-black px-2.5 py-0.5 rounded-full shrink-0">
                           <AlertCircle className="w-3 h-3 animate-[pulse_2s_ease-in-out_infinite]" />
                           Urgente
                        </span>
                     )}
                   </div>
-                  {!step.done && <p className="text-sm text-gray-500 mt-1">{step.sub}</p>}
+                  {!step.done && <p className="text-sm text-white/50 mt-1">{step.sub}</p>}
                 </div>
                 
                 {!step.done && (
@@ -280,7 +280,7 @@ export const Dashboard = () => {
                     className={`w-full sm:w-auto text-sm font-bold px-6 py-2.5 rounded-full shrink-0 text-center transition-transform active:scale-95 ${
                       step.urgent
                         ? 'bg-red-500 text-white hover:bg-red-600 shadow-md shadow-red-500/20'
-                        : 'bg-blue-600 text-white hover:bg-blue-700 shadow-md shadow-blue-600/20'
+                        : 'bg-orange-500 text-white hover:bg-orange-600 shadow-md shadow-orange-500/20'
                     }`}>
                     {step.cta}
                   </Link>
@@ -304,7 +304,7 @@ export const Dashboard = () => {
           title="Total de Pedidos"
           value={totalOrdersCount}
           icon={ShoppingCart}
-          color="bg-purple-50 text-purple-600"
+          color="bg-purple-500/10 text-purple-600"
           hoverBorder="hover:border-purple-300 hover:shadow-purple-500/10"
           link="/dashboard/orders"
         />
@@ -312,7 +312,7 @@ export const Dashboard = () => {
           title="Pedidos Pendentes"
           value={pendingOrdersCount}
           icon={Clock}
-          color="bg-orange-50 text-orange-600"
+          color="bg-orange-500/10 text-orange-600"
           hoverBorder="hover:border-orange-300 hover:shadow-orange-500/10"
           link="/dashboard/orders"
           badge={pendingOrdersCount > 0 && (
@@ -325,26 +325,26 @@ export const Dashboard = () => {
           title="Produtos Ativos"
           value={activeProductsCount}
           icon={Package}
-          color="bg-blue-50 text-blue-600"
-          hoverBorder="hover:border-blue-300 hover:shadow-blue-500/10"
+          color="bg-orange-500/10 text-orange-500"
+          hoverBorder="hover:border-orange-300 hover:shadow-orange-500/10"
           link="/dashboard/products"
         />
       </div>
 
       {nextAction && (
-        <div className="bg-white p-6 rounded-2xl border border-gray-200 flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left relative overflow-hidden group shadow-sm transition-all hover:border-blue-200">
+        <div className="bg-[#13131C] p-6 rounded-2xl border border-white/10 flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left relative overflow-hidden group shadow-sm transition-all hover:border-orange-500">
           <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 ${nextAction.colorClass} shadow-inner`}>
              <nextAction.icon className="w-8 h-8" />
           </div>
           <div className="flex-1">
-            <p className="text-xs uppercase font-black tracking-wider text-gray-400 mb-1">Próxima ação sugerida</p>
-            <h3 className="text-xl font-bold text-gray-900 leading-tight">{nextAction.title}</h3>
-            <p className="text-gray-500 text-sm mt-1">{nextAction.desc}</p>
+            <p className="text-xs uppercase font-black tracking-wider text-white/40 mb-1">Próxima ação sugerida</p>
+            <h3 className="text-xl font-bold text-white leading-tight">{nextAction.title}</h3>
+            <p className="text-white/50 text-sm mt-1">{nextAction.desc}</p>
           </div>
           {nextAction.link ? (
              <Link to={nextAction.link} className={`w-full sm:w-auto px-8 py-3.5 rounded-full font-bold transition-all text-white shadow-md active:scale-95 grid place-items-center ${
                nextAction.color === 'orange' ? 'bg-orange-500 hover:bg-orange-600 shadow-orange-500/20' : 
-               nextAction.color === 'blue' ? 'bg-blue-600 hover:bg-blue-700 shadow-blue-500/20' : 
+               nextAction.color === 'blue' ? 'bg-orange-500 hover:bg-orange-600 shadow-orange-500/20' : 
                'bg-green-600 hover:bg-green-700 shadow-green-500/20'
              }`}>
                {nextAction.cta}
@@ -352,7 +352,7 @@ export const Dashboard = () => {
           ) : (
              <button onClick={nextAction.action} className={`w-full sm:w-auto px-8 py-3.5 rounded-full font-bold transition-all text-white shadow-md active:scale-95 grid place-items-center ${
                nextAction.color === 'orange' ? 'bg-orange-500 hover:bg-orange-600 shadow-orange-500/20' : 
-               nextAction.color === 'blue' ? 'bg-blue-600 hover:bg-blue-700 shadow-blue-500/20' : 
+               nextAction.color === 'blue' ? 'bg-orange-500 hover:bg-orange-600 shadow-orange-500/20' : 
                'bg-green-600 hover:bg-green-700 shadow-green-500/20'
              }`}>
                {nextAction.cta}

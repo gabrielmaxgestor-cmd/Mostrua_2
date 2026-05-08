@@ -167,17 +167,17 @@ export const Catalogs = () => {
     const displayBanner = customBanner || catalog.bannerUrl || catalog.imageUrl;
 
     return (
-      <div key={catalog.id} className="bg-white rounded-3xl border border-gray-200 overflow-hidden shadow-sm flex flex-col">
-        <div className="aspect-video relative bg-gray-100 group">
+      <div key={catalog.id} className="bg-[#13131C] rounded-3xl border border-white/10 overflow-hidden shadow-sm flex flex-col">
+        <div className="aspect-video relative bg-[#13131C] group">
           {displayBanner ? (
             <img src={displayBanner} alt={catalog.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <Layers className="w-12 h-12 text-gray-300" />
+              <Layers className="w-12 h-12 text-white/30" />
             </div>
           )}
           
-          <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-gray-700 shadow-sm">
+          <div className="absolute top-4 right-4 bg-[#13131C]/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-white/70 shadow-sm">
             {catalog.productsCount || 0} produtos
           </div>
 
@@ -189,7 +189,7 @@ export const Catalogs = () => {
                   fileInputRef.current?.click();
                 }}
                 disabled={isProcessing}
-                className="bg-white/90 backdrop-blur-sm text-gray-900 px-4 py-2 rounded-xl font-bold text-sm shadow-lg flex items-center gap-2 hover:bg-white transition-colors disabled:opacity-50"
+                className="bg-[#13131C]/90 backdrop-blur-sm text-white px-4 py-2 rounded-xl font-bold text-sm shadow-lg flex items-center gap-2 hover:bg-[#13131C] transition-colors disabled:opacity-50"
               >
                 <ImageIcon className="w-4 h-4" />
                 {customBanner ? "Alterar Banner Customizado" : "Adicionar Banner Customizado"}
@@ -199,11 +199,11 @@ export const Catalogs = () => {
         </div>
         
         <div className="p-6 flex-1 flex flex-col">
-          <h3 className="text-lg font-bold text-gray-900 mb-2">{catalog.name}</h3>
-          <p className="text-sm text-gray-500 line-clamp-2 flex-1">{catalog.description}</p>
+          <h3 className="text-lg font-bold text-white mb-2">{catalog.name}</h3>
+          <p className="text-sm text-white/50 line-clamp-2 flex-1">{catalog.description}</p>
           
-          <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
-            <span className={`text-sm font-bold ${isActive ? "text-green-600" : "text-gray-500"}`}>
+          <div className="mt-4 pt-4 border-t border-white/5 flex items-center justify-between">
+            <span className={`text-sm font-bold ${isActive ? "text-green-600" : "text-white/50"}`}>
               {isActive ? "Ativo na sua loja" : "Inativo"}
             </span>
             
@@ -211,11 +211,11 @@ export const Catalogs = () => {
               onClick={() => toggleCatalog(catalog)}
               disabled={isProcessing}
               className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none ${
-                isActive ? "bg-green-500" : "bg-gray-200"
+                isActive ? "bg-green-500" : "bg-[#1A1A2E]"
               } ${isProcessing ? "opacity-50 cursor-not-allowed" : ""}`}
             >
               <span
-                className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
+                className={`inline-block h-5 w-5 transform rounded-full bg-[#13131C] transition-transform ${
                   isActive ? "translate-x-6" : "translate-x-1"
                 }`}
               />
@@ -233,32 +233,32 @@ export const Catalogs = () => {
 
   if (loading) return (
     <div className="flex justify-center py-12">
-      <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
     </div>
   );
 
   return (
     <div className="space-y-10">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Catálogos</h1>
-        <p className="text-gray-500">Gerencie os catálogos ativos na sua loja e descubra novos disponibilizados pelos administradores.</p>
+        <h1 className="text-2xl font-bold text-white">Catálogos</h1>
+        <p className="text-white/50">Gerencie os catálogos ativos na sua loja e descubra novos disponibilizados pelos administradores.</p>
       </div>
 
       {catalogs.length === 0 ? (
-        <div className="bg-white rounded-3xl border border-dashed border-gray-200 p-12 text-center">
-          <Layers className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-xl font-bold text-gray-900">Nenhum catálogo disponível</h3>
-          <p className="text-gray-500 mt-2">Não há catálogos ativos para o seu nicho no momento.</p>
+        <div className="bg-[#13131C] rounded-3xl border border-dashed border-white/10 p-12 text-center">
+          <Layers className="w-16 h-16 text-white/30 mx-auto mb-4" />
+          <h3 className="text-xl font-bold text-white">Nenhum catálogo disponível</h3>
+          <p className="text-white/50 mt-2">Não há catálogos ativos para o seu nicho no momento.</p>
         </div>
       ) : (
         <>
           <section>
-            <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
               <Check className="w-5 h-5 text-green-600" />
               Da sua loja (Ativos)
             </h2>
             {activeCatalogs.length === 0 ? (
-              <div className="bg-gray-50 rounded-2xl border border-dashed border-gray-200 p-8 text-center text-gray-500">
+              <div className="bg-[#0A0A0F] rounded-2xl border border-dashed border-white/10 p-8 text-center text-white/50">
                 Você ainda não ativou nenhum catálogo. Ative um abaixo!
               </div>
             ) : (
@@ -269,12 +269,12 @@ export const Catalogs = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <Layers className="w-5 h-5 text-blue-600" />
+            <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+              <Layers className="w-5 h-5 text-orange-500" />
               Dos Administradores (Disponíveis)
             </h2>
             {availableCatalogs.length === 0 ? (
-              <div className="bg-gray-50 rounded-2xl border border-dashed border-gray-200 p-8 text-center text-gray-500">
+              <div className="bg-[#0A0A0F] rounded-2xl border border-dashed border-white/10 p-8 text-center text-white/50">
                 Todos os catálogos disponíveis já estão ativos na sua loja.
               </div>
             ) : (

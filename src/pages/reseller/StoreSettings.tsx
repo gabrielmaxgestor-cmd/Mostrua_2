@@ -219,8 +219,8 @@ export const StoreSettings = () => {
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Minha Loja</h1>
-        <p className="text-gray-500">Personalize a aparência e informações da sua loja.</p>
+        <h1 className="text-2xl font-bold text-white">Minha Loja</h1>
+        <p className="text-white/50">Personalize a aparência e informações da sua loja.</p>
       </div>
 
       {toast && (
@@ -234,45 +234,45 @@ export const StoreSettings = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
-          <form onSubmit={handleSubmit} className="bg-white p-6 rounded-3xl border border-gray-200 space-y-6">
+          <form onSubmit={handleSubmit} className="bg-[#13131C] p-6 rounded-3xl border border-white/10 space-y-6">
             
             {/* Imagens */}
             <div className="space-y-4">
-              <h3 className="text-lg font-bold text-gray-900">Imagens</h3>
+              <h3 className="text-lg font-bold text-white">Imagens</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Logo</label>
+                  <label className="block text-sm font-medium text-white/70 mb-2">Logo</label>
                   <div 
                     onClick={() => logoInputRef.current?.click()}
-                    className="aspect-square w-32 border-2 border-dashed border-gray-300 rounded-2xl overflow-hidden cursor-pointer hover:border-blue-500 bg-gray-50 flex items-center justify-center relative"
+                    className="aspect-square w-32 border-2 border-dashed border-white/20 rounded-2xl overflow-hidden cursor-pointer hover:border-orange-500 bg-[#0A0A0F] flex items-center justify-center relative"
                   >
                     {logoPreview ? (
                       <img src={logoPreview} alt="Logo" className="w-full h-full object-contain p-2" />
                     ) : (
-                      <ImageIcon className="w-8 h-8 text-gray-400" />
+                      <ImageIcon className="w-8 h-8 text-white/40" />
                     )}
                   </div>
                   <input type="file" ref={logoInputRef} onChange={handleLogoChange} accept="image/*" className="hidden" />
-                  <p className="text-xs text-gray-400 mt-2 flex items-center gap-1">
+                  <p className="text-xs text-white/40 mt-2 flex items-center gap-1">
                     <Info className="w-3 h-3" />
                     Recomendado: 400×400px, PNG ou JPG, máx. 1MB
                   </p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Banner</label>
+                  <label className="block text-sm font-medium text-white/70 mb-2">Banner</label>
                   <div 
                     onClick={() => bannerInputRef.current?.click()}
-                    className="aspect-video w-full border-2 border-dashed border-gray-300 rounded-2xl overflow-hidden cursor-pointer hover:border-blue-500 bg-gray-50 flex items-center justify-center relative"
+                    className="aspect-video w-full border-2 border-dashed border-white/20 rounded-2xl overflow-hidden cursor-pointer hover:border-orange-500 bg-[#0A0A0F] flex items-center justify-center relative"
                   >
                     {bannerPreview ? (
                       <img src={bannerPreview} alt="Banner" className="w-full h-full object-cover" />
                     ) : (
-                      <ImageIcon className="w-8 h-8 text-gray-400" />
+                      <ImageIcon className="w-8 h-8 text-white/40" />
                     )}
                   </div>
                   <input type="file" ref={bannerInputRef} onChange={handleBannerChange} accept="image/*" className="hidden" />
-                  <p className="text-xs text-gray-400 mt-2 flex items-center gap-1">
+                  <p className="text-xs text-white/40 mt-2 flex items-center gap-1">
                     <Info className="w-3 h-3" />
                     Recomendado: 1200×400px (proporção 3:1), máx. 2MB
                   </p>
@@ -280,13 +280,13 @@ export const StoreSettings = () => {
               </div>
             </div>
 
-            <hr className="border-gray-100" />
+            <hr className="border-white/5" />
 
             {/* Cores */}
             <div className="space-y-4">
-              <h3 className="text-lg font-bold text-gray-900">Cores da Marca</h3>
+              <h3 className="text-lg font-bold text-white">Cores da Marca</h3>
               <div>
-                <label className="block text-sm font-bold text-gray-900 mb-3">Cor da sua loja</label>
+                <label className="block text-sm font-bold text-white mb-3">Cor da sua loja</label>
                 <div className="grid grid-cols-4 gap-2 mb-3">
                   {[
                     { name: "Azul Clássico", primary: "#2563eb" },
@@ -304,41 +304,41 @@ export const StoreSettings = () => {
                       onClick={() => setFormData(prev => ({ ...prev, primaryColor: palette.primary }))}
                       className={`flex flex-col items-center gap-1.5 p-2 rounded-xl border-2 transition-all ${
                         formData.primaryColor === palette.primary 
-                          ? 'border-gray-900 bg-gray-50' 
-                          : 'border-transparent hover:border-gray-200'
+                          ? 'border-orange-500 bg-[#0A0A0F]' 
+                          : 'border-transparent hover:border-white/10'
                       }`}
                     >
                       <div className="w-8 h-8 rounded-full shadow-sm" style={{ backgroundColor: palette.primary }} />
-                      <span className="text-[10px] text-gray-600 text-center leading-tight">{palette.name}</span>
+                      <span className="text-[10px] text-white/60 text-center leading-tight">{palette.name}</span>
                     </button>
                   ))}
                 </div>
                 
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-                  <label className="text-xs text-gray-600 font-medium">Personalizar:</label>
+                <div className="flex items-center gap-3 p-3 bg-[#0A0A0F] rounded-xl">
+                  <label className="text-xs text-white/60 font-medium">Personalizar:</label>
                   <input
                     type="color"
                     value={formData.primaryColor}
                     onChange={e => setFormData(prev => ({ ...prev, primaryColor: e.target.value }))}
-                    className="w-8 h-8 rounded cursor-pointer border border-gray-200 p-0"
+                    className="w-8 h-8 rounded cursor-pointer border border-white/10 p-0"
                   />
-                  <span className="text-xs text-gray-500 font-mono">{formData.primaryColor}</span>
+                  <span className="text-xs text-white/50 font-mono">{formData.primaryColor}</span>
                 </div>
 
                 <div className="mt-4">
-                  <label className="block text-sm font-bold text-gray-900 mb-2">
+                  <label className="block text-sm font-bold text-white mb-2">
                     Cor secundária
-                    <span className="ml-2 text-xs font-normal text-gray-400">Usada em fundos, badges e destaques</span>
+                    <span className="ml-2 text-xs font-normal text-white/40">Usada em fundos, badges e destaques</span>
                   </label>
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-                    <label className="text-xs text-gray-600 font-medium">Cor:</label>
+                  <div className="flex items-center gap-3 p-3 bg-[#0A0A0F] rounded-xl">
+                    <label className="text-xs text-white/60 font-medium">Cor:</label>
                     <input
                       type="color"
                       value={formData.secondaryColor}
                       onChange={e => setFormData(prev => ({ ...prev, secondaryColor: e.target.value }))}
-                      className="w-8 h-8 rounded cursor-pointer border border-gray-200 p-0"
+                      className="w-8 h-8 rounded cursor-pointer border border-white/10 p-0"
                     />
-                    <span className="text-xs text-gray-500 font-mono">{formData.secondaryColor}</span>
+                    <span className="text-xs text-white/50 font-mono">{formData.secondaryColor}</span>
                     <button
                       type="button"
                       onClick={() => {
@@ -351,26 +351,26 @@ export const StoreSettings = () => {
                         const secondary = `#${toHex(lighten(r))}${toHex(lighten(g))}${toHex(lighten(b))}`;
                         setFormData(prev => ({ ...prev, secondaryColor: secondary }));
                       }}
-                      className="ml-auto text-xs text-blue-600 font-medium hover:text-blue-700 transition-colors"
+                      className="ml-auto text-xs text-orange-500 font-medium hover:text-orange-500 transition-colors"
                     >
                       Gerar automaticamente ✨
                     </button>
                   </div>
-                  <p className="text-xs text-gray-400 mt-1 ml-1">
+                  <p className="text-xs text-white/40 mt-1 ml-1">
                     Dica: clique em "Gerar automaticamente" para criar uma versão harmoniosa da cor principal.
                   </p>
                 </div>
               </div>
             </div>
 
-            <hr className="border-gray-100" />
+            <hr className="border-white/5" />
 
             {/* Informações */}
             <div className="space-y-4">
-              <h3 className="text-lg font-bold text-gray-900">Informações</h3>
+              <h3 className="text-lg font-bold text-white">Informações</h3>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-white/70 mb-1">
                   Nome da Loja <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -378,46 +378,46 @@ export const StoreSettings = () => {
                   value={formData.storeName}
                   onChange={e => setFormData({ ...formData, storeName: e.target.value })}
                   maxLength={50}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full px-4 py-3 rounded-xl border border-white/10 focus:ring-2 focus:ring-orange-500 outline-none"
                   placeholder="Ex: Moda da Ana, Loja do João..."
                 />
-                <p className="text-xs text-gray-400 mt-1">Este é o nome que aparece na sua loja e no painel.</p>
+                <p className="text-xs text-white/40 mt-1">Este é o nome que aparece na sua loja e no painel.</p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Descrição da Loja</label>
+                <label className="block text-sm font-medium text-white/70 mb-1">Descrição da Loja</label>
                 <textarea 
                   rows={3}
                   value={formData.description}
                   onChange={e => setFormData({...formData, description: e.target.value})}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none resize-none"
+                  className="w-full px-4 py-3 rounded-xl border border-white/10 focus:ring-2 focus:ring-orange-500 outline-none resize-none"
                   placeholder="Conte um pouco sobre sua loja..."
                 />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">WhatsApp</label>
+                  <label className="block text-sm font-medium text-white/70 mb-1">WhatsApp</label>
                   <div className="relative">
-                    <MessageCircle className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <MessageCircle className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
                     <input 
                       type="tel" 
                       value={formData.whatsapp}
                       onChange={handlePhoneChange}
-                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
+                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-white/10 focus:ring-2 focus:ring-orange-500 outline-none"
                       placeholder="(11) 99999-9999"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Instagram</label>
+                  <label className="block text-sm font-medium text-white/70 mb-1">Instagram</label>
                   <div className="relative">
-                    <AtSign className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <AtSign className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
                     <input 
                       type="text" 
                       value={formData.instagram}
                       onChange={handleInstagramChange}
-                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
+                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-white/10 focus:ring-2 focus:ring-orange-500 outline-none"
                       placeholder="@sualoja"
                     />
                   </div>
@@ -425,44 +425,44 @@ export const StoreSettings = () => {
               </div>
             </div>
 
-            <hr className="border-gray-100" />
+            <hr className="border-white/5" />
 
             {/* Pagamento Pix */}
             <div className="space-y-4">
-              <h3 className="text-lg font-bold text-gray-900">Recebimento via Pix</h3>
-              <p className="text-sm text-gray-500">Configure sua chave Pix para gerar QR Codes automáticos no checkout.</p>
+              <h3 className="text-lg font-bold text-white">Recebimento via Pix</h3>
+              <p className="text-sm text-white/50">Configure sua chave Pix para gerar QR Codes automáticos no checkout.</p>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Chave Pix</label>
+                <label className="block text-sm font-medium text-white/70 mb-1">Chave Pix</label>
                 <input 
                   type="text" 
                   value={formData.pixKey}
                   onChange={e => setFormData({...formData, pixKey: e.target.value})}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full px-4 py-3 rounded-xl border border-white/10 focus:ring-2 focus:ring-orange-500 outline-none"
                   placeholder="Seu CPF, CNPJ, email, telefone ou chave aleatória"
                 />
-                <p className="text-xs text-gray-500 mt-1">Sua chave PIX para facilitar o pagamento dos clientes</p>
+                <p className="text-xs text-white/50 mt-1">Sua chave PIX para facilitar o pagamento dos clientes</p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Nome do Recebedor</label>
+                  <label className="block text-sm font-medium text-white/70 mb-1">Nome do Recebedor</label>
                   <input 
                     type="text" 
                     value={formData.pixName}
                     onChange={e => setFormData({...formData, pixName: e.target.value})}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
+                    className="w-full px-4 py-3 rounded-xl border border-white/10 focus:ring-2 focus:ring-orange-500 outline-none"
                     placeholder="Como aparece no seu banco"
                     maxLength={25}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Cidade</label>
+                  <label className="block text-sm font-medium text-white/70 mb-1">Cidade</label>
                   <input 
                     type="text" 
                     value={formData.pixCity}
                     onChange={e => setFormData({...formData, pixCity: e.target.value})}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
+                    className="w-full px-4 py-3 rounded-xl border border-white/10 focus:ring-2 focus:ring-orange-500 outline-none"
                     placeholder="Sua cidade"
                     maxLength={15}
                   />
@@ -470,22 +470,22 @@ export const StoreSettings = () => {
               </div>
             </div>
 
-            <hr className="border-gray-100" />
+            <hr className="border-white/5" />
 
             {/* URL */}
             <div className="space-y-4">
-              <h3 className="text-lg font-bold text-gray-900">Endereço da Loja (Link)</h3>
-              <p className="text-sm text-gray-500">Este é o link que você compartilha no Instagram e WhatsApp.</p>
+              <h3 className="text-lg font-bold text-white">Endereço da Loja (Link)</h3>
+              <p className="text-sm text-white/50">Este é o link que você compartilha no Instagram e WhatsApp.</p>
               <div>
                 <div className="flex items-center">
-                  <span className="text-gray-500 bg-gray-50 border border-r-0 border-gray-200 rounded-l-xl px-3 py-3 text-sm truncate max-w-[200px] sm:max-w-none">
+                  <span className="text-white/50 bg-[#0A0A0F] border border-r-0 border-white/10 rounded-l-xl px-3 py-3 text-sm truncate max-w-[200px] sm:max-w-none">
                     {(import.meta.env.VITE_APP_URL || window.location.origin).replace(/^https?:\/\//, '')}/store/
                   </span>
                   <input 
                     type="text" 
                     value={reseller?.slug || ''}
                     disabled
-                    className="w-full pl-3 pr-4 py-3 rounded-r-xl border border-gray-200 bg-gray-50 focus:outline-none text-gray-500 cursor-not-allowed"
+                    className="w-full pl-3 pr-4 py-3 rounded-r-xl border border-white/10 bg-[#0A0A0F] focus:outline-none text-white/50 cursor-not-allowed"
                     title="Para alterar seu link, entre em contato com o suporte."
                     placeholder="seudominio"
                   />
@@ -500,7 +500,7 @@ export const StoreSettings = () => {
               <button 
                 type="submit"
                 disabled={isSubmitting}
-                className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 px-6 py-3 bg-orange-500 text-white rounded-xl font-bold hover:bg-orange-600 transition-colors disabled:opacity-50"
               >
                 {isSubmitting ? (
                   <>
@@ -519,26 +519,26 @@ export const StoreSettings = () => {
 
           {/* Divulgação */}
           <div className="space-y-6 mt-8">
-            <div className="bg-blue-50 rounded-3xl border border-blue-100 p-6">
-              <h3 className="font-bold text-gray-900 mb-1">Link da sua loja</h3>
-              <p className="text-sm text-gray-500 mb-4">Compartilhe esse link para que seus clientes possam comprar.</p>
+            <div className="bg-orange-500/10 rounded-3xl border border-orange-500 p-6">
+              <h3 className="font-bold text-white mb-1">Link da sua loja</h3>
+              <p className="text-sm text-white/50 mb-4">Compartilhe esse link para que seus clientes possam comprar.</p>
               <div className="flex gap-2">
-                <div className="flex-1 bg-white rounded-xl px-4 py-3 border border-blue-100 text-sm font-medium truncate flex items-center">
+                <div className="flex-1 bg-[#13131C] rounded-xl px-4 py-3 border border-orange-500 text-sm font-medium truncate flex items-center">
                   {storeUrl ? (
-                    <span className="text-gray-700">{storeUrl}</span>
+                    <span className="text-white/70">{storeUrl}</span>
                   ) : (
-                    <span className="text-gray-400 italic">Sua loja ainda não possui um link ativo (Verifique o slug)</span>
+                    <span className="text-white/40 italic">Sua loja ainda não possui um link ativo (Verifique o slug)</span>
                   )}
                 </div>
-                <button onClick={handleCopy} disabled={!storeUrl} className="p-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50">
+                <button onClick={handleCopy} disabled={!storeUrl} className="p-3 bg-orange-500 text-white rounded-xl hover:bg-orange-600 transition-colors disabled:opacity-50">
                   <Copy className="w-4 h-4" />
                 </button>
               </div>
             </div>
 
             <div>
-              <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <Share2 className="w-6 h-6 text-gray-400" /> Kit de Divulgação
+              <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                <Share2 className="w-6 h-6 text-white/40" /> Kit de Divulgação
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <QRCodeGenerator 
@@ -565,10 +565,10 @@ export const StoreSettings = () => {
         {/* Preview */}
         <div className="lg:col-span-1">
           <div className="lg:sticky lg:top-6 h-fit">
-            <div className="bg-white rounded-3xl border border-gray-200 p-4 overflow-hidden">
-              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Preview da sua loja</p>
+            <div className="bg-[#13131C] rounded-3xl border border-white/10 p-4 overflow-hidden">
+              <p className="text-xs font-bold text-white/50 uppercase tracking-wider mb-3">Preview da sua loja</p>
               
-              <div className="rounded-2xl overflow-hidden border border-gray-100">
+              <div className="rounded-2xl overflow-hidden border border-white/5">
                 <div className="p-4 flex items-center gap-3" style={{ backgroundColor: formData.primaryColor + '15' }}>
                   {logoPreview ? (
                     <img src={logoPreview} className="w-10 h-10 rounded-xl object-cover" />
@@ -579,8 +579,8 @@ export const StoreSettings = () => {
                     </div>
                   )}
                   <div>
-                    <p className="font-bold text-gray-900 text-sm">{reseller?.storeName || 'Minha Loja'}</p>
-                    {formData.description && <p className="text-xs text-gray-500 line-clamp-1">{formData.description}</p>}
+                    <p className="font-bold text-white text-sm">{reseller?.storeName || 'Minha Loja'}</p>
+                    {formData.description && <p className="text-xs text-white/50 line-clamp-1">{formData.description}</p>}
                   </div>
                 </div>
                 
@@ -589,14 +589,14 @@ export const StoreSettings = () => {
                     <img src={bannerPreview} className="w-full h-full object-cover" />
                   </div>
                 ) : (
-                  <div className="aspect-[3/1] flex items-center justify-center text-xs text-gray-400 bg-gray-50">
+                  <div className="aspect-[3/1] flex items-center justify-center text-xs text-white/40 bg-[#0A0A0F]">
                     Sem banner
                   </div>
                 )}
                 
-                <div className="p-3 bg-gray-50">
+                <div className="p-3 bg-[#0A0A0F]">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-xs text-gray-400">Exemplo de produto</p>
+                    <p className="text-xs text-white/40">Exemplo de produto</p>
                   </div>
                   <button
                     className="w-full py-2 rounded-xl text-white text-xs font-bold transition-all"
@@ -609,12 +609,12 @@ export const StoreSettings = () => {
               
               <div className="mt-3 flex flex-col gap-2">
                 <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full border border-gray-200" style={{ backgroundColor: formData.primaryColor }} />
-                  <p className="text-xs text-gray-500">Cor principal: {formData.primaryColor}</p>
+                  <div className="w-4 h-4 rounded-full border border-white/10" style={{ backgroundColor: formData.primaryColor }} />
+                  <p className="text-xs text-white/50">Cor principal: {formData.primaryColor}</p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full border border-gray-200" style={{ backgroundColor: formData.secondaryColor }} />
-                  <p className="text-xs text-gray-500">Cor secundária: {formData.secondaryColor}</p>
+                  <div className="w-4 h-4 rounded-full border border-white/10" style={{ backgroundColor: formData.secondaryColor }} />
+                  <p className="text-xs text-white/50">Cor secundária: {formData.secondaryColor}</p>
                 </div>
               </div>
             </div>

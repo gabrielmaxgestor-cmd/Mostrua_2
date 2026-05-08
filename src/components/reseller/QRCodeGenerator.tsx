@@ -81,28 +81,28 @@ export const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({ storeUrl, prim
   };
 
   return (
-    <div className="bg-white p-6 rounded-3xl border border-gray-200 flex flex-col items-center text-center">
-      <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center mb-4">
-        <QrCode className="w-6 h-6 text-gray-600" />
+    <div className="bg-[#13131C] p-6 rounded-3xl border border-white/10 flex flex-col items-center text-center">
+      <div className="w-12 h-12 rounded-full bg-[#0A0A0F] flex items-center justify-center mb-4">
+        <QrCode className="w-6 h-6 text-white/60" />
       </div>
-      <h3 className="text-lg font-bold text-gray-900 mb-1">QR Code da Loja</h3>
-      <p className="text-sm text-gray-500 mb-6">Compartilhe ou imprima para seus clientes acessarem rapidamente.</p>
+      <h3 className="text-lg font-bold text-white mb-1">QR Code da Loja</h3>
+      <p className="text-sm text-white/50 mb-6">Compartilhe ou imprima para seus clientes acessarem rapidamente.</p>
       
-      <div className="bg-gray-50 p-4 rounded-2xl mb-6 inline-block">
+      <div className="bg-[#0A0A0F] p-4 rounded-2xl mb-6 inline-block">
         <img src={qrCodeUrl} alt={`QR Code para ${storeName}`} className="w-48 h-48 mx-auto" crossOrigin="anonymous" />
-        <p className="text-sm font-medium text-gray-600 mt-4">Escaneie para ver nossa loja</p>
+        <p className="text-sm font-medium text-white/60 mt-4">Escaneie para ver nossa loja</p>
       </div>
 
       <div className="flex gap-3 w-full max-w-xs">
         <button 
           onClick={handleDownload}
-          className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-colors"
+          className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-[#13131C] hover:bg-[#1A1A2E] text-white/70 rounded-xl font-medium transition-colors"
         >
           <Download className="w-4 h-4" /> Baixar
         </button>
         <button 
           onClick={handlePrint}
-          className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-colors"
+          className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-[#13131C] hover:bg-[#1A1A2E] text-white/70 rounded-xl font-medium transition-colors"
         >
           <Printer className="w-4 h-4" /> Imprimir
         </button>

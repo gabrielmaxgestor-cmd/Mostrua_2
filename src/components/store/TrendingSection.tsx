@@ -39,7 +39,7 @@ export const TrendingSection: React.FC<TrendingSectionProps> = ({
   if (loading) {
     return (
       <div className="w-full flex justify-center py-12">
-        <Loader2 className="w-8 h-8 animate-spin text-gray-300" />
+        <Loader2 className="w-8 h-8 animate-spin text-white/30" />
       </div>
     );
   }
@@ -49,10 +49,10 @@ export const TrendingSection: React.FC<TrendingSectionProps> = ({
   return (
     <section className="w-full py-8 overflow-hidden">
       <div className="px-4 mb-4 flex items-center justify-between">
-        <h2 className="text-xl md:text-2xl font-black text-gray-900 flex items-center gap-2">
+        <h2 className="text-xl md:text-2xl font-black text-white flex items-center gap-2">
           <TrendingUp className="w-6 h-6 text-orange-500" /> Em Alta
         </h2>
-        <span className="text-sm font-medium text-gray-500 hidden sm:block">
+        <span className="text-sm font-medium text-white/50 hidden sm:block">
           As camisas mais desejadas da semana
         </span>
       </div>

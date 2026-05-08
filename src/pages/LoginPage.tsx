@@ -88,10 +88,10 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen lg:grid lg:grid-cols-2 bg-white relative font-sans">
+    <div className="min-h-screen lg:grid lg:grid-cols-2 bg-[#0A0A0F] relative font-sans">
       
       {/* Left Column (Visual - hidden on mobile) */}
-      <div className="hidden lg:flex relative bg-gradient-to-br from-blue-600 to-blue-800 p-12 flex-col justify-between overflow-hidden">
+      <div className="hidden lg:flex relative bg-[#0A0A0F] p-12 flex-col justify-between overflow-hidden">
         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "radial-gradient(#ffffff 1px, transparent 1px)", backgroundSize: "24px 24px" }}></div>
         
         <div className="relative z-10">
@@ -99,30 +99,30 @@ export default function LoginPage() {
           <h1 className="text-4xl font-black text-white leading-tight mb-6 max-w-md">
             Sua loja,<br/>suas regras.
           </h1>
-          <p className="text-blue-100 text-lg max-w-md leading-relaxed">
+          <p className="text-orange-100 text-lg max-w-md leading-relaxed">
             Gerencie seus pedidos, produtos e clientes em um só lugar.
           </p>
         </div>
 
-        <div className="relative z-10 bg-blue-700/50 backdrop-blur-sm p-6 rounded-2xl border border-blue-500/30 max-w-md">
+        <div className="relative z-10 bg-orange-600/50 backdrop-blur-sm p-6 rounded-2xl border border-orange-500/30 max-w-md">
           <div className="flex items-center gap-4 mb-4">
-            <img src="https://i.pravatar.cc/100?img=5" alt="Juliana C." className="w-12 h-12 rounded-full border-2 border-blue-400" />
+            <img src="https://i.pravatar.cc/100?img=5" alt="Juliana C." className="w-12 h-12 rounded-full border-2 border-orange-400" />
             <div>
               <p className="text-white font-bold">Juliana C.</p>
-              <p className="text-blue-200 text-sm">Revendedora de moda</p>
+              <p className="text-orange-200 text-sm">Revendedora de moda</p>
             </div>
           </div>
-          <p className="text-blue-50 italic">"Dobrei minhas vendas no primeiro mês. Ter um catálogo organizado fez toda a diferença."</p>
+          <p className="text-orange-50 italic">"Dobrei minhas vendas no primeiro mês. Ter um catálogo organizado fez toda a diferença."</p>
         </div>
       </div>
 
       {/* Right Column (Form) */}
       <div className="relative flex flex-col justify-center min-h-screen px-6 py-12 sm:px-12 lg:px-24">
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gray-100 overflow-hidden">
-          <div className={`h-full bg-blue-600 transition-all duration-1000 ease-out ${loading ? 'w-full' : 'w-0'}`}></div>
+        <div className="absolute top-0 left-0 right-0 h-1 bg-[#1A1A2E] overflow-hidden">
+          <div className={`h-full bg-orange-500 transition-all duration-1000 ease-out ${loading ? 'w-full' : 'w-0'}`}></div>
         </div>
 
-        <Link to="/" className="absolute top-6 left-6 flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors font-medium text-sm">
+        <Link to="/" className="absolute top-6 left-6 flex items-center gap-2 text-white/50 hover:text-white transition-colors font-medium text-sm">
           <ArrowLeft className="w-4 h-4" />
           <span className="hidden sm:inline">Voltar para o início</span>
           <span className="sm:hidden">Voltar</span>
@@ -133,11 +133,11 @@ export default function LoginPage() {
             <img src="/logo.svg" alt="Mostrua Logo" className="h-10" />
           </div>
 
-          <h2 className="text-3xl font-black text-gray-900 mb-2">Entrar na sua conta</h2>
-          <p className="text-gray-500 text-sm mb-8">Acesse seu painel de revendedor</p>
+          <h2 className="text-3xl font-black text-white mb-2">Entrar na sua conta</h2>
+          <p className="text-white/50 text-sm mb-8">Acesse seu painel de revendedor</p>
 
           {error && (
-            <div className="flex items-start gap-3 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6 text-sm">
+            <div className="flex items-start gap-3 bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-xl mb-6 text-sm">
               <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
               <div className="flex flex-col gap-1">
                 {error === 'credenciais_invalidas' ? (
@@ -156,8 +156,8 @@ export default function LoginPage() {
 
           <form onSubmit={handleLogin} className="space-y-5">
             <div>
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1.5">
-                <Mail className="w-4 h-4 text-gray-400" />
+              <label className="flex items-center gap-2 text-sm font-medium text-white/70 mb-1.5">
+                <Mail className="w-4 h-4 text-white/40" />
                 Email
               </label>
               <input
@@ -166,13 +166,13 @@ export default function LoginPage() {
                 onChange={e => setEmail(e.target.value)}
                 required
                 placeholder="seu@email.com.br"
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                className="w-full bg-[#13131C] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
               />
             </div>
             
             <div>
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1.5">
-                <Lock className="w-4 h-4 text-gray-400" />
+              <label className="flex items-center gap-2 text-sm font-medium text-white/70 mb-1.5">
+                <Lock className="w-4 h-4 text-white/40" />
                 Senha
               </label>
               <div className="relative">
@@ -182,12 +182,12 @@ export default function LoginPage() {
                   onChange={e => setPassword(e.target.value)}
                   required
                   placeholder="Sua senha"
-                  className="w-full border border-gray-200 rounded-xl pl-4 pr-12 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                  className="w-full bg-[#13131C] border border-white/10 rounded-xl pl-4 pr-12 py-3 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-white/40 hover:text-white/60 transition-colors focus:outline-none"
                   aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -207,10 +207,10 @@ export default function LoginPage() {
 
           <div className="relative my-8">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200"></div>
+              <div className="w-full border-t border-white/10"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-3 bg-white text-gray-400 font-medium">Ou continue com</span>
+              <span className="px-3 bg-[#0A0A0F] text-white/40 font-medium">Ou continue com</span>
             </div>
           </div>
 
@@ -218,7 +218,7 @@ export default function LoginPage() {
             type="button"
             onClick={handleGoogleLogin}
             disabled={loading}
-            className="w-full flex justify-center items-center gap-3 py-3.5 px-4 border-2 border-gray-100 rounded-xl bg-white text-gray-700 font-bold hover:bg-gray-50 hover:border-gray-200 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-full flex justify-center items-center gap-3 py-3.5 px-4 border-2 border-white/5 rounded-xl bg-[#0A0A0F] text-white/70 font-bold hover:bg-[#13131C] hover:border-white/10 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
@@ -230,12 +230,12 @@ export default function LoginPage() {
           </button>
 
           <div className="mt-8 flex flex-col items-center gap-3 text-sm">
-            <Link to="/forgot-password" className="text-gray-500 hover:text-gray-900 transition-colors font-medium">
+            <Link to="/forgot-password" className="text-white/50 hover:text-white transition-colors font-medium">
               Esqueci minha senha
             </Link>
-            <div className="text-gray-500">
+            <div className="text-white/50">
               Ainda não tem conta?{' '}
-              <Link to="/register" className="text-blue-600 font-bold hover:underline">
+              <Link to="/register" className="text-orange-500 font-bold hover:underline">
                 Criar conta grátis
               </Link>
             </div>

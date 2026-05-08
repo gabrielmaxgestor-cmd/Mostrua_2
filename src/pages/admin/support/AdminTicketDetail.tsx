@@ -26,10 +26,10 @@ const STATUS_LABEL: Record<TicketStatus, string> = {
 };
 
 const STATUS_CLASS: Record<TicketStatus, string> = {
-  open: "bg-blue-100 text-blue-700",
-  in_progress: "bg-yellow-100 text-yellow-700",
-  resolved: "bg-green-100 text-green-700",
-  closed: "bg-gray-100 text-gray-500",
+  open: "bg-orange-100 text-orange-500",
+  in_progress: "bg-yellow-100 text-yellow-400",
+  resolved: "bg-green-100 text-green-400",
+  closed: "bg-[#13131C] text-white/50",
 };
 
 const PRIORITY_LABEL: Record<TicketPriority, string> = {
@@ -131,9 +131,9 @@ export const AdminTicketDetail: React.FC = () => {
 
   if (!loadingTicket && !ticket) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 text-gray-500">
+      <div className="flex flex-col items-center justify-center h-64 text-white/50">
         <p>Chamado não encontrado.</p>
-        <button onClick={() => navigate("/admin/support")} className="mt-4 text-blue-600 text-sm underline">
+        <button onClick={() => navigate("/admin/support")} className="mt-4 text-orange-500 text-sm underline">
           Voltar à fila
         </button>
       </div>
@@ -147,17 +147,17 @@ export const AdminTicketDetail: React.FC = () => {
       {/* Chat panel */}
       <div className="flex flex-col flex-1 min-w-0">
         {/* Header */}
-        <div className="flex items-center gap-3 pb-3 border-b border-gray-200 mb-3">
-          <button onClick={() => navigate("/admin/support")} className="text-gray-400 hover:text-gray-600 transition-colors">
+        <div className="flex items-center gap-3 pb-3 border-b border-white/10 mb-3">
+          <button onClick={() => navigate("/admin/support")} className="text-white/40 hover:text-white/60 transition-colors">
             <ChevronLeft className="w-5 h-5" />
           </button>
           <div className="flex-1 min-w-0">
             {loadingTicket ? (
-              <div className="h-4 bg-gray-200 rounded w-48 animate-pulse" />
+              <div className="h-4 bg-[#1A1A2E] rounded w-48 animate-pulse" />
             ) : (
               <>
-                <p className="font-semibold text-gray-900 truncate">{ticket?.subject}</p>
-                <p className="text-xs text-gray-500 truncate">
+                <p className="font-semibold text-white truncate">{ticket?.subject}</p>
+                <p className="text-xs text-white/50 truncate">
                   {ticket?.resellerName} · {ticket?.resellerEmail}
                 </p>
               </>
@@ -171,9 +171,9 @@ export const AdminTicketDetail: React.FC = () => {
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto space-y-3 bg-gray-50 rounded-2xl px-4 py-4">
+        <div className="flex-1 overflow-y-auto space-y-3 bg-[#0A0A0F] rounded-2xl px-4 py-4">
           {messages.length === 0 && !loadingTicket && (
-            <p className="text-center text-sm text-gray-400 py-8">Aguardando a primeira mensagem...</p>
+            <p className="text-center text-sm text-white/40 py-8">Aguardando a primeira mensagem...</p>
           )}
           {messages.map((msg) => {
             const isAdmin = msg.senderRole === "admin";
@@ -181,14 +181,14 @@ export const AdminTicketDetail: React.FC = () => {
               <div key={msg.id} className={`flex ${isAdmin ? "justify-end" : "justify-start"}`}>
                 <div className={`max-w-[78%] rounded-2xl px-4 py-2.5 ${
                   isAdmin
-                    ? "bg-blue-600 text-white rounded-br-sm"
-                    : "bg-white text-gray-800 border border-gray-200 rounded-bl-sm"
+                    ? "bg-orange-500 text-white rounded-br-sm"
+                    : "bg-[#13131C] text-white/90 bg-[#0A0A0F] border border-white/10 rounded-bl-sm"
                 }`}>
                   {!isAdmin && (
-                    <p className="text-xs font-semibold text-blue-600 mb-0.5">{msg.senderName}</p>
+                    <p className="text-xs font-semibold text-orange-500 mb-0.5">{msg.senderName}</p>
                   )}
                   <p className="text-sm whitespace-pre-wrap break-words">{msg.content}</p>
-                  <p className={`text-xs mt-1 text-right ${isAdmin ? "text-blue-200" : "text-gray-400"}`}>
+                  <p className={`text-xs mt-1 text-right ${isAdmin ? "text-orange-200" : "text-white/40"}`}>
                     {relativeTime(msg.createdAt)}
                   </p>
                 </div>
@@ -199,9 +199,9 @@ export const AdminTicketDetail: React.FC = () => {
         </div>
 
         {/* Input */}
-        <div className="border-t border-gray-200 pt-3 mt-3">
+        <div className="border-t border-white/10 pt-3 mt-3">
           {isClosed ? (
-            <p className="text-center text-sm text-gray-400 py-2">
+            <p className="text-center text-sm text-white/40 py-2">
               Chamado encerrado. Reabra o status para responder.
             </p>
           ) : (
@@ -213,13 +213,13 @@ export const AdminTicketDetail: React.FC = () => {
                 onKeyDown={handleKeyDown}
                 rows={1}
                 placeholder="Responda o revendedor... (Enter para enviar)"
-                className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none max-h-32"
+                className="flex-1 bg-[#0A0A0F] border border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none max-h-32"
                 style={{ minHeight: "40px" }}
               />
               <button
                 onClick={handleSend}
                 disabled={!text.trim() || sending}
-                className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white rounded-xl p-2.5 transition-colors shrink-0"
+                className="bg-orange-500 hover:bg-orange-600 disabled:bg-white/20 text-white rounded-xl p-2.5 transition-colors shrink-0"
               >
                 <Send className="w-4 h-4" />
               </button>
@@ -229,28 +229,28 @@ export const AdminTicketDetail: React.FC = () => {
       </div>
 
       {/* Sidebar */}
-      <aside className="w-60 shrink-0 border-l border-gray-200 pl-6 hidden lg:flex flex-col gap-6 overflow-y-auto">
+      <aside className="w-60 shrink-0 border-l border-white/10 pl-6 hidden lg:flex flex-col gap-6 overflow-y-auto">
         {/* Info */}
         <div>
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Informações</p>
+          <p className="text-xs font-semibold text-white/50 uppercase tracking-wide mb-2">Informações</p>
           {loadingTicket ? (
             <div className="space-y-2 animate-pulse">
-              <div className="h-3 bg-gray-200 rounded w-full" />
-              <div className="h-3 bg-gray-100 rounded w-3/4" />
+              <div className="h-3 bg-[#1A1A2E] rounded w-full" />
+              <div className="h-3 bg-[#13131C] rounded w-3/4" />
             </div>
           ) : (
-            <div className="space-y-1.5 text-sm text-gray-700">
-              <p><span className="text-gray-500">Revendedor: </span>{ticket?.resellerName}</p>
-              <p><span className="text-gray-500">Email: </span>{ticket?.resellerEmail}</p>
-              <p><span className="text-gray-500">Criado: </span>{relativeTime(ticket?.createdAt)}</p>
-              <p><span className="text-gray-500">Mensagens: </span>{messages.length}</p>
+            <div className="space-y-1.5 text-sm text-white/70">
+              <p><span className="text-white/50">Revendedor: </span>{ticket?.resellerName}</p>
+              <p><span className="text-white/50">Email: </span>{ticket?.resellerEmail}</p>
+              <p><span className="text-white/50">Criado: </span>{relativeTime(ticket?.createdAt)}</p>
+              <p><span className="text-white/50">Mensagens: </span>{messages.length}</p>
             </div>
           )}
         </div>
 
         {/* Status */}
         <div>
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Status</p>
+          <p className="text-xs font-semibold text-white/50 uppercase tracking-wide mb-2">Status</p>
           <div className="space-y-1.5">
             {ALL_STATUSES.map((s) => (
               <button
@@ -259,8 +259,8 @@ export const AdminTicketDetail: React.FC = () => {
                 disabled={updatingStatus || ticket?.status === s}
                 className={`w-full text-left text-sm px-3 py-2 rounded-xl transition-colors ${
                   ticket?.status === s
-                    ? "bg-blue-50 text-blue-700 font-semibold border border-blue-200"
-                    : "text-gray-600 hover:bg-gray-100 border border-transparent"
+                    ? "bg-orange-500/10 text-orange-500 font-semibold border border-orange-500"
+                    : "text-white/60 hover:bg-[#13131C] border border-transparent"
                 }`}
               >
                 {STATUS_LABEL[s]}
@@ -271,7 +271,7 @@ export const AdminTicketDetail: React.FC = () => {
 
         {/* Priority */}
         <div>
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Prioridade</p>
+          <p className="text-xs font-semibold text-white/50 uppercase tracking-wide mb-2">Prioridade</p>
           <div className="space-y-1.5">
             {(["low", "medium", "high"] as TicketPriority[]).map((p) => (
               <button
@@ -280,8 +280,8 @@ export const AdminTicketDetail: React.FC = () => {
                 disabled={ticket?.priority === p}
                 className={`w-full text-left text-sm px-3 py-2 rounded-xl transition-colors ${
                   ticket?.priority === p
-                    ? "bg-blue-50 text-blue-700 font-semibold border border-blue-200"
-                    : "text-gray-600 hover:bg-gray-100 border border-transparent"
+                    ? "bg-orange-500/10 text-orange-500 font-semibold border border-orange-500"
+                    : "text-white/60 hover:bg-[#13131C] border border-transparent"
                 }`}
               >
                 {PRIORITY_LABEL[p]}
@@ -292,19 +292,19 @@ export const AdminTicketDetail: React.FC = () => {
 
         {/* Quick actions */}
         <div>
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Ações rápidas</p>
+          <p className="text-xs font-semibold text-white/50 uppercase tracking-wide mb-2">Ações rápidas</p>
           <div className="space-y-2">
             <button
               onClick={() => handleStatusChange("resolved")}
               disabled={ticket?.status === "resolved" || updatingStatus}
-              className="w-full text-sm bg-green-50 hover:bg-green-100 text-green-700 border border-green-200 rounded-xl py-2 transition-colors disabled:opacity-50"
+              className="w-full text-sm bg-green-500/10 hover:bg-green-100 text-green-400 border border-green-500/30 rounded-xl py-2 transition-colors disabled:opacity-50"
             >
               ✅ Marcar como resolvido
             </button>
             <button
               onClick={() => handleStatusChange("closed")}
               disabled={ticket?.status === "closed" || updatingStatus}
-              className="w-full text-sm bg-gray-50 hover:bg-gray-100 text-gray-600 border border-gray-200 rounded-xl py-2 transition-colors disabled:opacity-50"
+              className="w-full text-sm bg-[#0A0A0F] hover:bg-[#13131C] text-white/60 bg-[#0A0A0F] border border-white/10 rounded-xl py-2 transition-colors disabled:opacity-50"
             >
               🔒 Encerrar chamado
             </button>

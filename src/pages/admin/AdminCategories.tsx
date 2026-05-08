@@ -79,71 +79,71 @@ export const AdminCategories = () => {
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Categorias</h1>
-          <p className="text-gray-500">Gerencie as categorias de produtos globais</p>
+          <h1 className="text-3xl font-bold text-white">Categorias</h1>
+          <p className="text-white/50">Gerencie as categorias de produtos globais</p>
         </div>
         <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
           <div className="relative w-full sm:w-auto">
-            <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
             <input 
               type="text" 
               placeholder="Buscar categorias..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full pl-10 pr-4 py-2.5 border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500"
             />
           </div>
           <button 
             onClick={() => openModal()}
-            className="w-full sm:w-auto bg-blue-600 text-white px-6 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 whitespace-nowrap"
+            className="w-full sm:w-auto bg-orange-500 text-white px-6 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-orange-600 transition-all shadow-lg shadow-orange-500 whitespace-nowrap"
           >
             <Plus className="w-5 h-5" /> Nova Categoria
           </button>
         </div>
       </div>
 
-      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="bg-[#13131C] rounded-3xl border border-white/5 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-gray-50/50 border-b border-gray-100">
-                <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Categoria</th>
-                <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Descrição</th>
-                <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Ações</th>
+              <tr className="bg-[#0A0A0F]/50 border-b border-white/5">
+                <th className="py-4 px-6 text-xs font-bold text-white/50 uppercase tracking-wider">Categoria</th>
+                <th className="py-4 px-6 text-xs font-bold text-white/50 uppercase tracking-wider">Descrição</th>
+                <th className="py-4 px-6 text-xs font-bold text-white/50 uppercase tracking-wider">Status</th>
+                <th className="py-4 px-6 text-xs font-bold text-white/50 uppercase tracking-wider text-right">Ações</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-white/5">
               {loading ? (
                 <tr>
-                  <td colSpan={4} className="py-8 text-center text-gray-500">
-                    <div className="flex justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div></div>
+                  <td colSpan={4} className="py-8 text-center text-white/50">
+                    <div className="flex justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div></div>
                   </td>
                 </tr>
               ) : filteredCategories.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="py-12 text-center">
-                    <Tag className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                    <h3 className="text-lg font-bold text-gray-900">Nenhuma categoria</h3>
-                    <p className="text-gray-500">Comece criando a primeira categoria.</p>
+                    <Tag className="w-12 h-12 text-white/30 mx-auto mb-4" />
+                    <h3 className="text-lg font-bold text-white">Nenhuma categoria</h3>
+                    <p className="text-white/50">Comece criando a primeira categoria.</p>
                   </td>
                 </tr>
               ) : (
                 filteredCategories.map(category => (
-                  <tr key={category.id} className="hover:bg-gray-50/50 transition-colors">
+                  <tr key={category.id} className="hover:bg-[#0A0A0F]/50 transition-colors">
                     <td className="py-4 px-6">
-                      <span className="font-bold text-gray-900">{category.name}</span>
+                      <span className="font-bold text-white">{category.name}</span>
                     </td>
                     <td className="py-4 px-6">
-                      <span className="text-sm text-gray-500">{category.description || "-"}</span>
+                      <span className="text-sm text-white/50">{category.description || "-"}</span>
                     </td>
                     <td className="py-4 px-6">
                       <button 
                         onClick={() => toggleStatus(category)}
                         className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${
                           category.active 
-                            ? 'bg-green-100 text-green-700 hover:bg-green-200' 
-                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                            ? 'bg-green-100 text-green-400 hover:bg-green-200' 
+                            : 'bg-[#13131C] text-white/60 hover:bg-[#1A1A2E]'
                         }`}
                       >
                         {category.active ? 'Ativo' : 'Inativo'}
@@ -153,14 +153,14 @@ export const AdminCategories = () => {
                       <div className="flex items-center justify-end gap-2">
                         <button 
                           onClick={() => openModal(category)} 
-                          className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          className="p-2 text-white/40 hover:text-orange-500 hover:bg-orange-500/10 rounded-lg transition-colors"
                           title="Editar"
                         >
                           <Edit className="w-4 h-4" />
                         </button>
                         <button 
                           onClick={() => handleDelete(category.id)} 
-                          className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          className="p-2 text-white/40 hover:text-red-600 hover:bg-red-500/10 rounded-lg transition-colors"
                           title="Excluir"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -183,30 +183,30 @@ export const AdminCategories = () => {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl flex flex-col max-h-full"
+                className="bg-[#13131C] rounded-3xl p-6 w-full max-w-md shadow-2xl flex flex-col max-h-full"
               >
-                <h2 className="text-2xl font-bold text-gray-900 mb-6 shrink-0">
+                <h2 className="text-2xl font-bold text-white mb-6 shrink-0">
                   {editingCategory ? "Editar Categoria" : "Nova Categoria"}
                 </h2>
                 
                 <div className="space-y-4 overflow-y-auto flex-1">
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-1">Nome da Categoria</label>
+                  <label className="block text-sm font-bold text-white/70 mb-1">Nome da Categoria</label>
                   <input 
                     type="text" 
                     value={formData.name}
                     onChange={e => setFormData({...formData, name: e.target.value})}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 rounded-xl border border-white/10 focus:outline-none focus:ring-2 focus:ring-orange-500"
                     placeholder="Ex: Eletrônicos"
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-1">Descrição (Opcional)</label>
+                  <label className="block text-sm font-bold text-white/70 mb-1">Descrição (Opcional)</label>
                   <textarea 
                     value={formData.description}
                     onChange={e => setFormData({...formData, description: e.target.value})}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none h-24"
+                    className="w-full px-4 py-3 rounded-xl border border-white/10 focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none h-24"
                     placeholder="Breve descrição da categoria"
                   />
                 </div>
@@ -217,22 +217,22 @@ export const AdminCategories = () => {
                     id="active"
                     checked={formData.active}
                     onChange={e => setFormData({...formData, active: e.target.checked})}
-                    className="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                    className="w-5 h-5 text-orange-500 rounded border-white/20 focus:ring-orange-500"
                   />
-                  <label htmlFor="active" className="font-medium text-gray-700">Categoria Ativa</label>
+                  <label htmlFor="active" className="font-medium text-white/70">Categoria Ativa</label>
                 </div>
               </div>
 
-              <div className="flex gap-3 mt-8 shrink-0 pb-2 border-t pt-4 border-gray-100">
+              <div className="flex gap-3 mt-8 shrink-0 pb-2 border-t pt-4 border-white/5">
                 <button 
                   onClick={() => setIsModalOpen(false)}
-                  className="flex-1 px-4 py-3 rounded-xl font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
+                  className="flex-1 px-4 py-3 rounded-xl font-bold text-white/60 bg-[#13131C] hover:bg-[#1A1A2E] transition-colors"
                 >
                   Cancelar
                 </button>
                 <button 
                   onClick={handleSave}
-                  className="flex-1 px-4 py-3 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+                  className="flex-1 px-4 py-3 rounded-xl font-bold text-white bg-orange-500 hover:bg-orange-600 transition-colors"
                 >
                   Salvar
                 </button>

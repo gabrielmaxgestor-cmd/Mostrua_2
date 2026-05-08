@@ -127,7 +127,7 @@ export const SizeRecommender: React.FC<SizeRecommenderProps> = ({
       {/* Trigger Button */}
       <button 
         onClick={() => setIsOpen(true)}
-        className={`flex items-center justify-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 font-bold rounded-xl hover:bg-blue-100 transition-colors ${buttonClassName}`}
+        className={`flex items-center justify-center gap-2 px-4 py-2 bg-orange-50 text-orange-500 font-bold rounded-xl hover:bg-orange-100 transition-colors ${buttonClassName}`}
       >
         <Ruler className="w-5 h-5" />
         Me ajude a escolher o tamanho
@@ -139,15 +139,15 @@ export const SizeRecommender: React.FC<SizeRecommenderProps> = ({
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={() => setIsOpen(false)} />
           
           {/* Modal Content */}
-          <div className="relative bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden flex flex-col justify-between max-h-[90vh] animate-in zoom-in-95 duration-200">
+          <div className="relative bg-[#13131C] w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden flex flex-col justify-between max-h-[90vh] animate-in zoom-in-95 duration-200">
             
             {/* Header */}
-            <div className="flex items-center justify-between p-5 border-b border-gray-100 bg-gray-50/50">
-              <h2 className="text-lg font-black text-gray-900 flex items-center gap-2">
-                <Ruler className="w-5 h-5 text-blue-600" /> 
+            <div className="flex items-center justify-between p-5 border-b border-white/5 bg-[#0A0A0F]/50">
+              <h2 className="text-lg font-black text-white flex items-center gap-2">
+                <Ruler className="w-5 h-5 text-orange-500" /> 
                 Descubra seu Tamanho
               </h2>
-              <button onClick={() => setIsOpen(false)} className="p-2 bg-white rounded-full text-gray-500 hover:text-gray-900 hover:bg-gray-100">
+              <button onClick={() => setIsOpen(false)} className="p-2 bg-[#13131C] rounded-full text-white/50 hover:text-white hover:bg-[#13131C]">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -158,51 +158,51 @@ export const SizeRecommender: React.FC<SizeRecommenderProps> = ({
               {/* STEP 1: INPUT FORM */}
               {step === 1 && (
                 <div className="space-y-6 animate-in slide-in-from-left-4 fade-in">
-                  <p className="text-gray-600 text-sm">
+                  <p className="text-white/60 text-sm">
                     Informe suas medidas e como prefere usar {productName}. Nós calculamos o ajuste ideal para você.
                   </p>
 
                   <div className="grid grid-cols-2 gap-4">
                     {/* Altura */}
                     <div className="space-y-2">
-                      <label className="text-sm font-bold text-gray-700 flex items-center gap-1.5">
-                        <Ruler className="w-4 h-4 text-gray-400" /> Altura (cm)
+                      <label className="text-sm font-bold text-white/70 flex items-center gap-1.5">
+                        <Ruler className="w-4 h-4 text-white/40" /> Altura (cm)
                       </label>
                       <div className="relative">
                         <input 
                           type="number" 
                           value={height}
                           onChange={(e) => setHeight(Number(e.target.value))}
-                          className="w-full bg-gray-50 border border-gray-200 text-gray-900 text-lg font-bold rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center"
+                          className="w-full bg-[#0A0A0F] border border-white/10 text-white text-lg font-bold rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-center"
                         />
                         <div className="absolute inset-x-0 bottom-0 px-3 pb-1">
-                           <input type="range" min="140" max="210" value={height} onChange={(e) => setHeight(Number(e.target.value))} className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer" />
+                           <input type="range" min="140" max="210" value={height} onChange={(e) => setHeight(Number(e.target.value))} className="w-full h-1 bg-[#1A1A2E] rounded-lg appearance-none cursor-pointer" />
                         </div>
                       </div>
                     </div>
 
                     {/* Peso */}
                     <div className="space-y-2">
-                      <label className="text-sm font-bold text-gray-700 flex items-center gap-1.5">
-                        <Scale className="w-4 h-4 text-gray-400" /> Peso (kg)
+                      <label className="text-sm font-bold text-white/70 flex items-center gap-1.5">
+                        <Scale className="w-4 h-4 text-white/40" /> Peso (kg)
                       </label>
                       <div className="relative">
                         <input 
                           type="number" 
                           value={weight}
                           onChange={(e) => setWeight(Number(e.target.value))}
-                          className="w-full bg-gray-50 border border-gray-200 text-gray-900 text-lg font-bold rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center"
+                          className="w-full bg-[#0A0A0F] border border-white/10 text-white text-lg font-bold rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-center"
                         />
                         <div className="absolute inset-x-0 bottom-0 px-3 pb-1">
-                           <input type="range" min="40" max="140" value={weight} onChange={(e) => setWeight(Number(e.target.value))} className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer" />
+                           <input type="range" min="40" max="140" value={weight} onChange={(e) => setWeight(Number(e.target.value))} className="w-full h-1 bg-[#1A1A2E] rounded-lg appearance-none cursor-pointer" />
                         </div>
                       </div>
                     </div>
                   </div>
 
                   <div className="space-y-3">
-                    <label className="text-sm font-bold text-gray-700 flex items-center gap-1.5">
-                      <Shirt className="w-4 h-4 text-gray-400" /> Preferência de Caimento
+                    <label className="text-sm font-bold text-white/70 flex items-center gap-1.5">
+                      <Shirt className="w-4 h-4 text-white/40" /> Preferência de Caimento
                     </label>
                     <div className="flex flex-col gap-2">
                       {FIT_OPTIONS.map((opt) => (
@@ -211,18 +211,18 @@ export const SizeRecommender: React.FC<SizeRecommenderProps> = ({
                           onClick={() => setFit(opt.id)}
                           className={`flex items-center p-3 rounded-xl border-2 transition-all text-left ${
                             fit === opt.id 
-                              ? 'border-blue-600 bg-blue-50' 
-                              : 'border-gray-100 bg-white hover:border-gray-200'
+                              ? 'border-orange-500 bg-orange-50' 
+                              : 'border-white/5 bg-[#13131C] hover:border-white/10'
                           }`}
                         >
                           <div className={`w-5 h-5 rounded-full border-2 mr-3 flex items-center justify-center shrink-0 ${
-                            fit === opt.id ? 'border-blue-600' : 'border-gray-300'
+                            fit === opt.id ? 'border-orange-500' : 'border-white/20'
                           }`}>
-                            {fit === opt.id && <div className="w-2.5 h-2.5 bg-blue-600 rounded-full" />}
+                            {fit === opt.id && <div className="w-2.5 h-2.5 bg-orange-500 rounded-full" />}
                           </div>
                           <div>
-                            <p className={`font-bold ${fit === opt.id ? 'text-blue-900' : 'text-gray-700'}`}>{opt.label}</p>
-                            <p className="text-xs text-gray-500 mt-0.5">{opt.desc}</p>
+                            <p className={`font-bold ${fit === opt.id ? 'text-orange-500' : 'text-white/70'}`}>{opt.label}</p>
+                            <p className="text-xs text-white/50 mt-0.5">{opt.desc}</p>
                           </div>
                         </button>
                       ))}
@@ -231,7 +231,7 @@ export const SizeRecommender: React.FC<SizeRecommenderProps> = ({
                   
                   <button 
                     onClick={handleGenerate}
-                    className="w-full py-4 mt-2 bg-gray-900 text-white font-bold rounded-xl hover:bg-black transition-colors flex items-center justify-center gap-2 active:scale-95"
+                    className="w-full py-4 mt-2 bg-[#0A0A0F] border border-white/10 text-white font-bold rounded-xl hover:bg-[#13131C] transition-colors flex items-center justify-center gap-2 active:scale-95"
                   >
                     Ver meu tamanho <ArrowRight className="w-5 h-5" />
                   </button>
@@ -243,11 +243,11 @@ export const SizeRecommender: React.FC<SizeRecommenderProps> = ({
                 <div className="space-y-6 animate-in slide-in-from-right-4 fade-in">
                   
                   {/* Highlight Box */}
-                  <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl p-6 text-white text-center relative overflow-hidden shadow-lg shadow-blue-900/20">
+                  <div className="bg-gradient-to-br from-orange-500 to-indigo-700 rounded-2xl p-6 text-white text-center relative overflow-hidden shadow-lg shadow-orange-500/20">
                      <div className="relative z-10">
-                        <p className="text-blue-100 font-medium text-sm mb-1 uppercase tracking-wider">Tamanho Ideal</p>
+                        <p className="text-orange-100 font-medium text-sm mb-1 uppercase tracking-wider">Tamanho Ideal</p>
                         <h3 className="text-5xl font-black mb-3">{recommendation.rec}</h3>
-                        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/20 backdrop-blur-md rounded-full text-white text-sm font-medium">
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#13131C]/20 backdrop-blur-md rounded-full text-white text-sm font-medium">
                           <CheckCircle2 className="w-4 h-4 text-green-300" />
                           {recommendation.confidence}% de Match
                         </div>
@@ -258,18 +258,18 @@ export const SizeRecommender: React.FC<SizeRecommenderProps> = ({
                   </div>
 
                   {/* Insight Visual do Fit */}
-                  <div className="flex gap-4 p-4 bg-gray-50 rounded-2xl items-center">
-                     <div className="shrink-0 relative w-16 h-16 flex items-center justify-center bg-white rounded-xl shadow-sm border border-gray-100">
+                  <div className="flex gap-4 p-4 bg-[#0A0A0F] rounded-2xl items-center">
+                     <div className="shrink-0 relative w-16 h-16 flex items-center justify-center bg-[#13131C] rounded-xl shadow-sm border border-white/5">
                         <Shirt 
-                          className={`text-gray-900 transition-all duration-500 ${
+                          className={`text-white transition-all duration-500 ${
                             fit === 'justo' ? 'w-6 h-6 scale-90' : 
                             fit === 'folgado' ? 'w-10 h-10 scale-110' : 'w-8 h-8'
                           }`} 
                         />
                      </div>
                      <div>
-                       <h4 className="font-bold text-gray-900 text-sm">Ajuste {FIT_OPTIONS.find(f => f.id === fit)?.label}</h4>
-                       <p className="text-xs text-gray-600 mt-1 leading-relaxed">
+                       <h4 className="font-bold text-white text-sm">Ajuste {FIT_OPTIONS.find(f => f.id === fit)?.label}</h4>
+                       <p className="text-xs text-white/60 mt-1 leading-relaxed">
                          Para esse caimento, recomendamos o tamanho <strong>{recommendation.rec}</strong>. 
                          Se preferir algo levemente diferente, o tamanho <strong>{recommendation.alt}</strong> também servirá.
                        </p>
@@ -278,12 +278,12 @@ export const SizeRecommender: React.FC<SizeRecommenderProps> = ({
 
                   {/* Tabela de Medidas */}
                   <div>
-                    <h4 className="font-bold text-gray-900 text-sm flex items-center gap-1.5 mb-3">
-                      <Ruler className="w-4 h-4 text-gray-400" /> Medidas do Produto (cm)
+                    <h4 className="font-bold text-white text-sm flex items-center gap-1.5 mb-3">
+                      <Ruler className="w-4 h-4 text-white/40" /> Medidas do Produto (cm)
                     </h4>
-                    <div className="rounded-xl border border-gray-200 overflow-hidden">
+                    <div className="rounded-xl border border-white/10 overflow-hidden">
                       <table className="w-full text-sm text-left">
-                        <thead className="bg-gray-50 text-gray-700">
+                        <thead className="bg-[#0A0A0F] text-white/70">
                           <tr>
                             <th className="px-4 py-2 font-bold w-1/4">Tamanho</th>
                             <th className="px-4 py-2 font-medium">Busto</th>
@@ -291,11 +291,11 @@ export const SizeRecommender: React.FC<SizeRecommenderProps> = ({
                             <th className="px-4 py-2 font-medium">Comprimento</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100 text-gray-600">
+                        <tbody className="divide-y divide-white/5 text-white/60">
                           {sizeChart.map((row) => (
                             <tr 
                               key={row.size} 
-                              className={row.size === recommendation.rec ? 'bg-blue-50/50 font-bold text-blue-900 border-l-4 border-l-blue-600' : ''}
+                              className={row.size === recommendation.rec ? 'bg-orange-50/50 font-bold text-orange-500 border-l-4 border-l-blue-600' : ''}
                             >
                               <td className="px-4 py-2">{row.size}</td>
                               <td className="px-4 py-2">{row.chest}</td>
@@ -310,7 +310,7 @@ export const SizeRecommender: React.FC<SizeRecommenderProps> = ({
 
                   <button 
                     onClick={reset}
-                    className="w-full py-3 mt-2 text-gray-500 font-bold rounded-xl hover:bg-gray-50 transition-colors text-sm"
+                    className="w-full py-3 mt-2 text-white/50 font-bold rounded-xl hover:bg-[#0A0A0F] transition-colors text-sm"
                   >
                     Calcular Novamente
                   </button>

@@ -9,12 +9,12 @@ import { OrderDetailsModal } from "../../components/reseller/OrderDetailsModal";
 import { ErrorState } from '../../components/ErrorState';
 
 const statusConfig: Record<OrderStatus, { label: string, color: string, icon: any }> = {
-  pending: { label: "Novo", color: "bg-blue-100 text-blue-700", icon: Clock },
+  pending: { label: "Novo", color: "bg-orange-100 text-orange-500", icon: Clock },
   confirmed: { label: "Confirmado", color: "bg-emerald-100 text-emerald-700", icon: CheckCircle },
-  processing: { label: "Atendimento", color: "bg-yellow-100 text-yellow-700", icon: Package },
+  processing: { label: "Atendimento", color: "bg-yellow-100 text-yellow-400", icon: Package },
   shipped: { label: "Enviado", color: "bg-indigo-100 text-indigo-700", icon: Truck },
-  delivered: { label: "Finalizado", color: "bg-green-100 text-green-700", icon: CheckCircle },
-  canceled: { label: "Cancelado", color: "bg-red-100 text-red-700", icon: XCircle }
+  delivered: { label: "Finalizado", color: "bg-green-100 text-green-400", icon: CheckCircle },
+  canceled: { label: "Cancelado", color: "bg-red-100 text-red-400", icon: XCircle }
 };
 
 export const Orders = () => {
@@ -107,7 +107,7 @@ export const Orders = () => {
     document.body.removeChild(link);
   };
 
-  if (loading) return <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-gray-400" /></div>;
+  if (loading) return <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-white/40" /></div>;
   if (error) return <ErrorState message={error} onRetry={() => window.location.reload()} />;
 
   return (
@@ -119,7 +119,7 @@ export const Orders = () => {
             initial={{ opacity: 0, y: 20 }} 
             animate={{ opacity: 1, y: 0 }} 
             exit={{ opacity: 0, y: 20 }}
-            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-gray-900 text-white px-5 py-3 rounded-full text-sm font-medium shadow-xl flex items-center gap-2"
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-[#0A0A0F] text-white px-5 py-3 rounded-full text-sm font-medium shadow-xl flex items-center gap-2"
           >
             <Check className="w-4 h-4 text-green-400" />
             {toastMessage}
@@ -129,8 +129,8 @@ export const Orders = () => {
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Pedidos</h1>
-          <p className="text-gray-500 text-sm">
+          <h1 className="text-2xl font-bold text-white">Pedidos</h1>
+          <p className="text-white/50 text-sm">
             {filteredOrders.length} pedido(s)
             {filterStatus !== 'all' && ` com status "${statusConfig[filterStatus as OrderStatus]?.label}"`}
             {searchQuery && ` · busca por "${searchQuery}"`}
@@ -138,16 +138,16 @@ export const Orders = () => {
         </div>
         <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
           {filteredOrders.length > 0 && (
-            <button onClick={handleExportCSV} className="flex items-center justify-center gap-2 text-sm font-medium text-gray-600 border border-gray-200 rounded-xl px-4 py-2.5 hover:bg-gray-50 transition-colors bg-white">
+            <button onClick={handleExportCSV} className="flex items-center justify-center gap-2 text-sm font-medium text-white/60 bg-[#0A0A0F] border border-white/10 rounded-xl bg-[#0A0A0F] px-4 py-2.5 hover:bg-[#0A0A0F] transition-colors bg-[#13131C]">
               <Download className="w-4 h-4" /> Exportar CSV
             </button>
           )}
           <div className="relative w-full sm:w-64 md:w-72">
-            <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
             <input
               type="text"
               placeholder="Buscar pedido, cliente..."
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-gray-900 outline-none transition-all shadow-sm bg-white"
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#0A0A0F] border border-white/10 focus:ring-2 focus:ring-white/20 outline-none transition-all shadow-sm bg-[#13131C]"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -160,7 +160,7 @@ export const Orders = () => {
         {(['all', 'pending', 'confirmed', 'processing', 'shipped', 'delivered', 'canceled'] as const).map(status => {
           const count = statusCounts[status] || 0;
           const isActive = filterStatus === status;
-          const config = status === 'all' ? { label: 'Todos', color: 'bg-gray-100 text-gray-700' } : statusConfig[status as OrderStatus];
+          const config = status === 'all' ? { label: 'Todos', color: 'bg-[#13131C] text-white/70' } : statusConfig[status as OrderStatus];
           const hasPending = status === 'pending' && count > 0;
           
           return (
@@ -168,14 +168,14 @@ export const Orders = () => {
               key={status}
               onClick={() => setFilterStatus(status as OrderStatus | "all")}
               className={`flex items-center gap-1.5 whitespace-nowrap px-3 py-2 rounded-full text-xs font-bold border transition-all ${
-                isActive ? 'bg-gray-900 text-white border-transparent' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+                isActive ? 'bg-[#0A0A0F] text-white border-transparent' : 'bg-[#13131C] text-white/60 border-white/10 hover:border-white/20'
               }`}
             >
               {config.label}
               {count > 0 && (
                 <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full ${
                   hasPending ? 'bg-red-500 text-white animate-pulse' :
-                  isActive ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-600'
+                  isActive ? 'bg-[#13131C]/20 text-white' : 'bg-[#13131C] text-white/60'
                 }`}>
                   {count}
                 </span>
@@ -186,18 +186,18 @@ export const Orders = () => {
       </div>
 
       {filteredOrders.length === 0 ? (
-        <div className="text-center py-20 bg-white rounded-3xl border border-gray-100">
-          <ShoppingCart className="w-12 h-12 text-gray-200 mx-auto mb-4" />
+        <div className="text-center py-20 bg-[#13131C] rounded-3xl border border-white/5">
+          <ShoppingCart className="w-12 h-12 text-white/20 mx-auto mb-4" />
           {filterStatus === 'all' && !searchQuery ? (
             <>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">Nenhum pedido ainda</h3>
-              <p className="text-gray-500 mb-6">Quando seus clientes fizerem pedidos, eles aparecerão aqui.</p>
-              <p className="text-sm text-gray-400">💡 Dica: compartilhe o link da sua loja no WhatsApp para começar a receber pedidos.</p>
+              <h3 className="text-lg font-bold text-white mb-2">Nenhum pedido ainda</h3>
+              <p className="text-white/50 mb-6">Quando seus clientes fizerem pedidos, eles aparecerão aqui.</p>
+              <p className="text-sm text-white/40">💡 Dica: compartilhe o link da sua loja no WhatsApp para começar a receber pedidos.</p>
             </>
           ) : (
             <>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">Nenhum pedido encontrado</h3>
-              <button onClick={() => { setFilterStatus('all'); setSearchQuery(''); }} className="text-blue-600 font-medium text-sm mt-2">Limpar filtros</button>
+              <h3 className="text-lg font-bold text-white mb-2">Nenhum pedido encontrado</h3>
+              <button onClick={() => { setFilterStatus('all'); setSearchQuery(''); }} className="text-orange-500 font-medium text-sm mt-2">Limpar filtros</button>
             </>
           )}
         </div>
@@ -212,17 +212,17 @@ export const Orders = () => {
                 <div
                   key={order.id}
                   onClick={() => setSelectedOrder(order)}
-                  className={`bg-white rounded-2xl border p-4 cursor-pointer hover:shadow-md transition-all ${
-                    order.status === 'pending' ? 'border-orange-200 border-l-4 border-l-orange-500' : 'border-gray-200'
+                  className={`bg-[#13131C] rounded-2xl border p-4 cursor-pointer hover:shadow-md transition-all ${
+                    order.status === 'pending' ? 'border-orange-200 border-l-4 border-l-orange-500' : 'border-white/10'
                   }`}
                 >
                   {/* Linha 1: Nome + Valor */}
                   <div className="flex items-center justify-between mb-2">
                     <div>
-                      <p className="font-bold text-gray-900 text-sm line-clamp-1">{order.customerName}</p>
-                      <p className="text-xs text-gray-500">#{order.id.slice(-6).toUpperCase()}</p>
+                      <p className="font-bold text-white text-sm line-clamp-1">{order.customerName}</p>
+                      <p className="text-xs text-white/50">#{order.id.slice(-6).toUpperCase()}</p>
                     </div>
-                    <p className="text-lg font-black text-gray-900">{formatCurrency(order.total || 0)}</p>
+                    <p className="text-lg font-black text-white">{formatCurrency(order.total || 0)}</p>
                   </div>
                   
                   {/* Linha 2: Status + Data + Ação rápida */}
@@ -232,7 +232,7 @@ export const Orders = () => {
                         <StatusIcon className="w-3 h-3" />
                         {config.label}
                       </span>
-                      <span className="text-[10px] text-gray-400 font-medium px-1">{formatDate(order.createdAt)}</span>
+                      <span className="text-[10px] text-white/40 font-medium px-1">{formatDate(order.createdAt)}</span>
                     </div>
                     {/* Botão de WhatsApp rápido */}
                     {order.customerPhone && (
@@ -256,36 +256,36 @@ export const Orders = () => {
           </div>
 
           {/* Desktop: manter layout atual de tabela/lista */}
-          <div className="hidden md:block bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm">
+          <div className="hidden md:block bg-[#13131C] rounded-3xl border border-white/5 overflow-hidden shadow-sm">
             <div className="overflow-x-auto">
               <table className="w-full text-left flex-col border-collapse">
                 <thead>
-                  <tr className="bg-gray-50/80 border-b border-gray-100">
-                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Nº Pedido</th>
-                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Cliente</th>
-                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider hidden sm:table-cell">Data</th>
-                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Valor</th>
-                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Status</th>
-                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Ações</th>
+                  <tr className="bg-[#0A0A0F]/80 border-b border-white/5">
+                    <th className="py-4 px-6 text-xs font-bold text-white/50 uppercase tracking-wider">Nº Pedido</th>
+                    <th className="py-4 px-6 text-xs font-bold text-white/50 uppercase tracking-wider">Cliente</th>
+                    <th className="py-4 px-6 text-xs font-bold text-white/50 uppercase tracking-wider hidden sm:table-cell">Data</th>
+                    <th className="py-4 px-6 text-xs font-bold text-white/50 uppercase tracking-wider text-right">Valor</th>
+                    <th className="py-4 px-6 text-xs font-bold text-white/50 uppercase tracking-wider text-center">Status</th>
+                    <th className="py-4 px-6 text-xs font-bold text-white/50 uppercase tracking-wider text-right">Ações</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {filteredOrders.map((order) => {
                     const StatusIcon = statusConfig[order.status].icon;
                     return (
-                      <tr key={order.id} className="hover:bg-gray-50 transition-colors">
+                      <tr key={order.id} className="hover:bg-[#0A0A0F] transition-colors">
                         <td className="py-4 px-6">
-                          <span className="font-mono text-sm text-gray-900 font-bold">#{order.id.slice(-6).toUpperCase()}</span>
+                          <span className="font-mono text-sm text-white font-bold">#{order.id.slice(-6).toUpperCase()}</span>
                         </td>
                         <td className="py-4 px-6">
-                          <p className="font-bold text-gray-900 line-clamp-1">{order.customerName}</p>
-                          <p className="text-xs text-gray-500 mt-0.5">{order.customerPhone}</p>
+                          <p className="font-bold text-white line-clamp-1">{order.customerName}</p>
+                          <p className="text-xs text-white/50 mt-0.5">{order.customerPhone}</p>
                         </td>
                         <td className="py-4 px-6 hidden sm:table-cell">
-                          <span className="text-sm text-gray-600">{formatDate(order.createdAt)}</span>
+                          <span className="text-sm text-white/60">{formatDate(order.createdAt)}</span>
                         </td>
                         <td className="py-4 px-6 text-right">
-                          <span className="font-bold text-gray-900">{formatCurrency(order.total)}</span>
+                          <span className="font-bold text-white">{formatCurrency(order.total)}</span>
                         </td>
                         <td className="py-4 px-6 text-center">
                           <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${statusConfig[order.status].color}`}>
@@ -296,7 +296,7 @@ export const Orders = () => {
                         <td className="py-4 px-6 text-right">
                           <button 
                             onClick={() => setSelectedOrder(order)}
-                            className="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-colors"
+                            className="p-2 text-white/40 hover:text-white hover:bg-[#13131C] rounded-xl transition-colors"
                             title="Ver Detalhes"
                           >
                             <Eye className="w-5 h-5" />

@@ -44,9 +44,9 @@ export const FilterByLeague: React.FC<FilterByLeagueProps> = ({
   };
 
   return (
-    <div className="w-full bg-white py-6 border-b border-gray-100">
+    <div className="w-full bg-[#13131C] py-6 border-b border-white/5">
       <div className="px-4 md:px-8 mb-4">
-        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest">
+        <h3 className="text-sm font-bold text-white uppercase tracking-widest">
           Filtrar por Competição
         </h3>
       </div>
@@ -60,8 +60,8 @@ export const FilterByLeague: React.FC<FilterByLeagueProps> = ({
               onClick={() => handleLeagueClick('all_override')}
               className={`flex items-center gap-3 px-5 py-3 rounded-2xl border-2 transition-all shrink-0
                 ${!selectedLeagueId 
-                  ? 'border-gray-900 bg-gray-900 text-white shadow-md' 
-                  : 'border-gray-100 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50'}`}
+                  ? 'border-orange-500 bg-[#0A0A0F] text-white shadow-md' 
+                  : 'border-white/5 bg-[#13131C] text-white/70 hover:border-white/20 hover:bg-[#0A0A0F]'}`}
             >
               <span className="font-bold">Todas as Ligas</span>
             </button>
@@ -76,12 +76,12 @@ export const FilterByLeague: React.FC<FilterByLeagueProps> = ({
                   onClick={() => handleLeagueClick(league.id)}
                   className={`flex items-center gap-3 px-5 py-3 rounded-2xl border-2 transition-all shrink-0 group
                     ${isSelected 
-                      ? 'border-blue-600 bg-blue-50/50 shadow-md transform scale-[1.02]' 
-                      : 'border-gray-100 bg-white hover:border-gray-300 hover:bg-gray-50'
+                      ? 'border-orange-500 bg-orange-50/50 shadow-md transform scale-[1.02]' 
+                      : 'border-white/5 bg-[#13131C] hover:border-white/20 hover:bg-[#0A0A0F]'
                     }`}
                 >
                   {/* Aspect Ratio rígido para segurar os logos horizontal/vertical perfeitamente */}
-                  <div className="w-8 h-8 rounded-full bg-white shadow-sm border border-gray-100 overflow-hidden shrink-0 flex items-center justify-center p-1">
+                  <div className="w-8 h-8 rounded-full bg-[#13131C] shadow-sm border border-white/5 overflow-hidden shrink-0 flex items-center justify-center p-1">
                     <img 
                       src={league.logoUrl} 
                       alt={`Logo ${league.name}`} 
@@ -90,10 +90,10 @@ export const FilterByLeague: React.FC<FilterByLeagueProps> = ({
                   </div>
                   
                   <div className="text-left flex flex-col justify-center">
-                    <span className={`text-sm font-bold leading-none ${isSelected ? 'text-blue-900' : 'text-gray-900'}`}>
+                    <span className={`text-sm font-bold leading-none ${isSelected ? 'text-orange-500' : 'text-white'}`}>
                       {league.name}
                     </span>
-                    <span className={`text-[10px] font-bold mt-1 tracking-wider uppercase ${isSelected ? 'text-blue-600' : 'text-gray-400'}`}>
+                    <span className={`text-[10px] font-bold mt-1 tracking-wider uppercase ${isSelected ? 'text-orange-500' : 'text-white/40'}`}>
                       {count} Produtos
                     </span>
                   </div>

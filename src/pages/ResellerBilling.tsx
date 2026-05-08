@@ -25,24 +25,24 @@ export const ResellerBilling = () => {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">Assinatura e Faturamento</h1>
+      <h1 className="text-2xl font-bold text-white">Assinatura e Faturamento</h1>
       
       {subscription && (
-        <div className="bg-white rounded-2xl border border-gray-200 p-6">
-          <h2 className="font-bold text-gray-900 mb-4">Plano Atual</h2>
+        <div className="bg-[#13131C] rounded-2xl border border-white/10 p-6">
+          <h2 className="font-bold text-white mb-4">Plano Atual</h2>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xl font-black text-blue-600">{plan?.name || 'Carregando...'}</p>
-              <p className="text-gray-500 text-sm">Status: {subscription.status}</p>
+              <p className="text-xl font-black text-orange-500">{plan?.name || 'Carregando...'}</p>
+              <p className="text-white/50 text-sm">Status: {subscription.status}</p>
               {subscription.currentPeriodEnd && (
-                <p className="text-gray-500 text-sm">
+                <p className="text-white/50 text-sm">
                   Proximo vencimento: {subscription.currentPeriodEnd.toDate().toLocaleDateString('pt-BR')}
                 </p>
               )}
             </div>
             {subscription.invoiceUrl && (
               <a href={subscription.invoiceUrl} target="_blank" rel="noopener noreferrer"
-                 className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold">
+                 className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-xl text-sm font-bold">
                 Pagar fatura <ExternalLink className="w-4 h-4" />
               </a>
             )}
@@ -50,20 +50,20 @@ export const ResellerBilling = () => {
         </div>
       )}
       
-      <div className="bg-white rounded-2xl border border-gray-200 p-6">
-        <h2 className="font-bold text-gray-900 mb-4">Historico de Pagamentos</h2>
+      <div className="bg-[#13131C] rounded-2xl border border-white/10 p-6">
+        <h2 className="font-bold text-white mb-4">Historico de Pagamentos</h2>
         {payments.length === 0 ? (
-          <p className="text-gray-500 text-sm">Nenhum pagamento registrado ainda.</p>
+          <p className="text-white/50 text-sm">Nenhum pagamento registrado ainda.</p>
         ) : (
           <table className="w-full text-sm">
-            <thead><tr className="text-gray-500 text-left border-b">
+            <thead><tr className="text-white/50 text-left border-b">
               <th className="pb-2">Data</th><th className="pb-2">Valor</th><th className="pb-2">Status</th>
             </tr></thead>
             <tbody>{payments.map(p => (
               <tr key={p.id} className="border-b last:border-0">
                 <td className="py-3">{p.createdAt?.toDate?.().toLocaleDateString('pt-BR') || '-'}</td>
                 <td className="py-3 font-bold">R$ {p.value?.toFixed(2) || '-'}</td>
-                <td className="py-3"><span className="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">{p.status}</span></td>
+                <td className="py-3"><span className="bg-green-100 text-green-400 px-2 py-1 rounded text-xs">{p.status}</span></td>
               </tr>
             ))}</tbody>
           </table>

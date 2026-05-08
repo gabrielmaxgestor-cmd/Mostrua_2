@@ -54,13 +54,13 @@ export const InstallBanner: React.FC<InstallBannerProps> = ({ storeName = 'nossa
 
   return (
     <div className="fixed bottom-0 left-0 right-0 p-4 z-50 animate-in slide-in-from-bottom duration-500">
-      <div className="max-w-md mx-auto bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 flex items-center gap-4">
+      <div className="max-w-md mx-auto bg-[#13131C] rounded-2xl shadow-2xl border border-white/5 p-4 flex items-center gap-4">
         <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 text-white" style={{ backgroundColor: primaryColor }}>
           <Download className="w-6 h-6" />
         </div>
         <div className="flex-1">
-          <h4 className="font-bold text-gray-900 text-sm">Instalar App</h4>
-          <p className="text-xs text-gray-500">Instale {storeName} na sua tela inicial para acesso rápido!</p>
+          <h4 className="font-bold text-white text-sm">Instalar App</h4>
+          <p className="text-xs text-white/50">Instale {storeName} na sua tela inicial para acesso rápido!</p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <button 
@@ -72,7 +72,7 @@ export const InstallBanner: React.FC<InstallBannerProps> = ({ storeName = 'nossa
           </button>
           <button 
             onClick={handleDismiss}
-            className="p-2 text-gray-400 hover:text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors"
+            className="p-2 text-white/40 hover:text-white/60 bg-[#0A0A0F] hover:bg-[#13131C] rounded-xl transition-colors"
           >
             <X className="w-5 h-5" />
           </button>

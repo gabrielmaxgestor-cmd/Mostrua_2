@@ -255,8 +255,8 @@ export default function PublicStore() {
     }
   }, [reseller, primaryColor]);
 
-  if (error) return <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 w-full max-w-sm">
+  if (error) return <div className="min-h-screen bg-[#0A0A0F] flex items-center justify-center p-4">
+    <div className="bg-[#13131C] p-6 rounded-2xl shadow-sm border border-white/5 w-full max-w-sm">
       <ErrorState message={error} onRetry={() => window.location.reload()} />
       {reseller && (
         <a href={`https://wa.me/55${reseller.settings?.whatsapp?.replace(/\D/g,'')}`} className="w-full mt-4 flex items-center justify-center gap-2 py-3 bg-green-500 text-white rounded-xl font-bold">
@@ -269,8 +269,8 @@ export default function PublicStore() {
   if (loading) {
     const pColor = tenantReseller?.settings?.primaryColor || "#16a34a";
     return (
-      <div className="min-h-screen bg-gray-50">
-        <header className="bg-white sticky top-0 z-40 shadow-sm border-b border-gray-100">
+      <div className="min-h-screen bg-[#0A0A0F]">
+        <header className="bg-[#13131C] sticky top-0 z-40 shadow-sm border-b border-white/5">
            <div className="max-w-5xl mx-auto px-4 py-3 flex items-center">
               <div className="flex items-center gap-3">
                 {tenantReseller?.settings?.logo ? (
@@ -280,7 +280,7 @@ export default function PublicStore() {
                     {tenantReseller?.storeName?.[0]?.toUpperCase() || 'L'}
                   </div>
                 )}
-                <h1 className="font-bold text-lg text-gray-900 truncate max-w-[180px]">{tenantReseller?.storeName || 'Carregando...'}</h1>
+                <h1 className="font-bold text-lg text-white truncate max-w-[180px]">{tenantReseller?.storeName || 'Carregando...'}</h1>
               </div>
            </div>
         </header>
@@ -288,11 +288,11 @@ export default function PublicStore() {
         <div className="max-w-5xl mx-auto px-4 py-6">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {[1,2,3,4,5,6].map(i => (
-              <div key={i} className="bg-white rounded-2xl border border-gray-100 overflow-hidden animate-pulse">
-                <div className="aspect-square bg-gray-200" />
+              <div key={i} className="bg-[#13131C] rounded-2xl border border-white/5 overflow-hidden animate-pulse">
+                <div className="aspect-square bg-[#1A1A2E]" />
                 <div className="p-3 space-y-2">
-                  <div className="h-3 bg-gray-200 rounded w-3/4" />
-                  <div className="h-4 bg-gray-200 rounded w-1/2" />
+                  <div className="h-3 bg-[#1A1A2E] rounded w-3/4" />
+                  <div className="h-4 bg-[#1A1A2E] rounded w-1/2" />
                 </div>
               </div>
             ))}
@@ -306,8 +306,8 @@ export default function PublicStore() {
     <div className="min-h-screen flex flex-col items-center justify-center p-8 text-center"
          style={{ background: reseller?.settings?.primaryColor ? reseller.settings.primaryColor + '10' : '#f9fafb' }}>
       {reseller?.settings?.logo && <img src={reseller.settings.logo} className="w-20 h-20 rounded-full mb-4 object-cover" />}
-      <h1 className="text-2xl font-bold text-gray-900 mb-2">{reseller?.storeName || 'Esta loja'}</h1>
-      <p className="text-gray-500 mb-6">Esta loja esta temporariamente indisponivel.</p>
+      <h1 className="text-2xl font-bold text-white mb-2">{reseller?.storeName || 'Esta loja'}</h1>
+      <p className="text-white/50 mb-6">Esta loja esta temporariamente indisponivel.</p>
       {reseller?.settings?.whatsapp && (
         <a href={`https://wa.me/55${reseller.settings.whatsapp.replace(/\D/g,'')}`}
            target="_blank" rel="noopener noreferrer"
@@ -319,10 +319,10 @@ export default function PublicStore() {
   );
 
   if (notFound) return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 text-center px-4">
-      <Store className="w-16 h-16 text-gray-300 mb-4" />
-      <h1 className="text-2xl font-bold text-gray-900 mb-2">Loja não encontrada</h1>
-      <p className="text-gray-500">O link que você acessou não existe ou está inativo.</p>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-[#0A0A0F] text-center px-4">
+      <Store className="w-16 h-16 text-white/30 mb-4" />
+      <h1 className="text-2xl font-bold text-white mb-2">Loja não encontrada</h1>
+      <p className="text-white/50">O link que você acessou não existe ou está inativo.</p>
     </div>
   );
 
@@ -373,7 +373,7 @@ export default function PublicStore() {
   })).filter(group => group.items.length > 0);
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24">
+    <div className="min-h-screen bg-[#0A0A0F] pb-24">
       {/* Header */}
       <header 
         className="sticky top-0 z-40 shadow-sm transition-colors"
@@ -386,11 +386,11 @@ export default function PublicStore() {
             {view !== 'home' ? (
               <div className="flex items-center gap-2">
                 <button onClick={goBack}
-                  className="p-2 -ml-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+                  className="p-2 -ml-2 text-white/60 hover:bg-[#13131C] rounded-full transition-colors"
                   title="Voltar">
                   <ArrowLeft className="w-5 h-5" />
                 </button>
-                <span className="text-sm font-medium text-gray-500 truncate max-w-[140px] cursor-pointer hover:text-gray-900" onClick={goHome}>
+                <span className="text-sm font-medium text-white/50 truncate max-w-[140px] cursor-pointer hover:text-white" onClick={goHome}>
                   {reseller?.storeName}
                 </span>
               </div>
@@ -404,9 +404,9 @@ export default function PublicStore() {
                   </div>
                 )}
                 <div className="flex flex-col">
-                  <h1 className="font-bold text-lg text-gray-900 truncate max-w-[200px] sm:max-w-[300px] leading-tight">{reseller?.storeName}</h1>
+                  <h1 className="font-bold text-lg text-white truncate max-w-[200px] sm:max-w-[300px] leading-tight">{reseller?.storeName}</h1>
                   {reseller?.settings?.description && (
-                    <p className="text-xs text-gray-500 truncate max-w-[200px] sm:max-w-[300px] mt-0.5">{reseller.settings.description}</p>
+                    <p className="text-xs text-white/50 truncate max-w-[200px] sm:max-w-[300px] mt-0.5">{reseller.settings.description}</p>
                   )}
                 </div>
               </div>
@@ -414,12 +414,12 @@ export default function PublicStore() {
           </div>
           <div className="flex items-center gap-4 shrink-0">
             {view === 'home' && (
-               <span className="text-xs font-medium text-gray-400 hidden sm:inline-block">
+               <span className="text-xs font-medium text-white/40 hidden sm:inline-block">
                  {products.length} produtos
                </span>
             )}
-            <button onClick={() => setShowCart(true)} className="relative p-2.5 bg-white rounded-full hover:bg-gray-50 transition-all shadow-sm border border-gray-100">
-              <ShoppingCart className="w-5 h-5 text-gray-700" />
+            <button onClick={() => setShowCart(true)} className="relative p-2.5 bg-[#13131C] rounded-full hover:bg-[#0A0A0F] transition-all shadow-sm border border-white/5">
+              <ShoppingCart className="w-5 h-5 text-white/70" />
               {totalItems > 0 && (
                 <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-white text-[10px] font-bold flex items-center justify-center border-2 border-white shadow-sm" style={{ backgroundColor: primaryColor }}>
                   {totalItems}
@@ -448,7 +448,7 @@ export default function PublicStore() {
           <>
             {/* Banner principal da loja (configurado pelo revendedor em StoreSettings) */}
             {reseller?.settings?.banner && !isSearching && (
-              <div className="w-full aspect-[21/9] sm:aspect-[21/6] overflow-hidden bg-gray-200">
+              <div className="w-full aspect-[21/9] sm:aspect-[21/6] overflow-hidden bg-[#1A1A2E]">
                 <img src={reseller.settings.banner} alt="Banner" className="w-full h-full object-cover" />
               </div>
             )}
@@ -456,14 +456,14 @@ export default function PublicStore() {
             {/* Filtro de categorias */}
             {!isSearching && categories.length > 0 && (
               <div className="px-4 py-6">
-                <h2 className="font-bold text-gray-900 mb-4">Categorias</h2>
+                <h2 className="font-bold text-white mb-4">Categorias</h2>
                 <div className="relative">
                   <div className="absolute right-0 top-0 bottom-2 w-8 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
                   <div className="flex overflow-x-auto hide-scrollbar gap-3 pb-2 -mx-4 px-4 pr-8">
                     <button
                       onClick={goHome}
                       className={`whitespace-nowrap px-5 py-2.5 rounded-full text-sm font-medium border transition-colors shadow-sm ${
-                        view === 'home' ? 'text-white border-transparent' : 'bg-white border-gray-200 text-gray-700 hover:border-gray-300'
+                        view === 'home' ? 'text-white border-transparent' : 'bg-[#13131C] border-white/10 text-white/70 hover:border-white/20'
                       }`}
                       style={view === 'home' ? { backgroundColor: primaryColor } : {}}
                     >
@@ -472,7 +472,7 @@ export default function PublicStore() {
                     {categories.map(cat => (
                       <button key={cat.id} onClick={() => openCategory(cat)}
                         className={`whitespace-nowrap px-5 py-2.5 rounded-full text-sm font-medium border transition-colors shadow-sm ${
-                          selectedCategory?.id === cat.id ? 'text-white border-transparent' : 'bg-white border-gray-200 text-gray-700'
+                          selectedCategory?.id === cat.id ? 'text-white border-transparent' : 'bg-[#13131C] border-white/10 text-white/70'
                         }`}
                         style={selectedCategory?.id === cat.id ? { backgroundColor: primaryColor } : {}}
                       >
@@ -489,12 +489,12 @@ export default function PublicStore() {
               {isSearching && (
                 <>
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
-                    <h2 className="font-bold text-gray-900 text-lg">
+                    <h2 className="font-bold text-white text-lg">
                       {searchResults.length} {searchResults.length === 1 ? 'resultado' : 'resultados'} para "{searchQuery}"
                     </h2>
                     <button 
                       onClick={() => setSearchQuery('')}
-                      className="text-sm font-medium hover:text-gray-900 transition-colors px-3 py-1.5 bg-white border border-gray-200 rounded-full w-fit"
+                      className="text-sm font-medium hover:text-white transition-colors px-3 py-1.5 bg-[#13131C] border border-white/10 rounded-full w-fit"
                       style={{ color: primaryColor }}
                     >
                       Limpar busca
@@ -502,10 +502,10 @@ export default function PublicStore() {
                   </div>
 
                   {searchResults.length === 0 ? (
-                    <div className="text-center py-16 px-4 bg-white rounded-3xl border border-gray-100 shadow-sm mt-4">
-                      <Search className="w-12 h-12 text-gray-200 mx-auto mb-4" />
-                      <h3 className="text-lg font-bold text-gray-900 mb-2">Nenhum produto encontrado</h3>
-                      <p className="text-gray-500 mb-6">Tente usar outros termos ou palavras-chave.</p>
+                    <div className="text-center py-16 px-4 bg-[#13131C] rounded-3xl border border-white/5 shadow-sm mt-4">
+                      <Search className="w-12 h-12 text-white/20 mx-auto mb-4" />
+                      <h3 className="text-lg font-bold text-white mb-2">Nenhum produto encontrado</h3>
+                      <p className="text-white/50 mb-6">Tente usar outros termos ou palavras-chave.</p>
                       <button 
                         onClick={() => setSearchQuery('')}
                         className="px-6 py-2.5 rounded-full text-white font-bold transition-all shadow-sm mx-auto"
@@ -539,8 +539,8 @@ export default function PublicStore() {
                       {reseller?.settings?.logo && (
                         <img src={reseller.settings.logo} className="w-20 h-20 rounded-full object-cover mb-4 shadow-sm" />
                       )}
-                      <h2 className="text-xl font-bold text-gray-900 mb-2">Em breve novidades! 🎉</h2>
-                      <p className="text-gray-500 mb-6 max-w-xs mx-auto">
+                      <h2 className="text-xl font-bold text-white mb-2">Em breve novidades! 🎉</h2>
+                      <p className="text-white/50 mb-6 max-w-xs mx-auto">
                         {reseller?.storeName} está preparando seu catálogo. Fale com a gente no WhatsApp para saber mais.
                       </p>
                       {reseller?.settings?.whatsapp && (
@@ -562,7 +562,7 @@ export default function PublicStore() {
                         <section key={catalog.id}>
                           {/* Banner 16:9 do catálogo */}
                           {catalog.bannerUrl && (
-                            <div className="w-full aspect-video overflow-hidden rounded-2xl mb-5 bg-gray-100 shadow-sm">
+                            <div className="w-full aspect-video overflow-hidden rounded-2xl mb-5 bg-[#13131C] shadow-sm">
                               <img
                                 src={catalog.bannerUrl}
                                 alt={catalog.name}
@@ -574,7 +574,7 @@ export default function PublicStore() {
 
                           {/* Nome do catálogo (só exibe se houver mais de um catálogo ativo) */}
                           {productsByCatalog.length > 1 && (
-                            <h2 className="font-bold text-gray-900 text-lg mb-4">{catalog.name}</h2>
+                            <h2 className="font-bold text-white text-lg mb-4">{catalog.name}</h2>
                           )}
 
                           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
@@ -602,23 +602,23 @@ export default function PublicStore() {
         {/* CATEGORY VIEW */}
         {view === 'category' && selectedCategory && (
           <div className="px-4 py-6">
-            <div className="flex items-center gap-2 mb-4 text-xs text-gray-400">
-              <button onClick={goHome} className="hover:text-gray-600 transition-colors">
+            <div className="flex items-center gap-2 mb-4 text-xs text-white/40">
+              <button onClick={goHome} className="hover:text-white/60 transition-colors">
                 {reseller?.storeName}
               </button>
               <span>/</span>
-              <span className="text-gray-700 font-medium">{selectedCategory?.name}</span>
+              <span className="text-white/70 font-medium">{selectedCategory?.name}</span>
             </div>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
-              <h2 className="font-bold text-xl text-gray-900">
+              <h2 className="font-bold text-xl text-white">
                 {isSearching ? `Resultados para "${searchQuery}" em ${selectedCategory.name}` : selectedCategory.name}
               </h2>
               <div className="flex items-center gap-3">
-                <span className="text-sm text-gray-500">{filteredProducts.length} produtos</span>
+                <span className="text-sm text-white/50">{filteredProducts.length} produtos</span>
                 {isSearching && (
                   <button 
                     onClick={() => setSearchQuery('')}
-                    className="text-sm font-medium hover:text-gray-900 transition-colors px-3 py-1.5 bg-white border border-gray-200 rounded-full w-fit"
+                    className="text-sm font-medium hover:text-white transition-colors px-3 py-1.5 bg-[#13131C] border border-white/10 rounded-full w-fit"
                     style={{ color: primaryColor }}
                   >
                     Limpar
@@ -628,10 +628,10 @@ export default function PublicStore() {
             </div>
             
             {filteredProducts.length === 0 ? (
-                <div className="text-center py-16 px-4 bg-white rounded-3xl border border-gray-100 shadow-sm mt-4">
-                  <Search className="w-12 h-12 text-gray-200 mx-auto mb-4" />
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">Nenhum produto encontrado</h3>
-                  <p className="text-gray-500 mb-6">Tente usar outros termos ou palavras-chave.</p>
+                <div className="text-center py-16 px-4 bg-[#13131C] rounded-3xl border border-white/5 shadow-sm mt-4">
+                  <Search className="w-12 h-12 text-white/20 mx-auto mb-4" />
+                  <h3 className="text-lg font-bold text-white mb-2">Nenhum produto encontrado</h3>
+                  <p className="text-white/50 mb-6">Tente usar outros termos ou palavras-chave.</p>
                   <button 
                     onClick={() => setSearchQuery('')}
                     className="px-6 py-2.5 rounded-full text-white font-bold transition-all shadow-sm mx-auto"
@@ -659,23 +659,23 @@ export default function PublicStore() {
 
         {/* PRODUCT VIEW */}
         {view === 'product' && selectedProduct && (
-          <div className="bg-white min-h-screen pb-24">
+          <div className="bg-[#13131C] min-h-screen pb-24">
             {/* Breadcrumb */}
-            <div className="px-5 py-3 border-b border-gray-100 flex items-center gap-2 text-xs text-gray-500 font-medium overflow-x-auto hide-scrollbar whitespace-nowrap">
-              <span onClick={goHome} className="cursor-pointer hover:text-gray-900 transition-colors">
+            <div className="px-5 py-3 border-b border-white/5 flex items-center gap-2 text-xs text-white/50 font-medium overflow-x-auto hide-scrollbar whitespace-nowrap">
+              <span onClick={goHome} className="cursor-pointer hover:text-white transition-colors">
                  ← {reseller?.storeName}
               </span>
               {selectedProduct.category && (
                 <>
-                  <span className="text-gray-300">/</span>
-                  <span className="text-gray-900">{selectedProduct.category}</span>
+                  <span className="text-white/30">/</span>
+                  <span className="text-white">{selectedProduct.category}</span>
                 </>
               )}
             </div>
 
             {/* Image Slider com suporte a múltiplas fotos */}
             <div 
-              className="relative aspect-square sm:aspect-[4/3] bg-gray-100"
+              className="relative aspect-square sm:aspect-[4/3] bg-[#13131C]"
               onTouchStart={handleTouchStart}
               onTouchEnd={handleTouchEnd}
             >
@@ -688,7 +688,7 @@ export default function PublicStore() {
               {selectedProduct.images?.[currentImageIndex] ? (
                 <img src={selectedProduct.images[currentImageIndex]} alt={selectedProduct.name} className="w-full h-full object-cover" />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-gray-300"><Store className="w-16 h-16" /></div>
+                <div className="w-full h-full flex items-center justify-center text-white/30"><Store className="w-16 h-16" /></div>
               )}
               
               {/* Dots de navegação entre fotos */}
@@ -696,7 +696,7 @@ export default function PublicStore() {
                 <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
                   {selectedProduct.images.map((_: any, idx: number) => (
                     <button key={idx} onClick={() => setCurrentImageIndex(idx)}
-                      className={`h-2.5 rounded-full transition-all ${idx === currentImageIndex ? 'w-6 bg-white' : 'w-2.5 bg-white/60'}`} />
+                      className={`h-2.5 rounded-full transition-all ${idx === currentImageIndex ? 'w-6 bg-[#13131C]' : 'w-2.5 bg-[#13131C]/60'}`} />
                   ))}
                 </div>
               )}
@@ -724,13 +724,13 @@ export default function PublicStore() {
 
             {/* Miniaturas das fotos (thumbnail strip) */}
             {selectedProduct.images?.length > 1 && (
-              <div className="flex gap-2 overflow-x-auto hide-scrollbar px-5 py-3 border-b border-gray-100 bg-white">
+              <div className="flex gap-2 overflow-x-auto hide-scrollbar px-5 py-3 border-b border-white/5 bg-[#13131C]">
                 {selectedProduct.images.map((img: string, idx: number) => (
                   <button
                     key={idx}
                     onClick={() => setCurrentImageIndex(idx)}
                     className={`shrink-0 w-14 h-14 rounded-xl overflow-hidden border-2 transition-all ${
-                      idx === currentImageIndex ? 'border-gray-900 opacity-100' : 'border-transparent opacity-60 hover:opacity-100'
+                      idx === currentImageIndex ? 'border-orange-500 opacity-100' : 'border-transparent opacity-60 hover:opacity-100'
                     }`}
                   >
                     <img src={img} alt={`Foto ${idx + 1}`} className="w-full h-full object-cover" />
@@ -741,20 +741,20 @@ export default function PublicStore() {
 
             <div className="p-5">
               <div className="mb-6">
-                <h1 className="text-2xl font-bold text-gray-900 mb-2">{selectedProduct.name}</h1>
+                <h1 className="text-2xl font-bold text-white mb-2">{selectedProduct.name}</h1>
                 <p className="text-3xl font-black" style={{ color: primaryColor }}>R$ {Number(selectedProduct.price).toFixed(2)}</p>
               </div>
 
               {selectedProduct.variations?.length > 0 && (
                 <div className="mb-6">
                   <div className="mb-3">
-                    <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Opções disponíveis</h3>
-                    <p className="text-xs text-gray-400 mt-0.5">Selecione antes de adicionar ao carrinho</p>
+                    <h3 className="text-sm font-bold text-white uppercase tracking-wider">Opções disponíveis</h3>
+                    <p className="text-xs text-white/40 mt-0.5">Selecione antes de adicionar ao carrinho</p>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {selectedProduct.variations.map((v: string) => (
                       <button key={v} onClick={() => setSelectedVariation(v)}
-                        className={`px-4 py-2 rounded-xl text-sm font-medium border-2 transition-all ${selectedVariation === v ? 'border-transparent text-white' : 'border-gray-200 text-gray-600 hover:border-gray-300'}`}
+                        className={`px-4 py-2 rounded-xl text-sm font-medium border-2 transition-all ${selectedVariation === v ? 'border-transparent text-white' : 'border-white/10 text-white/60 hover:border-white/20'}`}
                         style={selectedVariation === v ? { backgroundColor: primaryColor } : {}}>
                         {v}
                       </button>
@@ -765,16 +765,16 @@ export default function PublicStore() {
 
               {selectedProduct.description && (
                 <div className="mb-8">
-                  <h3 className="text-sm font-bold text-gray-900 mb-2 uppercase tracking-wider">Descrição</h3>
-                  <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap">{selectedProduct.description}</p>
+                  <h3 className="text-sm font-bold text-white mb-2 uppercase tracking-wider">Descrição</h3>
+                  <p className="text-white/60 text-sm leading-relaxed whitespace-pre-wrap">{selectedProduct.description}</p>
                 </div>
               )}
             </div>
 
             {/* Fixed Bottom Actions */}
-            <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 flex gap-3 z-30 max-w-5xl mx-auto">
+            <div className="fixed bottom-0 left-0 right-0 p-4 bg-[#13131C] border-t border-white/5 flex gap-3 z-30 max-w-5xl mx-auto">
               <button onClick={() => handleAddToCart(selectedProduct, selectedVariation)} disabled={selectedProduct.stock === 0}
-                className="flex-1 py-3.5 rounded-2xl font-bold border-2 transition-colors disabled:opacity-50 text-gray-700 hover:bg-gray-50 active:scale-95"
+                className="flex-1 py-3.5 rounded-2xl font-bold border-2 transition-colors disabled:opacity-50 text-white/70 hover:bg-[#0A0A0F] active:scale-95"
                 style={selectedProduct.stock !== 0 ? { borderColor: primaryColor, color: primaryColor } : {}}>
                 Adicionar
               </button>
