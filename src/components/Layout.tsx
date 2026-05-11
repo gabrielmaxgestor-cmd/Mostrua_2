@@ -23,21 +23,33 @@ export const AdminLayout: React.FC<{ children?: React.ReactNode }> = ({ children
   const getLinkClass = (path: string) => 
     `flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium transition-colors ${
       isActive(path) 
-        ? "bg-[#13131C] text-white" 
-        : "text-white/40 hover:bg-[#13131C] hover:text-white"
+        ? "bg-orange-500/15 text-orange-400 border border-orange-500/20" 
+        : "text-white/60 hover:bg-white/5 hover:text-white/90"
     }`;
 
   return (
     <div className="flex min-h-screen bg-[#0A0A0F]">
       {/* Dark Sidebar */}
       <aside className="w-64 bg-[#0A0A0F] border-r border-white/5 p-6 flex flex-col fixed h-full z-20">
-        <div className="flex items-center gap-3 mb-8 px-2">
-          <img src="/logo.svg" alt="Mostrua Logo" className="h-8" />
+        <div className="flex items-center gap-2.5 mb-8 px-2">
+          {/* Inline icon — never depends on font loading */}
+          <div className="w-8 h-8 rounded-lg bg-[#FF5C00] flex items-center justify-center shrink-0">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <rect x="2" y="2" width="7" height="7" rx="1.5" fill="#0A0A0F"/>
+              <rect x="11" y="2" width="7" height="7" rx="1.5" fill="#0A0A0F"/>
+              <rect x="2" y="11" width="7" height="7" rx="1.5" fill="#0A0A0F"/>
+              <rect x="11" y="11" width="7" height="7" rx="1.5" fill="#FF8040"/>
+            </svg>
+          </div>
+          {/* Wordmark — single element, no split text, no overlap risk */}
+          <span className="font-black text-xl tracking-tight leading-none select-none" style={{ fontFamily: "'Big Shoulders Display','Arial Black','Impact',sans-serif" }}>
+            <span className="text-[#E8F0FF]">MOSTR</span><span className="text-[#FF5C00]">UA</span>
+          </span>
         </div>
         
         <nav className="flex-1 space-y-1 overflow-y-auto pr-2 custom-scrollbar">
           <div className="pt-2 pb-2 px-4">
-            <p className="text-xs font-bold text-white/50 uppercase tracking-wider">Visão Geral</p>
+            <p className="text-xs font-bold text-white/40 uppercase tracking-wider">Visão Geral</p>
           </div>
           <Link to="/admin" className={getLinkClass("/admin")}>
             <LayoutDashboard className="w-5 h-5" /> Dashboard
@@ -47,7 +59,7 @@ export const AdminLayout: React.FC<{ children?: React.ReactNode }> = ({ children
           </Link>
 
           <div className="pt-6 pb-2 px-4">
-            <p className="text-xs font-bold text-white/50 uppercase tracking-wider">Catálogo</p>
+            <p className="text-xs font-bold text-white/40 uppercase tracking-wider">Catálogo</p>
           </div>
           <Link to="/admin/niches" className={getLinkClass("/admin/niches")}>
             <Layers className="w-5 h-5" /> Nichos
@@ -63,7 +75,7 @@ export const AdminLayout: React.FC<{ children?: React.ReactNode }> = ({ children
           </Link>
 
           <div className="pt-6 pb-2 px-4">
-            <p className="text-xs font-bold text-white/50 uppercase tracking-wider">Negócio</p>
+            <p className="text-xs font-bold text-white/40 uppercase tracking-wider">Negócio</p>
           </div>
           <Link to="/admin/users" className={getLinkClass("/admin/users")}>
             <Users className="w-5 h-5" /> Revendedores
@@ -76,7 +88,7 @@ export const AdminLayout: React.FC<{ children?: React.ReactNode }> = ({ children
           </Link>
 
           <div className="pt-6 pb-2 px-4">
-            <p className="text-xs font-bold text-white/50 uppercase tracking-wider">Sistema</p>
+            <p className="text-xs font-bold text-white/40 uppercase tracking-wider">Sistema</p>
           </div>
           <Link to="/admin/settings" className={getLinkClass("/admin/settings")}>
             <Settings className="w-5 h-5" /> Configurações
@@ -100,7 +112,7 @@ export const AdminLayout: React.FC<{ children?: React.ReactNode }> = ({ children
               <input 
                 type="text" 
                 placeholder="Buscar revendedores, pedidos, produtos..." 
-                className="w-full pl-10 pr-4 py-2.5 bg-[#0A0A0F] border-none rounded-xl text-sm focus:ring-2 focus:ring-orange-500 outline-none transition-all"
+                className="w-full pl-10 pr-4 py-2.5 bg-[#0A0A0F] border border-white/8 rounded-xl text-sm text-white/80 placeholder:text-white/30 focus:ring-2 focus:ring-orange-500 outline-none transition-all"
               />
             </div>
           </div>
@@ -112,15 +124,15 @@ export const AdminLayout: React.FC<{ children?: React.ReactNode }> = ({ children
             
             <div className="w-px h-8 bg-[#1A1A2E] hidden md:block"></div>
             
-            <button className="relative text-white/50 hover:text-white/70 transition-colors">
+            <button className="relative text-white/60 hover:text-white/90 transition-colors">
               <Bell className="w-6 h-6" />
-              <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+              <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-[#13131C]"></span>
             </button>
             
             <div className="flex items-center gap-3 pl-2 cursor-pointer">
               <div className="text-right hidden md:block">
                 <p className="text-sm font-bold text-white leading-none mb-1">Admin</p>
-                <p className="text-xs text-white/50 leading-none">{profile?.email}</p>
+                <p className="text-xs text-white/55 leading-none">{profile?.email}</p>
               </div>
               <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-orange-500 to-orange-700 flex items-center justify-center text-white font-bold shadow-sm">
                 A
