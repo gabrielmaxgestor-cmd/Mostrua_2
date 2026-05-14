@@ -25,9 +25,10 @@ import { db } from "../../firebase";
 import { AppNotification } from "../../types";
 import { notificationService } from "../../services/notificationService";
 import { motion, AnimatePresence } from "motion/react";
+import { TrialExpiredGate } from "../../components/reseller/TrialExpiredGate";
 
 export const ResellerLayout: React.FC = () => {
-  const { user, logout, subscription } = useAuth();
+  const { user, logout, subscription, loading } = useAuth();
   const { reseller } = useReseller(user?.uid);
   const { orders } = useOrders(user?.uid);
   const location = useLocation();
@@ -38,7 +39,23 @@ export const ResellerLayout: React.FC = () => {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const notificationsRef = useRef<HTMLDivElement>(null);
 
-  const isExpired = subscription && subscription.status !== 'active' && subscription.status !== 'trial';
+  // ─── Lógica de bloqueio de trial ────────────────────────────────────────────
+  const now = new Date();
+
+  const isTrialExpired =
+    subscription?.status === "trial" &&
+    subscription?.currentPeriodEnd != null &&
+    subscription.currentPeriodEnd.toDate() < now;
+
+  const isBlocked =
+    !loading && (
+      !subscription ||
+      isTrialExpired ||
+      subscription.status === "expired" ||
+      subscription.status === "canceled" ||
+      subscription.status === "past_due"
+    );
+  // ────────────────────────────────────────────────────────────────────────────
 
   useEffect(() => {
     if (!user?.uid) return;
@@ -65,17 +82,9 @@ export const ResellerLayout: React.FC = () => {
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
-  useEffect(() => {
-    if (subscription && subscription.status !== 'active' && subscription.status !== 'trial') {
-      if (location.pathname !== '/dashboard/plans') {
-        navigate('/dashboard/plans', { state: { message: "Seu periodo de teste encerrou. Escolha um plano para continuar." } });
-      }
-    }
-  }, [subscription, navigate, location.pathname]);
-
   const pendingOrdersCount = orders.filter(o => o.status === "pending").length;
 
-  const trialDaysLeft = subscription?.status === 'trial' && subscription.currentPeriodEnd
+  const trialDaysLeft = subscription?.status === "trial" && subscription.currentPeriodEnd
     ? Math.ceil((subscription.currentPeriodEnd.toDate().getTime() - Date.now()) / 86400000)
     : null;
 
@@ -83,6 +92,12 @@ export const ResellerLayout: React.FC = () => {
     await logout();
     navigate("/login");
   };
+
+  // ─── Gate: renderiza tela de bloqueio ao invés do layout normal ─────────────
+  if (isBlocked) {
+    return <TrialExpiredGate />;
+  }
+  // ────────────────────────────────────────────────────────────────────────────
 
   const menuItems = [
     { path: "/dashboard", icon: <LayoutDashboard className="w-5 h-5" />, label: "Dashboard" },
@@ -106,17 +121,9 @@ export const ResellerLayout: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#0A0A0F] flex flex-col">
-      {isExpired && (
-        <div className="bg-red-50 border-b border-red-200 px-4 py-3 text-center">
-          <span className="text-red-700 text-sm font-medium">
-            Sua assinatura esta inativa. Sua loja esta offline para novos pedidos.
-          </span>
-          <Link to="/dashboard/plans" className="ml-2 text-red-700 font-bold underline">Renovar agora</Link>
-        </div>
-      )}
       {trialDaysLeft !== null && trialDaysLeft > 0 && (
         <div className="bg-amber-50 border-b border-amber-200 px-4 py-2 text-center text-sm text-amber-800 z-50">
-          Voce esta no periodo de teste. <strong>{trialDaysLeft} dias restantes</strong>.
+          Você está no período de teste. <strong>{trialDaysLeft} dias restantes</strong>.{" "}
           <Link to="/dashboard/plans" className="ml-2 underline font-bold">Assinar agora</Link>
         </div>
       )}
