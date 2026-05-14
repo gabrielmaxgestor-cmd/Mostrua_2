@@ -49,3 +49,45 @@ export const bootstrapFirstAdmin = functions.https.onRequest(async (req: functio
     res.status(500).json({ error: 'Erro ao conceder admin claim.' });
   }
 });
+
+/**
+ * expireTrials
+ * Roda todo dia às 03:00 (horário de Brasília).
+ * Busca todas as subscriptions com status = "trial" cujo currentPeriodEnd já passou
+ * e atualiza o status para "expired" via batch.
+ */
+export const expireTrials = functions.pubsub
+  .schedule("0 3 * * *")
+  .timeZone("America/Sao_Paulo")
+  .onRun(async () => {
+    const db = admin.firestore();
+    const now = admin.firestore.Timestamp.now();
+
+    const expiredTrials = await db
+      .collection("subscriptions")
+      .where("status", "==", "trial")
+      .where("currentPeriodEnd", "<=", now)
+      .get();
+
+    if (expiredTrials.empty) {
+      console.log("[expireTrials] Nenhum trial expirado encontrado.");
+      return;
+    }
+
+    // Firestore batch suporta até 500 operações por vez
+    const BATCH_SIZE = 500;
+    const docs = expiredTrials.docs;
+    let updated = 0;
+
+    for (let i = 0; i < docs.length; i += BATCH_SIZE) {
+      const batch = db.batch();
+      const chunk = docs.slice(i, i + BATCH_SIZE);
+      chunk.forEach((docSnap) => {
+        batch.update(docSnap.ref, { status: "expired" });
+      });
+      await batch.commit();
+      updated += chunk.length;
+    }
+
+    console.log(`[expireTrials] ${updated} trial(s) expirado(s) atualizado(s) para "expired".`);
+  });
