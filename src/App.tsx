@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useParams } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { auth, db } from "./firebase";
@@ -33,13 +33,23 @@ import { StorePreview } from "./pages/reseller/StorePreview";
 import ResellerWelcome from "./pages/reseller/ResellerWelcome";
 import Analytics from "./pages/reseller/Analytics";
 import { ResellerCustomers } from "./pages/ResellerCustomers";
+import { ResellerPlans } from "./pages/ResellerPlans";
+import { ResellerBilling } from "./pages/ResellerBilling";
 import { SupportPage } from "./pages/reseller/support/SupportPage";
 import { TicketDetail } from "./pages/reseller/support/TicketDetail";
 
 import OrderConfirmedPage from "./pages/store/OrderConfirmedPage";
 import CategoryPage from "./pages/store/CategoryPage";
 
-function ProtectedRoute({ children, requiredRole }: { children: React.ReactNode; requiredRole?: string }) {
+// ─── ProtectedRoute ──────────────────────────────────────────────────────────
+
+function ProtectedRoute({
+  children,
+  requiredRole,
+}: {
+  children: React.ReactNode;
+  requiredRole?: string;
+}) {
   const [user, setUser] = useState<User | null>(null);
   const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -58,7 +68,7 @@ function ProtectedRoute({ children, requiredRole }: { children: React.ReactNode;
           const snap = await getDoc(doc(db, "users", u.uid));
           const userRole = tokenResult.claims.admin
             ? "admin"
-            : (snap.data()?.role || null);
+            : snap.data()?.role || null;
           setRole(userRole);
         } catch (error) {
           console.error("ProtectedRoute: erro ao obter role:", error);
@@ -72,20 +82,28 @@ function ProtectedRoute({ children, requiredRole }: { children: React.ReactNode;
     return unsub;
   }, []);
 
-  if (loading) return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500" />
-    </div>
-  );
+  if (loading)
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500" />
+      </div>
+    );
+
   if (!user) return <Navigate to="/login" replace />;
   if (requiredRole && role !== requiredRole) return <Navigate to="/" replace />;
   return <>{children}</>;
 }
 
+// ─── App ─────────────────────────────────────────────────────────────────────
+
 export default function App() {
   const host = window.location.hostname;
-  const isMainDomain = host.includes('localhost') || host.includes('vercel.app') || host.includes('run.app');
+  const isMainDomain =
+    host.includes("localhost") ||
+    host.includes("vercel.app") ||
+    host.includes("run.app");
 
+  // Domínio customizado do revendedor → renderiza só a loja pública
   if (!isMainDomain) {
     return (
       <TenantProvider>
@@ -104,13 +122,21 @@ export default function App() {
   return (
     <Router>
       <Routes>
+        {/* ── Públicas ── */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
         {/* ── Admin ── */}
-        <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminLayout /></ProtectedRoute>}>
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <AdminLayout />
+            </ProtectedRoute>
+          }
+        >
           <Route index element={<AdminDashboard />} />
           <Route path="niches" element={<Niches />} />
           <Route path="catalogs" element={<AdminCatalogs />} />
@@ -121,10 +147,25 @@ export default function App() {
           <Route path="notifications" element={<AdminNotifications />} />
         </Route>
 
-        {/* ── Reseller ── */}
-        <Route path="/reseller/welcome" element={<ProtectedRoute requiredRole="reseller"><ResellerWelcome /></ProtectedRoute>} />
+        {/* ── Revendedor — Welcome (fora do layout principal) ── */}
+        <Route
+          path="/reseller/welcome"
+          element={
+            <ProtectedRoute requiredRole="reseller">
+              <ResellerWelcome />
+            </ProtectedRoute>
+          }
+        />
 
-        <Route path="/dashboard" element={<ProtectedRoute requiredRole="reseller"><ResellerLayout /></ProtectedRoute>}>
+        {/* ── Revendedor — Dashboard (dentro do ResellerLayout) ── */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute requiredRole="reseller">
+              <ResellerLayout />
+            </ProtectedRoute>
+          }
+        >
           <Route index element={<ResellerDashboard />} />
           <Route path="analytics" element={<Analytics />} />
           <Route path="customers" element={<ResellerCustomers />} />
@@ -136,20 +177,54 @@ export default function App() {
           <Route path="orders" element={<ResellerOrders />} />
           <Route path="support" element={<SupportPage />} />
           <Route path="support/:ticketId" element={<TicketDetail />} />
+          {/* ↓ Rotas que existiam como páginas mas não estavam no router */}
+          <Route path="plans" element={<ResellerPlans />} />
+          <Route path="billing" element={<ResellerBilling />} />
         </Route>
 
-        {/* ── Public store ── */}
-        <Route path="/store/:slug/product/:productId" element={<TenantProviderWrapper><ProductPage /></TenantProviderWrapper>} />
-        <Route path="/store/:slug/categoria/:categoryId" element={<TenantProviderWrapper><CategoryPage /></TenantProviderWrapper>} />
-        <Route path="/store/:slug/order-confirmed/:orderId" element={<TenantProviderWrapper><OrderConfirmedPage /></TenantProviderWrapper>} />
-        <Route path="/store/:slug/*" element={<TenantProviderWrapper><PublicStore /></TenantProviderWrapper>} />
+        {/* ── Loja pública (via slug) ── */}
+        <Route
+          path="/store/:slug/product/:productId"
+          element={
+            <TenantProviderWrapper>
+              <ProductPage />
+            </TenantProviderWrapper>
+          }
+        />
+        <Route
+          path="/store/:slug/categoria/:categoryId"
+          element={
+            <TenantProviderWrapper>
+              <CategoryPage />
+            </TenantProviderWrapper>
+          }
+        />
+        <Route
+          path="/store/:slug/order-confirmed/:orderId"
+          element={
+            <TenantProviderWrapper>
+              <OrderConfirmedPage />
+            </TenantProviderWrapper>
+          }
+        />
+        <Route
+          path="/store/:slug/*"
+          element={
+            <TenantProviderWrapper>
+              <PublicStore />
+            </TenantProviderWrapper>
+          }
+        />
+
+        {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );
 }
 
-import { useParams } from "react-router-dom";
+// ─── Helper ──────────────────────────────────────────────────────────────────
+
 function TenantProviderWrapper({ children }: { children: React.ReactNode }) {
   const { slug } = useParams<{ slug: string }>();
   return <TenantProvider slug={slug}>{children}</TenantProvider>;
